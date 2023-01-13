@@ -19,11 +19,11 @@ hal::result<starter::hardware_map> initialize_target()
   hal::cortex_m::initialize_data_section();
   hal::cortex_m::system_control::initialize_floating_point_unit();
 
-    auto& uart0 = HAL_CHECK((hal::lpc40xx::uart::get<0, 64>(hal::serial::settings{
+  auto& uart0 = HAL_CHECK((hal::lpc40xx::uart::get<0, 64>(hal::serial::settings{
     .baud_rate = 38400,
   })));
 
-  
+  auto& can = HAL_CHECK(hal::liblpc40xx::can::get<1>());
 
     // Get and initialize UART3 with a 8kB receive buffer
   auto& uart3 =
