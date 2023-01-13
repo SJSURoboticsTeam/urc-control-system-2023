@@ -15,8 +15,8 @@ struct hardware_map
   hal::input_pin* in_pin1;
   hal::input_pin* in_pin2;
   hal::serial* esp;
-  hal::callback<void()> reset;
   hal::steady_clock* steady_clock;
+  hal::callback<void()> reset;
 };
 
 }  // namespace Arm

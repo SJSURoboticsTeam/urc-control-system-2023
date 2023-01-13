@@ -19,6 +19,13 @@ hal::result<Drive::hardware_map> initialize_target()
   hal::cortex_m::initialize_data_section();
   hal::cortex_m::system_control::initialize_floating_point_unit();
 
+  HAL_CHECK(hal::lpc40xx::clock::maximum(10.0_MHz));
+
+      // Clock declaration
+    auto& clock = hal::lpc40xx::clock::get();
+    auto cpu_frequency = clock.get_frequency(hal::lpc40xx::peripheral::cpu);
+    static hal::cortex_m::dwt_counter counter(cpu_frequency);
+
   auto& uart0 = HAL_CHECK((hal::lpc40xx::uart::get<0, 64>(hal::serial::settings{
     .baud_rate = 38400,
   })));
@@ -35,12 +42,6 @@ hal::result<Drive::hardware_map> initialize_target()
       .baud_rate = 115200,
     })));
 
-    // Clock declaration
-    HAL_CHECK(hal::lpc40xx::clock::maximum(10.0_MHz));
-    auto& clock = hal::lpc40xx::clock::get();
-    auto cpu_frequency = clock.get_frequency(hal::lpc40xx::peripheral::cpu);
-    static hal::cortex_m::dwt_counter counter(cpu_frequency);
-
   return Drive::hardware_map{
     .terminal = &uart0,
     .can = &can,
@@ -48,7 +49,7 @@ hal::result<Drive::hardware_map> initialize_target()
     .in_pin1 = &in1,
     .in_pin2 = &in2,
     .esp = &uart3,
-    .reset = []() { hal::cortex_m::system_control::reset(); },
-    .steady_clock = &counter
+    .steady_clock = &counter,
+    .reset = []() { hal::cortex_m::system_control::reset(); }
   };
 }
