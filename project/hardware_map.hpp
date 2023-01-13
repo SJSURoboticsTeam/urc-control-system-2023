@@ -6,7 +6,7 @@
 #include <libhal/steady_clock.hpp>
 #include <libhal/can.hpp>
 
-namespace Arm {
+namespace Drive {
 struct hardware_map
 {
   hal::serial* terminal;
@@ -23,5 +23,5 @@ struct hardware_map
 
 // Application function must be implemented by one of the compilation units
 // (.cpp) files.
-hal::status application(starter::hardware_map& p_map);
-hal::result<starter::hardware_map> initialize_target();
+hal::status application(Drive::hardware_map& p_map);
+hal::result<Drive::hardware_map> initialize_target();

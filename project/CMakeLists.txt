@@ -20,10 +20,10 @@ set(LINKER_SCRIPT_PATHS ${CMAKE_SOURCE_DIR}/)
 # List of demo applications
 # To add a new demo to the list, simply add its filename without the .cpp
 # extension to this list.
-set(DEMOS blinker button_and_led hello_world)
+set(DEMOS subsystem-arm)
 
 # List of targets in the LPC40 series MCU
-set(TARGETS lpc4078 stm32f103)
+set(TARGETS lpc4078)
 
 # Iterate through each possible target and demo and generate a "make" target
 # for each.

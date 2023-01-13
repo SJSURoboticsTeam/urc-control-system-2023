@@ -8,11 +8,11 @@
 #include <liblpc40xx/system_controller.hpp>
 #include <liblpc40xx/uart.hpp>
 
-#include <libhal-util/can.hpp>
+#include <liblpc40xx/can.hpp>
 
 #include "../../hardware_map.hpp"
 
-hal::result<starter::hardware_map> initialize_target()
+hal::result<Drive::hardware_map> initialize_target()
 {
   using namespace hal::literals;
 
@@ -23,7 +23,11 @@ hal::result<starter::hardware_map> initialize_target()
     .baud_rate = 38400,
   })));
 
-  auto& can = HAL_CHECK(hal::liblpc40xx::can::get<1>());
+  auto& can = HAL_CHECK((hal::lpc40xx::can::get<1>(hal::can::settings{.baud_rate = 100})));
+
+  auto& in0 = HAL_CHECK((hal::lpc40xx::input_pin::get<2, 1>()));
+  auto& in1 = HAL_CHECK((hal::lpc40xx::input_pin::get<2, 2>()));
+  auto& in2 = HAL_CHECK((hal::lpc40xx::input_pin::get<2, 0>()));
 
     // Get and initialize UART3 with a 8kB receive buffer
   auto& uart3 =
@@ -31,14 +35,20 @@ hal::result<starter::hardware_map> initialize_target()
       .baud_rate = 115200,
     })));
 
-  return Arm::hardware_map{
+    // Clock declaration
+    HAL_CHECK(hal::lpc40xx::clock::maximum(10.0_MHz));
+    auto& clock = hal::lpc40xx::clock::get();
+    auto cpu_frequency = clock.get_frequency(hal::lpc40xx::peripheral::cpu);
+    static hal::cortex_m::dwt_counter counter(cpu_frequency);
+
+  return Drive::hardware_map{
     .terminal = &uart0,
     .can = &can,
     .in_pin0 = &in0,
     .in_pin1 = &in1,
     .in_pin2 = &in2,
     .esp = &uart3,
-    .steady_clock = &counter,
     .reset = []() { hal::cortex_m::system_control::reset(); },
+    .steady_clock = &counter
   };
 }
