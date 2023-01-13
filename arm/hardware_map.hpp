@@ -1,12 +1,12 @@
 #pragma once
 
+#include <libhal/can.hpp>
 #include <libhal/functional.hpp>
 #include <libhal/input_pin.hpp>
 #include <libhal/serial.hpp>
 #include <libhal/steady_clock.hpp>
-#include <libhal/can.hpp>
 
-namespace Drive {
+namespace drive {
 struct hardware_map
 {
   hal::serial* terminal;
@@ -19,9 +19,9 @@ struct hardware_map
   hal::callback<void()> reset;
 };
 
-}  // namespace Arm
+}  // namespace drive
 
 // Application function must be implemented by one of the compilation units
 // (.cpp) files.
-hal::status application(Drive::hardware_map& p_map);
-hal::result<Drive::hardware_map> initialize_target();
+hal::status application(drive::hardware_map& p_map);
+hal::result<drive::hardware_map> initialize_target();

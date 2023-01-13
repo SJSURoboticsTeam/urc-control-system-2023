@@ -3,7 +3,7 @@
 
 #include "../hardware_map.hpp"
 
-hal::status application(Drive::hardware_map& p_map)
+hal::status application(drive::hardware_map& p_map)
 {
 
     using namespace std::chrono_literals;

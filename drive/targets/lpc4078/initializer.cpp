@@ -12,7 +12,7 @@
 
 #include "../../hardware_map.hpp"
 
-hal::result<Drive::hardware_map> initialize_target()
+hal::result<drive::hardware_map> initialize_target()
 {
   using namespace hal::literals;
 
@@ -42,7 +42,7 @@ hal::result<Drive::hardware_map> initialize_target()
       .baud_rate = 115200,
     })));
 
-  return Drive::hardware_map{
+  return drive::hardware_map{
     .terminal = &uart0,
     .can = &can,
     .in_pin0 = &in0,
