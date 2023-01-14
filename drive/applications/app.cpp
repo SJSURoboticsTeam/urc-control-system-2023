@@ -139,7 +139,14 @@ hal::status application(drive::hardware_map& p_map)
     HAL_CHECK(hal::write(terminal, json));
     HAL_CHECK(hal::write(terminal, "\r\n\n"));
 
-    // HAL_CHECK(mission_control.ParseMissionControlData(json, terminal));
+    std::string json_string(json);
+
+    commands = HAL_CHECK(mission_control.ParseMissionControlData(json_string, terminal));
+    // std::string speed_str(commands.speed);
+    // std::string angle_str(commands.angle);
+    // HAL_CHECK(hal::write(terminal, speed_str));
+    // HAL_CHECK(hal::write(terminal, angle_str));
+    
 
     // commands = rules_engine.ValidateCommands(commands);
     // commands = mode_switch.SwitchSteerMode(commands, arguments, motor_speeds);
