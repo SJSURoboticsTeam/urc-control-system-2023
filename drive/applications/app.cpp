@@ -9,6 +9,8 @@
 
 #include <string_view>
 
+#include "src/util.hpp"
+
 hal::status application(drive::hardware_map& p_map)
 {
   using namespace std::chrono_literals;
@@ -19,6 +21,7 @@ hal::status application(drive::hardware_map& p_map)
   auto& counter = *p_map.steady_clock;
 
   std::array<hal::byte, 8192> buffer{};
+  static std::string_view get_request = "";
 
   HAL_CHECK(hal::write(terminal, "Starting program...\n"));
 
@@ -52,25 +55,25 @@ hal::status application(drive::hardware_map& p_map)
   auto socket = std::move(socket_result.value());
 
   while (true) {
-    static constexpr std::string_view get_request =
-      "GET /drive?hello=1&world=2 HTTP/1.1\r\n"
-      "Host: 192.168.1.183:5000/\r\n"
-      "\r\n";
-
     buffer.fill('.');
+    get_request = "GET /drive" + get_rover_status() +
+                  " HTTP/1.1\r\n"
+                  "Host: 192.168.1.183:5000/\r\n"
+                  "\r\n";
 
     auto write_result =
       socket.write(hal::as_bytes(get_request),
-                   HAL_CHECK(hal::create_timeout(counter, 100ms)));
+                   HAL_CHECK(hal::create_timeout(counter, 500ms)));
     if (!write_result) {
       continue;
     }
+
     HAL_CHECK(hal::delay(counter, 100ms));
 
     auto received = HAL_CHECK(socket.read(buffer)).data;
 
-    auto result = std::string_view(reinterpret_cast<char*>(received.data()),
-                                   received.size());
+    auto result = to_string_view(received);
+
     auto start = result.find('{');
     auto end = result.find('}');
     auto json = result.substr(start, end - start + 1);
