@@ -108,7 +108,7 @@ hal::status application(drive::hardware_map& p_map)
   Drive::CommandLerper lerp;
 
   HAL_CHECK(hal::delay(counter, 1000ms));
-  tri_wheel.HomeLegs(terminal);
+  // tri_wheel.HomeLegs(terminal);
   HAL_CHECK(hal::delay(counter, 1000ms));
   HAL_CHECK(hal::write(terminal, "Starting control loop..."));
 
@@ -142,10 +142,12 @@ hal::status application(drive::hardware_map& p_map)
     std::string json_string(json);
 
     commands = HAL_CHECK(mission_control.ParseMissionControlData(json_string, terminal));
-    // std::string speed_str(commands.speed);
-    // std::string angle_str(commands.angle);
-    // HAL_CHECK(hal::write(terminal, speed_str));
-    // HAL_CHECK(hal::write(terminal, angle_str));
+    std::string speed_str(std::to_string(commands.speed));
+    std::string angle_str(std::to_string(commands.angle));
+    HAL_CHECK(hal::write(terminal, speed_str));
+        HAL_CHECK(hal::write(terminal, "\r\n\n"));
+    HAL_CHECK(hal::write(terminal, angle_str));
+        HAL_CHECK(hal::write(terminal, "\r\n\n"));
     
 
     // commands = rules_engine.ValidateCommands(commands);
