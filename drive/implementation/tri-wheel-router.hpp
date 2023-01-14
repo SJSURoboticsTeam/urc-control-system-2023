@@ -129,9 +129,9 @@ namespace Drive
             hal::rmd::drc::read read_commands;
             leg_.steer_motor_.position_control(-60.0_deg, 2.0_rpm);
 
-            HAL_CHECK(left_.steer_motor_.feedback_request(read_commands));
+            HAL_CHECK(leg_.steer_motor_.feedback_request(read_commands));
 
-            if (left_.steer_motor_.feedback().speed() != 0.0_rpm)
+            if (leg_.steer_motor_.feedback().speed() != 0.0_rpm)
             {
                 // This wheel is NOT at -60
                 return true;

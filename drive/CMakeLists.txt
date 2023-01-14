@@ -58,7 +58,6 @@ foreach(target IN LISTS TARGETS)
             librmd::librmd
             libesp8266::libesp8266
             libhal-util::libhal-util)
-            # libarmcortex::libarmcortex
         arm_post_build(${current_project})
     endforeach()
 endforeach()

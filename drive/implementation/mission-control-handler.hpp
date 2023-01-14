@@ -3,6 +3,8 @@
 #include <array>
 #include <libhal-util/serial.hpp>
 
+#include <string_view>
+
 #include "../dto/drive-dto.hpp"
 
 namespace Drive
