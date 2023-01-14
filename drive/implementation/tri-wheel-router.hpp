@@ -11,20 +11,20 @@
 #include "../dto/drive-dto.hpp"
 #include "../dto/motor-feedback-dto.hpp"
 
+
 namespace Drive
 {
     class TriWheelRouter
     {
     public:
-    using namespace hal::literals;
         struct leg
         {
-            leg(hal::rmd& steer, hal::rmd& drive, hal::lpc40xx::input_pin& magnet) : steer_motor_(steer), drive_motor_(drive), magnet_(magnet)
+            leg(hal::rmd::drc& steer, hal::rmd::drc& drive, hal::input_pin& magnet) : steer_motor_(steer), drive_motor_(drive), magnet_(magnet)
             {
             }
             hal::rmd::drc& steer_motor_;
             hal::rmd::drc& drive_motor_;
-            hal::lpc40xx::input_pin& magnet_;
+            hal::input_pin& magnet_;
             int16_t wheel_offset_=0;
         };
 
@@ -56,7 +56,7 @@ namespace Drive
         }
 
         /// At the moment, homing is where the legs turn on so we just calculate the initial encoder positions. ***Must be called in main
-        void HomeLegs()
+        hal::status HomeLegs(hal::serial& terminal)
         {
             motor_feedback angle_verification;
 
@@ -65,26 +65,27 @@ namespace Drive
                 //This loops until all of the wheels are zeroed and/or homed
             }
 
-            bool leftNotHome = left_.magnet_.level(), rightNotHome = right_.magnet_.level(), backNotHome = back_.magnet_.level();
+            bool leftNotHome = HAL_CHECK(left_.magnet_.level()), rightNotHome = HAL_CHECK(right_.magnet_.level()), backNotHome = HAL_CHECK(back_.magnet_.level());
 
             while ((!leftNotHome && WheelNotNeg60DoThis(left_)) | (!rightNotHome && WheelNotNeg60DoThis(right_)) | (!backNotHome && WheelNotNeg60DoThis(back_)))
             {
                 //This loop moves wheels that were prematurely homed away from their current position
             }
 
-            while (WheelNotHomeDoThis(left_) | WheelNotHomeDoThis(right_) | WheelNotHomeDoThis(back_))
+            while (HAL_CHECK(WheelNotHomeDoThis(left_)) | HAL_CHECK(WheelNotHomeDoThis(right_)) | HAL_CHECK(WheelNotHomeDoThis(back_)))
             {
-                HAL_CHECK(hal::write(*p_map.terminal, "HomingPins L = %d\t R = %d\t B = %d", left_.magnet_->level(), right_.magnet_.level(), back_.magnet_.level()));
-                HAL_CHECK(hal::write(*p_map.terminal, "b = %d\tr = %d\tl = %d", back_.wheel_offset_, right_.wheel_offset_, left_.wheel_offset_));
-                angle_verification = GetMotorFeedback();
-                while (angle_verification.left_steer_speed != 0_rpm | angle_verification.right_steer_speed != 0_rpm | angle_verification.back_steer_speed != 0_rpm)
+                HAL_CHECK(hal::write(terminal, std::string("HomingPins L = " + (HAL_CHECK(left_.magnet_.level())) + std::string(" \t R = " + HAL_CHECK(right_.magnet_.level())) + std::string("\t B = " + HAL_CHECK(back_.magnet_.level())))));
+                HAL_CHECK(hal::write(terminal, std::string("b = " + back_.wheel_offset_) + std::string("\tr = " + right_.wheel_offset_) + std::string("\tl = " + left_.wheel_offset_)));
+                angle_verification = HAL_CHECK(GetMotorFeedback());
+                while ((angle_verification.left_steer_speed != 0) | (angle_verification.right_steer_speed != 0) | (angle_verification.back_steer_speed != 0))
                 {
-                    angle_verification = GetMotorFeedback();
+                    angle_verification = HAL_CHECK(GetMotorFeedback());
                 }
             }
+            return hal::success();
         }
 
-        motor_feedback GetMotorFeedback()
+        hal::result<motor_feedback> GetMotorFeedback()
         {
             motor_feedback motor_speeds;
             // Creating this enum from the drc class allows us to read all data from the rmd when it is passed into the feedback_request function
@@ -103,10 +104,12 @@ namespace Drive
     private:
         bool WheelNotZeroDoThis(leg &leg_)
         {
+            using namespace std::chrono_literals;
+            using namespace hal::literals;
             // This leg is NOT at zero
             if ((Drive::RmdEncoder::CalcEncoderPositions(leg_.steer_motor_, 360.0f) >= 0.01f) || Drive::RmdEncoder::CalcEncoderPositions(leg_.steer_motor_, 360.0f) <= -0.01f)
             {
-                leg_.steer_motor_.position_control(0_deg, 2_rpm);
+                leg_.steer_motor_.position_control(0.0_deg, 2.0_rpm);
                 // This wheel is NOT at zero
                 return true;
             }
@@ -118,15 +121,17 @@ namespace Drive
         }
 
         
-        bool WheelNotNeg60DoThis(leg &leg_)
+        hal::result<bool> WheelNotNeg60DoThis(leg &leg_)
         {
+            using namespace std::chrono_literals;
+            using namespace hal::literals;
             leg_.wheel_offset_ = -60;
             hal::rmd::drc::read read_commands;
-            leg_.steer_motor_.position_control(-60_deg, 2_rpm);
+            leg_.steer_motor_.position_control(-60.0_deg, 2.0_rpm);
 
             HAL_CHECK(left_.steer_motor_.feedback_request(read_commands));
 
-            if (left_.steer_motor_.feedback().speed() != 0_rpm)
+            if (left_.steer_motor_.feedback().speed() != 0.0_rpm)
             {
                 // This wheel is NOT at -60
                 return true;
@@ -138,13 +143,15 @@ namespace Drive
             }
         }
 
-        bool WheelNotHomeDoThis (leg& leg_) {
+        hal::result<bool> WheelNotHomeDoThis (leg& leg_) {
+            using namespace std::chrono_literals;
+            using namespace hal::literals;
             // level returns true if it is high, and the magnet is high when it is not 
-            bool not_homed = leg_.magnet_.level()
-            if (not_homed)
+            bool not_homed = HAL_CHECK(leg_.magnet_.level());
+            if(not_homed)
             {
                 leg_.wheel_offset_++;
-                leg_.steer_motor_.position_control(hal::angle(leg_.wheel_offset_), 2_rpm);
+                leg_.steer_motor_.position_control(hal::angle(leg_.wheel_offset_), 2.0_rpm);
                 return true;
             }
             else 

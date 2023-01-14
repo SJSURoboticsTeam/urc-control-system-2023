@@ -19,7 +19,7 @@ namespace Drive
             return request_parameter;
         }
 
-        drive_commands ParseMissionControlData(std::string& response, hal::serial& terminal)
+        hal::result<drive_commands> ParseMissionControlData(std::string& response, hal::serial& terminal)
         {
             response = response.substr(response.find('{'));
             int actual_arguments = sscanf(
@@ -28,7 +28,7 @@ namespace Drive
                 &commands_.mode, &commands_.speed, &commands_.angle);
             if (actual_arguments != kExpectedNumberOfArguments)
             {
-                HAL_CHECK(hal::write(terminal, "Received %d arguments, expected %d", actual_arguments, kExpectedNumberOfArguments));
+                HAL_CHECK(hal::write(terminal, std::string("Received " + actual_arguments) + std::string("arguments, expected " + kExpectedNumberOfArguments)));
             }
             return commands_;
         }

@@ -10,9 +10,10 @@ namespace Drive
     public:
         static float CalcEncoderPositions(hal::rmd::drc &motor, float type)
         {
-            hal::rmd::drc::read read_commands;
-            HAL_CHECK(motor.steer_motor_.feedback_request(read_commands));
-            int eight_bit_raw_encoder_data = static_cast<float>(motor.steer_motor_.feedback().encoder >> 8)
+            using namespace hal::literals;
+            hal::rmd::drc::read read_commands{};
+            motor.feedback_request(read_commands);
+            int eight_bit_raw_encoder_data = static_cast<float>(motor.feedback().encoder >> 8);
             //We shift right because the driver returns this value as a 16-bit number but the datasheet says its an 8 bit number
                 return MapEncoderDataToDegrees(eight_bit_raw_encoder_data, type);
         }
