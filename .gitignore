@@ -30,3 +30,14 @@
 *.exe
 *.out
 *.app
+
+# IDEs
+.vscode/
+archives/
+
+# GDB
+*/**/.gdb_history
+
+# Artifacts
+build/
+.DS_Store
