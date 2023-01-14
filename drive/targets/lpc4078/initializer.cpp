@@ -7,8 +7,8 @@
 #include <liblpc40xx/output_pin.hpp>
 #include <liblpc40xx/system_controller.hpp>
 #include <liblpc40xx/uart.hpp>
-
 #include <liblpc40xx/can.hpp>
+#include <libhal-util/units.hpp>
 
 #include "../../hardware_map.hpp"
 
@@ -30,7 +30,7 @@ hal::result<drive::hardware_map> initialize_target()
     .baud_rate = 38400,
   })));
 
-  auto& can = HAL_CHECK((hal::lpc40xx::can::get<1>(hal::can::settings{.baud_rate = 100})));
+  auto& can = HAL_CHECK((hal::lpc40xx::can::get<1>()));
 
   auto& in0 = HAL_CHECK((hal::lpc40xx::input_pin::get<2, 1>()));
   auto& in1 = HAL_CHECK((hal::lpc40xx::input_pin::get<2, 2>()));
