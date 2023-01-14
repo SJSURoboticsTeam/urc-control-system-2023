@@ -18,7 +18,6 @@ hal::status application(drive::hardware_map& p_map)
   auto& terminal = *p_map.terminal;
   auto& counter = *p_map.steady_clock;
 
-  // 8kB buffer to read data into
   std::array<hal::byte, 8192> buffer{};
 
   HAL_CHECK(hal::write(terminal, "Starting program...\n"));
