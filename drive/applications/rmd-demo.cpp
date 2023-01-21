@@ -1,9 +1,12 @@
 #include <cinttypes>
 
+#include <libhal-esp8266/at/socket.hpp>
+#include <libhal-esp8266/at/wlan_client.hpp>
+#include <libhal-esp8266/util.hpp>
+#include <libhal-rmd/drc.hpp>
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
 #include <libhal/can.hpp>
-#include <librmd/drc.hpp>
 
 #include "../dto/drive-dto.hpp"
 #include "../hardware_map.hpp"
@@ -15,6 +18,7 @@ hal::status application(drive::hardware_map& p_map)
   using namespace std::chrono_literals;
   using namespace hal::literals;
   Drive::drive_commands commands;
+  Drive::MissionControlHandler mission_control;
   auto& can = *p_map.can;
   auto& terminal = *p_map.terminal;
   auto& esp = *p_map.esp;
@@ -25,18 +29,6 @@ hal::status application(drive::hardware_map& p_map)
   auto router = HAL_CHECK(hal::can_router::create(can));
   auto drc = HAL_CHECK(hal::rmd::drc::create(router, 8.0f, 0x141));
 
-  HAL_CHECK(hal::write(terminal, "Moving RMD motor in one second...\n"));
-  HAL_CHECK(hal::delay(*p_map.steady_clock, 1s));
-
-  drc.velocity_control(30.0_rpm);
-  HAL_CHECK(hal::delay(*p_map.steady_clock, 3s));
-
-  drc.velocity_control(-30.0_rpm);
-  HAL_CHECK(hal::delay(*p_map.steady_clock, 3s));
-
-  drc.system_control(hal::rmd::drc::system::off);
-  HAL_CHECK(hal::delay(*p_map.steady_clock, 3s));
-
   HAL_CHECK(hal::write(terminal, "Connecting to wifi...\n"));
   std::array<hal::byte, 8192> buffer{};
   static std::string_view get_request = "";
@@ -45,7 +37,7 @@ hal::status application(drive::hardware_map& p_map)
     esp,
     "SJSU Robotics 2.4GHz",
     "R0Bot1cs3250",
-    HAL_CHECK(hal::create_timeout(counter, 10s)));
+    HAL_CHECK(hal::create_timeout(*p_map.steady_clock, 10s)));
 
   if (!wifi_result) {
     HAL_CHECK(hal::write(terminal, "Failed to create wifi client!\n"));
@@ -56,7 +48,7 @@ hal::status application(drive::hardware_map& p_map)
 
   auto socket_result = hal::esp8266::at::socket::create(
     wifi,
-    HAL_CHECK(hal::create_timeout(counter, 1s)),
+    HAL_CHECK(hal::create_timeout(*p_map.steady_clock, 1s)),
     {
       .type = hal::socket::type::tcp,
       .domain = "192.168.1.183",
@@ -72,7 +64,11 @@ hal::status application(drive::hardware_map& p_map)
   HAL_CHECK(hal::write(
     terminal,
     "Connected to wifi! Starting main control loop in 1 second...\n"));
+  drc.system_control(hal::rmd::drc::system::running);
+
   HAL_CHECK(hal::delay(*p_map.steady_clock, 1s));
+
+  HAL_CHECK(hal::write(terminal, "Starting!\n"));
 
   while (true) {
     buffer.fill('.');
@@ -83,11 +79,11 @@ hal::status application(drive::hardware_map& p_map)
 
     auto write_result =
       socket.write(hal::as_bytes(get_request),
-                   HAL_CHECK(hal::create_timeout(counter, 500ms)));
+                   HAL_CHECK(hal::create_timeout(*p_map.steady_clock, 500ms)));
     if (!write_result) {
       continue;
     }
-    HAL_CHECK(hal::delay(counter, 100ms));
+    HAL_CHECK(hal::delay(*p_map.steady_clock, 100ms));
     auto received = HAL_CHECK(socket.read(buffer)).data;
     auto result = to_string_view(received);
     auto start = result.find('{');
@@ -102,8 +98,7 @@ hal::status application(drive::hardware_map& p_map)
     commands =
       HAL_CHECK(mission_control.ParseMissionControlData(json_string, terminal));
 
-    auto rmd_speed = commands.rmd_speed;
-    drc.system_control(hal::rmd::drc::system::running);
+    auto rmd_speed = commands.speed;
     drc.velocity_control(rmd_speed);
   }
 
