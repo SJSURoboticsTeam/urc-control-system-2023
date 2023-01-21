@@ -1,14 +1,14 @@
-#include <libarmcortex/dwt_counter.hpp>
-#include <libarmcortex/startup.hpp>
-#include <libarmcortex/system_control.hpp>
+#include <libhal-armcortex/dwt_counter.hpp>
+#include <libhal-armcortex/startup.hpp>
+#include <libhal-armcortex/system_control.hpp>
 
+#include <libhal-lpc40xx/can.hpp>
+#include <libhal-lpc40xx/constants.hpp>
+#include <libhal-lpc40xx/input_pin.hpp>
+#include <libhal-lpc40xx/output_pin.hpp>
+#include <libhal-lpc40xx/system_controller.hpp>
+#include <libhal-lpc40xx/uart.hpp>
 #include <libhal-util/units.hpp>
-#include <liblpc40xx/can.hpp>
-#include <liblpc40xx/constants.hpp>
-#include <liblpc40xx/input_pin.hpp>
-#include <liblpc40xx/output_pin.hpp>
-#include <liblpc40xx/system_controller.hpp>
-#include <liblpc40xx/uart.hpp>
 
 #include "../../hardware_map.hpp"
 
@@ -30,9 +30,8 @@ hal::result<drive::hardware_map> initialize_target()
     .baud_rate = 38400,
   })));
 
-  auto& can = HAL_CHECK(
-    (hal::lpc40xx::can::get<2>(hal::can::settings{ .baud_rate = 10.0_MHz })));
-  // HAL_CHECK(can.configure(hal::can::settings{ .baud_rate = 10.0_MHz }));z
+  hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
+  auto& can = HAL_CHECK((hal::lpc40xx::can::get<2>(can_settings)));
 
   auto& in0 = HAL_CHECK((hal::lpc40xx::input_pin::get<2, 1>()));
   auto& in1 = HAL_CHECK((hal::lpc40xx::input_pin::get<2, 2>()));
