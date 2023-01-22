@@ -2,7 +2,7 @@
 
 #include <libhal/can.hpp>
 #include <libhal/functional.hpp>
-#include <libhal/i2c.hpp>
+// #include <libhal/i2c.hpp>
 #include <libhal/input_pin.hpp>
 #include <libhal/serial.hpp>
 #include <libhal/steady_clock.hpp>
