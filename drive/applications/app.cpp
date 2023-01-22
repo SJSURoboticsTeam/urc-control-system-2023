@@ -1,11 +1,11 @@
-#include <libesp8266/at/socket.hpp>
-#include <libesp8266/at/wlan_client.hpp>
-#include <libesp8266/util.hpp>
+#include <libhal-esp8266/at/socket.hpp>
+#include <libhal-esp8266/at/wlan_client.hpp>
+#include <libhal-esp8266/util.hpp>
+#include <libhal-lpc40xx/can.hpp>
+#include <libhal-lpc40xx/input_pin.hpp>
+#include <libhal-rmd/drc.hpp>
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
-#include <liblpc40xx/can.hpp>
-#include <liblpc40xx/input_pin.hpp>
-#include <librmd/drc.hpp>
 
 #include "../implementation/command-lerper.hpp"
 #include "../implementation/mission-control-handler.hpp"
@@ -16,9 +16,9 @@
 
 #include "../hardware_map.hpp"
 
-#include <libesp8266/at/socket.hpp>
-#include <libesp8266/at/wlan_client.hpp>
-#include <libesp8266/util.hpp>
+#include <libhal-esp8266/at/socket.hpp>
+#include <libhal-esp8266/at/wlan_client.hpp>
+#include <libhal-esp8266/util.hpp>
 
 #include <string>
 #include <string_view>
@@ -37,9 +37,6 @@ hal::status application(drive::hardware_map& p_map)
   auto& magnet1 = *p_map.in_pin1;
   auto& magnet2 = *p_map.in_pin2;  //
   auto& can = *p_map.can;          // check
-
-  // start of esp initialization
-  // ==========================================================
 
   std::array<hal::byte, 8192> buffer{};
   static std::string_view get_request = "";
@@ -74,9 +71,6 @@ hal::status application(drive::hardware_map& p_map)
   }
 
   auto socket = std::move(socket_result.value());
-
-  // End of esp initialization
-  // ==========================================================
 
   auto can_router = hal::can_router::create(can).value();
 

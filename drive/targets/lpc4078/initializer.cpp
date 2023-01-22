@@ -31,7 +31,7 @@ hal::result<drive::hardware_map> initialize_target()
   })));
 
   hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
-  auto& can = HAL_CHECK((hal::lpc40xx::can::get<2>(can_settings)));
+  auto& can = HAL_CHECK((hal::lpc40xx::can::get<1>(can_settings)));
 
   auto& in0 = HAL_CHECK((hal::lpc40xx::input_pin::get<2, 1>()));
   auto& in1 = HAL_CHECK((hal::lpc40xx::input_pin::get<2, 2>()));

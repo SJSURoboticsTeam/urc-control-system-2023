@@ -27,7 +27,9 @@ hal::status application(drive::hardware_map& p_map)
   HAL_CHECK(hal::delay(*p_map.steady_clock, 1s));
 
   auto router = HAL_CHECK(hal::can_router::create(can));
-  auto drc = HAL_CHECK(hal::rmd::drc::create(router, 8.0f, 0x141));
+  auto left_hub_motor = HAL_CHECK(hal::rmd::drc::create(router, 15.0, 0x142));
+  auto right_hub_motor = HAL_CHECK(hal::rmd::drc::create(router, 15.0, 0x144));
+  auto back_hub_motor = HAL_CHECK(hal::rmd::drc::create(router, 15.0, 0x146));
 
   HAL_CHECK(hal::write(terminal, "Connecting to wifi...\n"));
   std::array<hal::byte, 8192> buffer{};
@@ -64,7 +66,9 @@ hal::status application(drive::hardware_map& p_map)
   HAL_CHECK(hal::write(
     terminal,
     "Connected to wifi! Starting main control loop in 1 second...\n"));
-  drc.system_control(hal::rmd::drc::system::running);
+  left_hub_motor.system_control(hal::rmd::drc::system::running);
+  right_hub_motor.system_control(hal::rmd::drc::system::running);
+  back_hub_motor.system_control(hal::rmd::drc::system::running);
 
   HAL_CHECK(hal::delay(*p_map.steady_clock, 1s));
 
@@ -99,7 +103,9 @@ hal::status application(drive::hardware_map& p_map)
       HAL_CHECK(mission_control.ParseMissionControlData(json_string, terminal));
 
     auto rmd_speed = commands.speed;
-    drc.velocity_control(rmd_speed);
+    left_hub_motor.velocity_control(rmd_speed);
+    right_hub_motor.velocity_control(rmd_speed);
+    back_hub_motor.velocity_control(rmd_speed);
   }
 
   return hal::success();

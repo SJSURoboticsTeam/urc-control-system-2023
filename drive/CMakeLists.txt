@@ -24,7 +24,7 @@ set(LINKER_SCRIPT_PATHS ${CMAKE_SOURCE_DIR}/)
 # List of demo applications
 # To add a new demo to the list, simply add its filename without the .cpp
 # extension to this list.
-set(DEMOS rmd-demo)
+set(DEMOS rmd-demo app)
 
 # List of targets in the LPC40 series MCU
 set(TARGETS lpc4078)
