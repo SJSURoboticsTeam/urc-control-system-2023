@@ -1,10 +1,13 @@
 [requires]
-liblpc40xx/0.3.2
-librmd/0.3.3
-libesp8266/0.3.2
-libhal-util/0.3.3
+libhal-lpc40xx/0.3.6
+libhal-rmd/0.3.4
+libhal-esp8266/0.3.3
+libhal-util/0.3.4
+
+[tool_requires]
+gnu-arm-embedded-toolchain/11.3.0
+cmake-arm-embedded/0.1.1
 
 [generators]
 CMakeToolchain
 CMakeDeps
-VirtualRunEnv

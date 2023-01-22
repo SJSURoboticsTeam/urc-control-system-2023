@@ -1,11 +1,11 @@
-#include <libesp8266/at/socket.hpp>
-#include <libesp8266/at/wlan_client.hpp>
-#include <libesp8266/util.hpp>
+#include <libhal-esp8266/at/socket.hpp>
+#include <libhal-esp8266/at/wlan_client.hpp>
+#include <libhal-esp8266/util.hpp>
+#include <libhal-lpc40xx/can.hpp>
+#include <libhal-lpc40xx/input_pin.hpp>
+#include <libhal-rmd/drc.hpp>
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
-#include <liblpc40xx/can.hpp>
-#include <liblpc40xx/input_pin.hpp>
-#include <librmd/drc.hpp>
 
 #include "../implementation/command-lerper.hpp"
 #include "../implementation/mission-control-handler.hpp"
@@ -16,9 +16,9 @@
 
 #include "../hardware_map.hpp"
 
-#include <libesp8266/at/socket.hpp>
-#include <libesp8266/at/wlan_client.hpp>
-#include <libesp8266/util.hpp>
+#include <libhal-esp8266/at/socket.hpp>
+#include <libhal-esp8266/at/wlan_client.hpp>
+#include <libhal-esp8266/util.hpp>
 
 #include <string>
 #include <string_view>
@@ -37,9 +37,6 @@ hal::status application(drive::hardware_map& p_map)
   auto& magnet1 = *p_map.in_pin1;
   auto& magnet2 = *p_map.in_pin2;  //
   auto& can = *p_map.can;          // check
-
-  // start of esp initialization
-  // ==========================================================
 
   std::array<hal::byte, 8192> buffer{};
   static std::string_view get_request = "";
@@ -74,9 +71,6 @@ hal::status application(drive::hardware_map& p_map)
   }
 
   auto socket = std::move(socket_result.value());
-
-  // End of esp initialization
-  // ==========================================================
 
   auto can_router = hal::can_router::create(can).value();
 
@@ -141,25 +135,18 @@ hal::status application(drive::hardware_map& p_map)
 
     std::string json_string(json);
 
-    commands = HAL_CHECK(mission_control.ParseMissionControlData(json_string, terminal));
-    std::string speed_str(std::to_string(commands.speed));
-    std::string angle_str(std::to_string(commands.angle));
-    HAL_CHECK(hal::write(terminal, speed_str));
-        HAL_CHECK(hal::write(terminal, "\r\n\n"));
-    HAL_CHECK(hal::write(terminal, angle_str));
-        HAL_CHECK(hal::write(terminal, "\r\n\n"));
-    
+    commands =
+      HAL_CHECK(mission_control.ParseMissionControlData(json_string, terminal));
 
-    // commands = rules_engine.ValidateCommands(commands);
-    // commands = mode_switch.SwitchSteerMode(commands, arguments, motor_speeds);
-    // commands = lerp.Lerp(commands);
+    commands = rules_engine.ValidateCommands(commands);
+    commands = mode_switch.SwitchSteerMode(commands, arguments, motor_speeds);
+    commands = lerp.Lerp(commands);
 
     // commands.Print();
-    // arguments = Drive::ModeSelect::SelectMode(commands);
-    // arguments = tri_wheel.SetLegArguments(arguments);
+    arguments = Drive::ModeSelect::SelectMode(commands);
+    arguments = tri_wheel.SetLegArguments(arguments);
 
-    // motor_speeds = HAL_CHECK(tri_wheel.GetMotorFeedback());
-    
+    motor_speeds = HAL_CHECK(tri_wheel.GetMotorFeedback());
   }
 
   return hal::success();
