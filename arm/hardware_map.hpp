@@ -2,6 +2,7 @@
 
 #include <libhal/can.hpp>
 #include <libhal/functional.hpp>
+// #include <libhal/i2c.hpp>
 #include <libhal/input_pin.hpp>
 #include <libhal/serial.hpp>
 #include <libhal/steady_clock.hpp>
@@ -11,14 +12,11 @@ struct hardware_map
 {
   hal::serial* terminal;
   hal::can* can;
-  hal::input_pin* in_pin0;
-  hal::input_pin* in_pin1;
-  hal::input_pin* in_pin2;
   hal::serial* esp;
+  // hal::i2c* i2c;
   hal::steady_clock* steady_clock;
   hal::callback<void()> reset;
 };
-
 }  // namespace drive
 
 // Application function must be implemented by one of the compilation units
