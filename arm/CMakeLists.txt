@@ -12,7 +12,11 @@ project(demos VERSION 0.0.1 LANGUAGES CXX)
 list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 
 # Import the liblpc40xx library (and all of its dependencies)
-find_package(liblpc40xx REQUIRED CONFIG)
+find_package(libhal-lpc40xx REQUIRED CONFIG)
+find_package(libhal-rmd REQUIRED CONFIG)
+find_package(libhal-esp8266 REQUIRED CONFIG)
+find_package(libhal-util REQUIRED CONFIG)
+# find_package(libhal-armcortex REQUIRED CONFIG)
 
 # Set the path to the linekr scripts to the source directory or (..)
 set(LINKER_SCRIPT_PATHS ${CMAKE_SOURCE_DIR}/)
@@ -40,17 +44,13 @@ foreach(target IN LISTS TARGETS)
             ./
             targets/${target})
         target_compile_features(${current_project} PRIVATE cxx_std_20)
-        set_target_properties(${current_project} PROPERTIES CXX_EXTENSIONS OFF)
-        target_compile_options(${current_project} PRIVATE ${CORTEX_M4F_FLAGS})
-        target_link_options(${current_project} PRIVATE ${CORTEX_M4F_FLAGS}
-            -L${LINKER_SCRIPT_PATHS}
-            -T${LINKER_SCRIPT_PATHS}/targets/${target}/${target}.ld
-            -Wl,-Map=${current_project}.map,--cref -Wl,--gc-sections
-            -Wl,--print-memory-usage)
-
+        
         # TODO(#3): This will not work for libstm32 and other target libraries.
         target_link_libraries(${current_project} PRIVATE
-            liblpc40xx::liblpc40xx)
+            libhal::lpc4078
+            libhal::rmd
+            libhal::esp8266
+            libhal::util)
         arm_post_build(${current_project})
     endforeach()
 endforeach()
