@@ -7,6 +7,7 @@ project(science-robot.elf VERSION 0.0.1 LANGUAGES CXX)
 
 find_package(libhal-lpc40xx REQUIRED CONFIG)
 
+add_link_options(-lc -lrdimon -u _printf_float) # enables floating point string interpolation
 add_executable(${PROJECT_NAME} main.cpp libhal_configuration/newlib.cpp libhal_configuration/initializer.cpp)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 target_include_directories(${PROJECT_NAME} PUBLIC .)
