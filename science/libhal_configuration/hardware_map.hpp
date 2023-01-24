@@ -8,7 +8,6 @@ namespace science {
 struct hardware_map {
     hal::callback<void()> reset; // reset function
 };
+} // namespace science
 
 hal::result<science::hardware_map> initialize_target();
-
-} // namespace science
