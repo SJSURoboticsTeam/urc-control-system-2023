@@ -10,6 +10,8 @@ find_package(libhal-util REQUIRED CONFIG)
 set(DEMOS rmd-demo app)
 set(TARGETS lpc4078_10mhz lpc4078_12mhz)
 
+add_link_options(-lc -lrdimon -u _printf_float)
+
 foreach(target IN LISTS TARGETS)
     foreach(demo IN LISTS DEMOS)
         set(current_project ${target}_${demo})
