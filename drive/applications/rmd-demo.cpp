@@ -78,7 +78,9 @@ hal::status application(drive::hardware_map& p_map)
   char buffer[20];
   while (true) {
     HAL_CHECK(hal::delay(*p_map.steady_clock, 1s));
-    snprintf(buffer, 20, "%f", Drive::RmdEncoder::CalcEncoderPositions(left_hub_motor, 60.0f));
+    motor.feedback_request(hal::rmd::drc::read::encoder_data);
+    int eight_bit_raw_encoder_data = static_cast<float>(motor.feedback().encoder);
+    snprintf(buffer, 20, "%f", eight_bit_raw_encoder);
     HAL_CHECK(hal::write(terminal, buffer));
     // HAL_CHECK(hal::write(terminal, encoder));
     // buffer.fill('.');
