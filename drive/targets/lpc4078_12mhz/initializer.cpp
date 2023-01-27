@@ -38,8 +38,8 @@ hal::result<drive::hardware_map> initialize_target()
   auto& in2 = HAL_CHECK((hal::lpc40xx::input_pin::get<1, 4>()));  // home_a
 
   // Get and initialize UART3 with a 8kB receive buffer
-  auto& uart3 =
-    HAL_CHECK((hal::lpc40xx::uart::get<3, 8192>(hal::serial::settings{
+  auto& uart1 =
+    HAL_CHECK((hal::lpc40xx::uart::get<1, 8192>(hal::serial::settings{
       .baud_rate = 115200,
     })));
 
@@ -48,7 +48,7 @@ hal::result<drive::hardware_map> initialize_target()
                               .in_pin0 = &in0,
                               .in_pin1 = &in1,
                               .in_pin2 = &in2,
-                              .esp = &uart3,
+                              .esp = &uart1,
                               .steady_clock = &counter,
                               .reset = []() {
                                 hal::cortex_m::system_control::reset();
