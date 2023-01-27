@@ -7,27 +7,19 @@
 #include "libhal_configuration/hardware_map.hpp"
 #include "implementations/mq4_methane_sensor.hpp"
 
+// demos
+#include "demos/methan_sensor.hpp"
+
 // Defined to use custom libhal units such as volts or milliseconds
 using namespace hal::literals;
 using namespace std::chrono_literals;
 
 hal::status science_app(science::hardware_map& p_map) {
-    // science robot entry point here. This function may yield an error.
-    while (true) {
-        // demo for methane sensor driver.
-        auto methane_driver = Mq4MethaneSensor(p_map.is_methane, p_map.methane_level);
-        float methane_value = HAL_CHECK(methane_driver.read_methane_level());
-        bool is_methane = HAL_CHECK(methane_driver.detect_methane());
-
-        if (is_methane) {
-            hal::print<64>(*p_map.science_serial, "CH4: %f\n", methane_value);
-        } else {
-            hal::print<64>(*p_map.science_serial, "No methane detected.\n");
-        }
-        HAL_CHECK(hal::delay(*p_map.clock, 100ms));
-
-    }
-    return hal::success();
+    // TODO: This is for the main science robot. The control flow has not been figured out! Right now
+    // We just have some demos for various drivers and components. To run them, include the right header
+    // from the demos folder.
+    
+    HAL_CHECK(demos::methane_sensor_demo(p_map));
 }
 
 int main() {
