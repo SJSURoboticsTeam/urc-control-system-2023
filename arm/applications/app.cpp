@@ -7,6 +7,11 @@
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
 
+#include "../dto/arm-dto.hpp"
+#include "../dto/feedback-dto.hpp"
+#include "../implementation/routers/joint-router.hpp"
+#include "../implementation/rules-engine.hpp"
+
 #include "../hardware_map.hpp"
 
 hal::status application(drive::hardware_map& p_map)
@@ -31,6 +36,9 @@ hal::status application(drive::hardware_map& p_map)
     HAL_CHECK(hal::rmd::drc::create(can_router, 8.0, 0x144));
   auto right_wrist_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, 8.0, 0x145));
+
+  Arm::mc_commands commands;
+  Arm::motors_feedback feedback;
 
   while (true) {
     HAL_CHECK(hal::write(*p_map.terminal, "Hello, Will!\n"));
