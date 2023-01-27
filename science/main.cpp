@@ -8,7 +8,7 @@
 #include "implementations/mq4_methane_sensor.hpp"
 
 // demos
-#include "demos/methan_sensor.hpp"
+#include "demos/methane_sensor.hpp"
 
 // Defined to use custom libhal units such as volts or milliseconds
 using namespace hal::literals;
