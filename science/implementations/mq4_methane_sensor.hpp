@@ -4,34 +4,16 @@
 #include <libhal/adc.hpp>
 #include <cmath>
 
-class Mq4MethaneSensor {
-private:
-    hal::input_pin* methane_detected_;
-    hal::adc* methane_data_;
+#include "generic_adc_sensor.hpp"
 
+class Mq4MethaneSensor : public GenericAdcSensor {
 public:
-    Mq4MethaneSensor(
-        hal::input_pin* methane_detected,
-        hal::adc* methane_data):methane_detected_{methane_detected}, methane_data_{methane_data} {}
+    Mq4MethaneSensor(hal::adc* adc_data, hal::input_pin* digital_detector): GenericAdcSensor(adc_data, digital_detector) {};
 
-    hal::result<bool> detect_methane() {
-        bool result = HAL_CHECK(methane_detected_->level());
-        return result;
-    }
+    virtual hal::result<float> read_convert_data() override {
+        float raw_adc_value = HAL_CHECK(read_raw_adc());
 
-    hal::result<float> read_methane_level() {
-
-        float raw_ratio_average = 0;
-        for (int i = 0; i < 10; i++)
-            raw_ratio_average += HAL_CHECK(methane_data_->read());
-        
-        raw_ratio_average /= 10;
-
-        // using the formula derived in https://www.utmel.com/components/how-to-use-mq4-gas-sensor?id=821
-        // ppm for Methane (CH4) from the ratio read in by the sensor is 1000(ratio)^(-2.95)
-        float ppm_value = static_cast<float>(std::pow(1000 * raw_ratio_average, -2.95));
+        float ppm_value = static_cast<float>(std::pow(1000 * raw_adc_value, -2.95));
         return ppm_value;
     }
 };
-
-
