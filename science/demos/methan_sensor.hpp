@@ -19,9 +19,9 @@ hal::status methane_sensor_demo(science::hardware_map& p_map) {
     // science robot entry point here. This function may yield an error.
     while (true) {
         // demo for methane sensor driver.
-        Mq4MethaneSensor methane_driver = Mq4MethaneSensor(p_map.is_methane, p_map.methane_level);
+        Mq4MethaneSensor methane_driver = Mq4MethaneSensor(p_map.methane_level, p_map.is_methane);
 
-        bool is_methane = HAL_CHECK(methane_driver.detect_methane());
+        bool is_methane = HAL_CHECK(methane_driver.detect_signal());
         float methane_value = HAL_CHECK(methane_driver.read_convert_data());
 
         if (is_methane) {

@@ -15,7 +15,7 @@ using namespace hal::literals;
 using namespace std::chrono_literals;
 
 hal::status science_app(science::hardware_map& p_map) {
-    // TODO: This is for the main science robot. The control flow has not been figured out! Right now
+    // This is for the main science robot. The control flow has not been figured out! Right now
     // We just have some demos for various drivers and components. To run them, include the right header
     // from the demos folder.
     
