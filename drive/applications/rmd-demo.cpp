@@ -28,7 +28,7 @@ hal::status application(drive::hardware_map& p_map)
   HAL_CHECK(hal::delay(*p_map.steady_clock, 1s));
 
   auto router = HAL_CHECK(hal::can_router::create(can));
-  auto left_hub_motor = HAL_CHECK(hal::rmd::drc::create(router, 15.0, 0x141));
+  auto left_hub_motor = HAL_CHECK(hal::rmd::drc::create(router, 15.0, 0x142));
   // auto right_hub_motor = HAL_CHECK(hal::rmd::drc::create(router, 15.0, 0x144));
   // auto back_hub_motor = HAL_CHECK(hal::rmd::drc::create(router, 15.0, 0x146));
 
@@ -78,8 +78,15 @@ hal::status application(drive::hardware_map& p_map)
   char buffer[20];
   while (true) {
     HAL_CHECK(hal::delay(*p_map.steady_clock, 1s));
-    left_hub_motor.feedback_request(hal::rmd::drc::read::encoder_data);
-    int eight_bit_raw_encoder_data = static_cast<float>(left_hub_motor.feedback().encoder);
+    HAL_CHECK(left_hub_motor.feedback_request(hal::rmd::drc::read::pid_data));
+    HAL_CHECK(left_hub_motor.feedback_request(hal::rmd::drc::read::acceleration_data));
+    HAL_CHECK(left_hub_motor.feedback_request(hal::rmd::drc::read::encoder_data));
+    HAL_CHECK(left_hub_motor.feedback_request(hal::rmd::drc::read::multi_turns_angle));
+    HAL_CHECK(left_hub_motor.feedback_request(hal::rmd::drc::read::single_circle_angle));
+    HAL_CHECK(left_hub_motor.feedback_request(hal::rmd::drc::read::status_1_and_error_flags));
+    HAL_CHECK(left_hub_motor.feedback_request(hal::rmd::drc::read::status_2));
+    HAL_CHECK(left_hub_motor.feedback_request(hal::rmd::drc::read::status_3));
+    int eight_bit_raw_encoder_data = left_hub_motor.feedback().encoder;
     snprintf(buffer, 20, "%d", eight_bit_raw_encoder_data);
     HAL_CHECK(hal::write(terminal, buffer));
     // HAL_CHECK(hal::write(terminal, encoder));

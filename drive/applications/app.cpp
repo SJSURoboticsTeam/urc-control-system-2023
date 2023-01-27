@@ -61,7 +61,7 @@ hal::status application(drive::hardware_map& p_map)
     HAL_CHECK(hal::create_timeout(counter, 1s)),
     {
       .type = hal::socket::type::tcp,
-      .domain = "192.168.56.1",
+      .domain = "192.168.1.110",
       .port = "5000",
     });
 
@@ -77,13 +77,13 @@ hal::status application(drive::hardware_map& p_map)
   auto left_steer_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, 6.0, 0x141));
   auto left_hub_motor =
-    HAL_CHECK(hal::rmd::drc::create(can_router, 15.0, 0x142));
+    HAL_CHECK(hal::rmd::drc::create(can_router, 15.0, 0x145));
   auto right_steer_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, 6.0, 0x143));
   auto right_hub_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, 15.0, 0x144));
   auto back_steer_motor =
-    HAL_CHECK(hal::rmd::drc::create(can_router, 6.0, 0x145));
+    HAL_CHECK(hal::rmd::drc::create(can_router, 6.0, 0x142));
   auto back_hub_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, 15.0, 0x146));
 
@@ -102,7 +102,7 @@ hal::status application(drive::hardware_map& p_map)
   Drive::CommandLerper lerp;
 
   HAL_CHECK(hal::delay(counter, 1000ms));
-  // tri_wheel.HomeLegs(terminal);
+  tri_wheel.HomeLegs(terminal);
   HAL_CHECK(hal::delay(counter, 1000ms));
   HAL_CHECK(hal::write(terminal, "Starting control loop..."));
 
@@ -110,7 +110,7 @@ hal::status application(drive::hardware_map& p_map)
     buffer.fill('.');
     get_request = "GET /drive" + get_rover_status() +
                   " HTTP/1.1\r\n"
-                  "Host: 192.168.56.1:5000/\r\n"
+                  "Host: 192.168.1.110:5000/\r\n"
                   "\r\n";
 
     auto write_result =
