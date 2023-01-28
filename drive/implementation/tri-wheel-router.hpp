@@ -40,19 +40,19 @@ public:
     tri_wheel_router_arguments tri_wheel_arguments)
   {
     left_.steer_motor_.position_control(
-      hal::angle(-tri_wheel_arguments.left.steer.angle + left_.wheel_offset_),
+      hal::degrees(-tri_wheel_arguments.left.steer.angle + left_.wheel_offset_),
       hal::rpm(tri_wheel_arguments.left.steer.speed));
     left_.drive_motor_.velocity_control(
       hal::rpm(tri_wheel_arguments.left.hub.speed));
 
     right_.steer_motor_.position_control(
-      hal::angle(-tri_wheel_arguments.right.steer.angle + right_.wheel_offset_),
+      hal::degrees(-tri_wheel_arguments.right.steer.angle + right_.wheel_offset_),
       hal::rpm(tri_wheel_arguments.right.steer.speed));
     right_.drive_motor_.velocity_control(
       hal::rpm(tri_wheel_arguments.right.hub.speed));
 
     back_.steer_motor_.position_control(
-      hal::angle(-tri_wheel_arguments.back.steer.angle + back_.wheel_offset_),
+      hal::degrees(-tri_wheel_arguments.back.steer.angle + back_.wheel_offset_),
       hal::rpm(tri_wheel_arguments.back.steer.speed));
     back_.drive_motor_.velocity_control(
       hal::rpm(tri_wheel_arguments.back.hub.speed));
@@ -134,9 +134,9 @@ private:
     using namespace std::chrono_literals;
     using namespace hal::literals;
     // This leg is NOT at zero
-    if ((Drive::RmdEncoder::CalcEncoderPositions(leg_.steer_motor_, 360.0f) >=
+    if ((Drive::RmdEncoder::CalcEncoderPositions(leg_.steer_motor_, 60.0f) >=
          0.01f) ||
-        Drive::RmdEncoder::CalcEncoderPositions(leg_.steer_motor_, 360.0f) <=
+        Drive::RmdEncoder::CalcEncoderPositions(leg_.steer_motor_, 60.0f) <=
           -0.01f) {
       leg_.steer_motor_.position_control(0.0_deg, 2.0_rpm);
       // This wheel is NOT at zero
@@ -174,7 +174,7 @@ private:
     bool not_homed = HAL_CHECK(leg_.magnet_.level());
     if (not_homed) {
       leg_.wheel_offset_++;
-      leg_.steer_motor_.position_control(hal::angle(leg_.wheel_offset_),
+      leg_.steer_motor_.position_control(hal::degrees(leg_.wheel_offset_),
                                          2.0_rpm);
       return true;
     } else {

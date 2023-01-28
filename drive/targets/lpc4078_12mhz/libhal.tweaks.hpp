@@ -6,5 +6,5 @@
 #include <string_view>
 
 namespace hal::config {
-constexpr std::string_view platform = "stm32f103";
+constexpr std::string_view platform = "lpc4078";
 }  // namespace hal::config

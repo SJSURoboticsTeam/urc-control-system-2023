@@ -11,7 +11,7 @@ cd build
 
 conan install .. -s build_type=Debug
 
-cmake -G  "Unix Makefiles" .. -D CMAKE_BUILD_TYPE=Debug
+cmake .. -D CMAKE_BUILD_TYPE=Debug -D CMAKE_TOOLCHAIN_FILE=conan_toolchain.cmake -G "Unix Makefiles"
 
 make -j
 
