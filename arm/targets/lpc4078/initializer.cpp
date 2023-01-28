@@ -33,8 +33,8 @@ hal::result<drive::hardware_map> initialize_target()
   })));
 
   hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
-  auto& can = HAL_CHECK((hal::lpc40xx::can::get<2>(
-    can_settings)));  // use 2 when using pins 2.7 and 2.8
+  auto& can = HAL_CHECK((hal::lpc40xx::can::get<1>(
+    can_settings)));  // use 2 when using pins 2.7 and 2.8, use 1 when on Dorito
 
   // Get and initialize UART3 with a 8kB receive buffer
   auto& uart3 =
