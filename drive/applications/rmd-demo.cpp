@@ -75,20 +75,12 @@ hal::status application(drive::hardware_map& p_map)
   HAL_CHECK(hal::delay(*p_map.steady_clock, 1s));
 
   HAL_CHECK(hal::write(terminal, "Starting!\n"));
-  char buffer[20];
   while (true) {
     HAL_CHECK(hal::delay(*p_map.steady_clock, 1s));
-    HAL_CHECK(left_hub_motor.feedback_request(hal::rmd::drc::read::pid_data));
-    HAL_CHECK(left_hub_motor.feedback_request(hal::rmd::drc::read::acceleration_data));
-    HAL_CHECK(left_hub_motor.feedback_request(hal::rmd::drc::read::encoder_data));
-    HAL_CHECK(left_hub_motor.feedback_request(hal::rmd::drc::read::multi_turns_angle));
-    HAL_CHECK(left_hub_motor.feedback_request(hal::rmd::drc::read::single_circle_angle));
-    HAL_CHECK(left_hub_motor.feedback_request(hal::rmd::drc::read::status_1_and_error_flags));
-    HAL_CHECK(left_hub_motor.feedback_request(hal::rmd::drc::read::status_2));
-    HAL_CHECK(left_hub_motor.feedback_request(hal::rmd::drc::read::status_3));
+
+    // HAL_CHECK(left_hub_motor.feedback_request(hal::rmd::drc::read::encoder_data));
     int eight_bit_raw_encoder_data = left_hub_motor.feedback().encoder;
-    snprintf(buffer, 20, "%d", eight_bit_raw_encoder_data);
-    HAL_CHECK(hal::write(terminal, buffer));
+    hal::print<10>(terminal, "%d\n", eight_bit_raw_encoder_data);
     // HAL_CHECK(hal::write(terminal, encoder));
     // buffer.fill('.');
     // get_request = "GET /drive" + get_rover_status() +
