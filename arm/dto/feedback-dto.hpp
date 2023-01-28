@@ -27,10 +27,10 @@ struct motors_feedback
   hal::rpm shoulder_speed = hal::rpm(0);
   hal::rpm elbow_speed = hal::rpm(0);
   hal::rpm wrist_speed = hal::rpm(0);
-  hal::angle rotunda_angle = hal::angle(0);
-  hal::angle shoulder_angle = hal::angle(0);
-  hal::angle elbow_angle = hal::angle(0);
-  hal::angle wrist_angle = hal::angle(0);
+  hal::degrees rotunda_angle = hal::degrees(0);
+  hal::degrees shoulder_angle = hal::degrees(0);
+  hal::degrees elbow_angle = hal::degrees(0);
+  hal::degrees wrist_angle = hal::degrees(0);
 
   void Print()
   {

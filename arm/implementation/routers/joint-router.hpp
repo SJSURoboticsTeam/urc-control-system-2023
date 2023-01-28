@@ -25,21 +25,21 @@ public:
   mc_commands SetJointArguments(mc_commands arguments)
   {
     rotunda_.position_control(
-      hal::angle(static_cast<float>(arguments.rotunda_angle)),
+      hal::degrees(static_cast<float>(arguments.rotunda_angle)),
       hal::rpm(static_cast<float>(arguments.speed)));
     shoulder_.position_control(
-      hal::angle(static_cast<float>(arguments.shoulder_angle)),
+      hal::degrees(static_cast<float>(arguments.shoulder_angle)),
       hal::rpm(static_cast<float>(arguments.speed)));
     elbow_.position_control(
-      hal::angle(static_cast<float>(arguments.elbow_angle)),
+      hal::degrees(static_cast<float>(arguments.elbow_angle)),
       hal::rpm(static_cast<float>(arguments.speed)));
     left_wrist_.position_control(
-      hal::angle(static_cast<float>(arguments.wrist_pitch_angle) +
-                 static_cast<float>(arguments.wrist_roll_angle)),
+      hal::degrees(static_cast<float>(arguments.wrist_pitch_angle) +
+                   static_cast<float>(arguments.wrist_roll_angle)),
       hal::rpm(static_cast<float>(arguments.speed)));
     right_wrist_.position_control(
-      hal::angle(static_cast<float>(arguments.wrist_roll_angle) -
-                 static_cast<float>(arguments.wrist_pitch_angle)),
+      hal::degrees(static_cast<float>(arguments.wrist_roll_angle) -
+                   static_cast<float>(arguments.wrist_pitch_angle)),
       hal::rpm(static_cast<float>(arguments.speed)));
     return arguments;
   }
