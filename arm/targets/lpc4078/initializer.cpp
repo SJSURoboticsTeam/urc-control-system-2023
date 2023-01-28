@@ -10,6 +10,7 @@
 
 #include <libhal-lpc40xx/can.hpp>
 // #include <libhal-lpc40xx/i2c.hpp>
+// #include <libhal-lpc40xx/pwm.hpp>
 
 #include "../../hardware_map.hpp"
 
@@ -30,8 +31,10 @@ hal::result<drive::hardware_map> initialize_target()
   auto& uart0 = HAL_CHECK((hal::lpc40xx::uart::get<0, 64>(hal::serial::settings{
     .baud_rate = 38400,
   })));
+
   hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
-  auto& can = HAL_CHECK((hal::lpc40xx::can::get<1>(can_settings)));
+  auto& can = HAL_CHECK((hal::lpc40xx::can::get<1>(
+    can_settings)));  // use 2 when using pins 2.7 and 2.8, use 1 when on Dorito
 
   // Get and initialize UART3 with a 8kB receive buffer
   auto& uart3 =
@@ -41,9 +44,12 @@ hal::result<drive::hardware_map> initialize_target()
 
   // auto& i2c = HAL_CHECK((hal::lpc40xx::i2c::get<0>()));
 
+  // auto& pwm0 = HAL_CHECK((hal::lpc40xx::pwm::get<2, 0>()));
+
   return drive::hardware_map{ .terminal = &uart0,
                               .can = &can,
                               .esp = &uart3,
+                              // .pwm0 = &pwm0,
                               // .i2c = &i2c,
                               .steady_clock = &counter,
                               .reset = []() {
