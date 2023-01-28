@@ -20,10 +20,14 @@ public:
     hal::time_duration max_pulse = 2400us;
   };
 
+  static constexpr hal::byte default_address = 0x7F;
   static constexpr hal::byte kModeRegister1 = 0x00;
   static constexpr hal::byte kAllOutputAddress = 0x05;
   static constexpr hal::byte kOutputAddress0 = 0x06;
   static constexpr hal::byte kPreScaler = 0xFE;
+
+  static result<PCA9685> create(hal::i2c& i2c,
+                                hal::byte device_address = default_address)
 
   PCA9685(hal::i2c& p_i2c, uint8_t p_address)
     : m_i2c(p_i2c)
@@ -37,14 +41,35 @@ public:
   }
 
 private:
-  void setFrequency(hal::hertz p_output_frequency = 50.0_Hz)
+  /// @param i2c The I2C peripheral used for communication with the device.
+  /// @param device_address The device address of the sensor. The address is
+  ///                       configured by physically modifying the connection of
+  ///                       the P0 pin.
+  explicit constexpr PCA9685(hal::i2c& i2c, hal::byte device_address)
+    : m_i2c(&i2c)
+    , m_address(device_address)
   {
-    hal::write(
-      m_i2c, m_address, std::array{ kPreScaler }, hal::never_timeout());
   }
 
-  void enableDevice()
+  void setFrequency(hal::hertz p_output_frequency = 50.0_Hz)
   {
+    std::array<hal::byte, 1>{ kPreScaler };
+    return hal::write(m_i2c, m_address, payload, hal::never_timeout());
+  }
+
+  void enable_device()
+  {
+      uint8_t mode_register_data;
+      constexpr auto kSleepMask = bit::MaskFromRange(4);
+
+      std::array<hal::byte, 1> wake{ kModeRegister1 };
+      std::array<hal::byte, 2> response {kModeRegister1, mode_register_data}
+
+      hal::writeThenRead(m_i2c, m_address, payload, &mode_register_data, 1);
+      mode_register_data = bit::Insert(mode_register_data, !is_active, kSleepMask);
+      hal::write(m_i2c, m_address, {Value(RegisterMap::kModeRegister1), mode_register_data});
+
+
     hal::byte mode_register_data;
     constexpr auto kSleepMask = hal::bit::mask{ 4 };
 
@@ -66,7 +91,7 @@ private:
   {
   }
 
-  hal::i2c& m_i2c;
-  const uint8_t m_address;
+  hal::i2c* m_i2c;
+  hal::byte m_address;
 };
 }  // namespace Arm
