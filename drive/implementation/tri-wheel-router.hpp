@@ -134,9 +134,9 @@ private:
     using namespace std::chrono_literals;
     using namespace hal::literals;
     // This leg is NOT at zero
-    if ((Drive::RmdEncoder::CalcEncoderPositions(leg_.steer_motor_, 60.0f) >=
+    if ((Drive::RmdEncoder::CalcEncoderPositions(leg_.steer_motor_) >=
          0.01f) ||
-        Drive::RmdEncoder::CalcEncoderPositions(leg_.steer_motor_, 60.0f) <=
+        Drive::RmdEncoder::CalcEncoderPositions(leg_.steer_motor_) <=
           -0.01f) {
       leg_.steer_motor_.position_control(0.0_deg, 2.0_rpm);
       // This wheel is NOT at zero
