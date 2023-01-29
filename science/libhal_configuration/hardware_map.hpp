@@ -4,6 +4,7 @@
 #include <libhal/adc.hpp>
 #include <libhal/steady_clock.hpp>
 #include <libhal/serial.hpp>
+#include <libhal/pwm.hpp>
 
 namespace science {
 
@@ -13,6 +14,8 @@ struct hardware_map {
     hal::steady_clock* clock;
     hal::serial* science_serial;
     hal::callback<void()> reset; // reset function
+    hal::pwm* air_pump;
+    hal::pwm* dosing_pump;
 };
 } // namespace science
 

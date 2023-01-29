@@ -23,10 +23,14 @@ public:
         return result;
     }
 
+
+    // TODO: comment why 10
     hal::result<float> read_raw_adc() {
         float raw_ratio_average = 0;
         for (int i = 0; i < 10; i++)
-            raw_ratio_average += HAL_CHECK(adc_data_->read());
+        {
+            auto result = HAL_CHECK(adc_data_->read());
+        }
         
         raw_ratio_average /= 10;
 
