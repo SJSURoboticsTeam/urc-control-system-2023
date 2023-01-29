@@ -88,8 +88,8 @@ hal::status application(drive::hardware_map& p_map)
 
   while (true) {
     buffer.fill('.');
-    get_request =
-      "GET /arm?HB=0&IO=1 HTTP/1.1\r\n Host: 192.168.1.183:5000/\r\n\r\n";
+    get_request = "GET /arm?" + commands.get_http_parameters() +
+                  " HTTP/1.1\r\n Host: 192.168.1.183:5000/\r\n\r\n";
 
     auto write_result =
       socket.write(hal::as_bytes(get_request),
@@ -118,7 +118,6 @@ hal::status application(drive::hardware_map& p_map)
 
     commands = rules_engine.ValidateCommands(commands);
     arm.SetJointArguments(commands);
-
   }
 
   return hal::success();

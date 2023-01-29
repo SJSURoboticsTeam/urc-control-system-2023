@@ -3,8 +3,7 @@
 #include <cstdint>
 
 namespace Arm {
-// joint_angles order [rotunda, shoulder, elbow, wrist_pitch, wrist_yaw]
-// hand_angles order [pinky, ring, middle, index, thumb]
+// joint_angles order [rotunda, shoulder, elbow, wrist_pitch, wrist_yaw, rr9]
 const char kResponseBodyFormat[] =
   "{\"heartbeat_count\":%d,\"is_operational\":%d,\"speed\":%d,\"angles\":[%d,%"
   "d,%d,%d,%d,%d]}\n";
@@ -30,24 +29,40 @@ struct mc_commands
   int wrist_roll_angle = 0;
   int rr9_angle = 0;
 
-  std::string Print()
+  std::string json_string()
   {
-    const char kResponseBodyFormat[] =
-      "{\"heartbeat_count\":%d,\"is_operational\":%d,\"speed\":%d,\"angles\":[%"
-      "d,%d,%d,%d,%d,%d]}\n";
     char response[256];
-    sprintf(response,
-            kResponseBodyFormat,
-            heartbeat_count,
-            is_operational,
-            speed,
-            rotunda_angle,
-            shoulder_angle,
-            elbow_angle,
-            wrist_pitch_angle,
-            wrist_roll_angle,
-            rr9_angle);
-    return response;
+    auto length = snprintf(response,
+                           sizeof(response),
+                           kGETRequestFormat,
+                           heartbeat_count,
+                           is_operational,
+                           speed,
+                           rotunda_angle,
+                           shoulder_angle,
+                           elbow_angle,
+                           wrist_pitch_angle,
+                           wrist_roll_angle,
+                           rr9_angle);
+    return std::string(response, length);
+  }
+
+  std::string get_http_parameters()
+  {
+    char response[256];
+    auto length = snprintf(response,
+                           sizeof(response),
+                           kGETRequestFormat,
+                           heartbeat_count,
+                           is_operational,
+                           speed,
+                           rotunda_angle,
+                           shoulder_angle,
+                           elbow_angle,
+                           wrist_pitch_angle,
+                           wrist_roll_angle,
+                           rr9_angle);
+    return std::string(response, length);
   }
 };
 }  // namespace Arm

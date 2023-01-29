@@ -31,7 +31,7 @@ hal::status application(drive::hardware_map& p_map)
 
   while (true) {
     HAL_CHECK(hal::delay(counter, 1s));
-    auto json = commands.Print();
+    auto json = commands.json_string();
     HAL_CHECK(hal::write(terminal, json));
   }
 
