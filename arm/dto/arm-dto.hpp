@@ -29,18 +29,25 @@ struct mc_commands
   int wrist_pitch_angle = 0;
   int wrist_roll_angle = 0;
   int rr9_angle = 0;
-  void Print()
+
+  std::string Print()
   {
-    printf("%d, %d, %d, %d, %d, %d, %d, %d, %d",
-           heartbeat_count,
-           is_operational,
-           speed,
-           rotunda_angle,
-           shoulder_angle,
-           elbow_angle,
-           wrist_pitch_angle,
-           wrist_roll_angle,
-           rr9_angle);
+    const char kResponseBodyFormat[] =
+      "{\"heartbeat_count\":%d,\"is_operational\":%d,\"speed\":%d,\"angles\":[%"
+      "d,%d,%d,%d,%d,%d]}\n";
+    char response[256];
+    sprintf(response,
+            kResponseBodyFormat,
+            heartbeat_count,
+            is_operational,
+            speed,
+            rotunda_angle,
+            shoulder_angle,
+            elbow_angle,
+            wrist_pitch_angle,
+            wrist_roll_angle,
+            rr9_angle);
+    return response;
   }
 };
 }  // namespace Arm
