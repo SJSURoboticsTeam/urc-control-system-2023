@@ -19,20 +19,12 @@ private:
 
     const int MAX_VALUE = 1000; // TODO: update with real value.
 
-    hal::status driver_set_frequncy(hal::hertz frequency) {
+    hal::status set_frequncy(float frequency) {
         HAL_CHECK(data_pin_->frequency(frequency));
         current_frequency_ = frequency;
         return hal::success();
     }
 
-    hal::status set_frequncy(hal::hertz frequency) {
-        return driver_set_frequncy(frequency);
-    }
-
-    hal::status set_frequncy(float frequency) {
-        hal::hertz frequency_hz = static_cast<hal::hertz>(frequency);
-        return driver_set_frequncy(frequency_hz);
-    }
 
     hal::status set_duty_cycle() {
         data_pin_->duty_cycle(DUTY_CYCLE);
