@@ -7,7 +7,7 @@
 #include <libhal-util/serial.hpp>
 
 #include "../libhal_configuration/hardware_map.hpp"
-#include "../implementations/pwm_controller.hpp"
+#include "../implementations/pump_controller.hpp"
 
 
 using namespace hal::literals;
@@ -25,22 +25,27 @@ hal::status pump_demo(science::hardware_map& p_map) {
         hal::write(*p_map.science_serial, "Demo cannot be ran as no pwm API exists for lpc40xx");
         return hal::new_error("Demo cannot be ran as no pwm API exists for lpc40xx");
     }
-    
+
     while (true)
     {
-        PwmController dosing_pump = PwmController(p_map.dosing_pump, DOSING_PUMP_PWM_FREQUENCY);
-        PwmController air_pump = PwmController(p_map.air_pump, AIR_PUMP_PWM_FREQUENCY);
+        PressureSensor pressure_sensor = PressureSensor(p_map.pressure_sensor_pin);
+
+        PumpPwmController dosing_pump = PumpPwmController(p_map.dosing_pump, DOSING_PUMP_PWM_FREQUENCY, pressure_sensor);
+        PumpPwmController air_pump = PumpPwmController(p_map.air_pump, AIR_PUMP_PWM_FREQUENCY, pressure_sensor);
 
         hal::print<128>(*p_map.science_serial, "Dosing pump starting at: %f\n", dosing_pump.frequency());
         hal::print<128>(*p_map.science_serial, "Air pump starting at: %f\n", air_pump.frequency());
         hal::delay(*p_map.clock, 250ms);
 
-        dosing_pump.set_frequncy(500);
-        air_pump.set_frequncy(750);
+        dosing_pump.start_flow(500);
+        air_pump.start_flow(750);
 
         hal::print<128>(*p_map.science_serial, "Dosing pump ending at: %f\n", dosing_pump.frequency());
         hal::print<128>(*p_map.science_serial, "Air pump ending at: %f\n", air_pump.frequency());
         
+        hal::delay(*p_map.clock, 500ms);
+        dosing_pump.stop_flow();
+        air_pump.release_all();
         hal::delay(*p_map.clock, 500ms);
     }
 

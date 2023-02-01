@@ -16,6 +16,7 @@ struct hardware_map {
     hal::callback<void()> reset; // reset function
     hal::pwm* air_pump;
     hal::pwm* dosing_pump;
+    hal::adc* pressure_sensor_pin;
 };
 } // namespace science
 

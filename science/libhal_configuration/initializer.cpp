@@ -7,8 +7,11 @@
 
 #include "hardware_map.hpp"
 // TODO: update with proper hardware data
-#define METHANE_DIGITAL 0, 0
-#define METHANE_ANALOG_CHANNEL 4
+constexpr int METHANE_DIGITAL_PORT = 0;
+constexpr int METHANE_DIGITAL_PIN = 0;
+constexpr int METHANE_ANALOG_CHANNEL = 4;
+
+constexpr int PRESSURE_SENSOR_ANALOG = 5;
 
 hal::result<science::hardware_map> initialize_target() {
     hal::cortex_m::initialize_data_section();
@@ -20,8 +23,9 @@ hal::result<science::hardware_map> initialize_target() {
     static hal::cortex_m::dwt_counter counter(cpu_frequency);
     
     // create output data pins
-    auto& is_methane = HAL_CHECK(hal::lpc40xx::input_pin::get<METHANE_DIGITAL>());
+    auto& is_methane = HAL_CHECK((hal::lpc40xx::input_pin::get<METHANE_DIGITAL_PORT, METHANE_DIGITAL_PIN>()));
     auto& methane_level = HAL_CHECK(hal::lpc40xx::adc::get<METHANE_ANALOG_CHANNEL>());
+    auto& pressure_sensor_pin = HAL_CHECK(hal::lpc40xx::adc::get<PRESSURE_SENSOR_ANALOG>());
 
     // Get and initialize UART0 for UART based terminal logging
     auto& uart0 = HAL_CHECK((hal::lpc40xx::uart::get<0, 64>(hal::serial::settings{
@@ -36,5 +40,6 @@ hal::result<science::hardware_map> initialize_target() {
         .clock = &counter,
         .science_serial = &uart0,
         .reset = []() { hal::cortex_m::system_control::reset(); },
+        .pressure_sensor_pin = &pressure_sensor_pin,
     };
 }
