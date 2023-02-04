@@ -7,13 +7,11 @@
 using namespace hal::literals;
 using namespace std::chrono_literals;
 
-const float DUTY_CYCLE = 10; // TODO: get info from electrical.
 
 class PumpPwmController {
 private:
     hal::pwm* data_pin_;
     hal::hertz current_frequency_;
-    PressureSensor& pressure_sensor_;
     
     
 
@@ -26,15 +24,19 @@ private:
     }
 
 
-    hal::status set_duty_cycle() {
-        data_pin_->duty_cycle(DUTY_CYCLE);
+    hal::status set_duty_cycle(float duty_cycle) {
+        if (duty_cycle < 0 || duty_cycle > 1)
+            return hal::new_error("Invalid percentage for duty cycle passed");
+        HAL_CHECK(data_pin_->duty_cycle(duty_cycle));
+        return hal::success();
     }
 
 public:
-    PumpPwmController(hal::pwm* data_pin, hal::hertz frequency, PressureSensor& pressure_sensor): 
+    PumpPwmController(hal::pwm* data_pin, hal::hertz frequency): 
     data_pin_{data_pin}, 
-    current_frequency_{frequency}, pressure_sensor_{pressure_sensor} {
-        set_duty_cycle();
+    current_frequency_{frequency} {
+        set_duty_cycle(0);
+        set_frequncy(frequency);
     };
     
    
@@ -43,31 +45,29 @@ public:
         return current_frequency_;
     }
 
-    hal::status start_flow(float rate) {
-        // TODO: checks to make sure a real pwm value is passed
-        if (rate < 0) {
-            return hal::new_error("Invalid rate passed");
+    hal::status start_flow(float rate_percentage) {
+        if (rate_percentage < 0) {
+            return hal::new_error("Invalid rate_percentage passed");
         }
 
-        HAL_CHECK(set_frequncy(rate));
+        HAL_CHECK(set_duty_cycle(rate_percentage));
         return hal::success();
     }
 
     hal::status stop_flow() {
-        HAL_CHECK(set_frequncy(0));
+        HAL_CHECK(set_duty_cycle(0));
         return hal::success();
     }
 
-    hal::status release_all() {
-        const auto time_to_empty = 1000ms;
-        HAL_CHECK(start_flow(MAX_VALUE));
-        // TODO: make better
-        while (!pressure_sensor_.is_pressurized())
-        {
+    // TODO: Add way to give either negative or positive voltage (6V or 6V max)
+    hal::status release_all(PressureSensor& sensor) {
+        return hal::new_error("Not implemented");
+        HAL_CHECK(start_flow(1));
+        while (!sensor.is_pressurized()) {
             continue;
         }
-        
         HAL_CHECK(stop_flow());
+        return hal::success();
     }
     
 };

@@ -15,8 +15,8 @@ using namespace std::chrono_literals;
 
 namespace demos {
 
-const hal::hertz DOSING_PUMP_PWM_FREQUENCY = 1000;
-const hal::hertz AIR_PUMP_PWM_FREQUENCY = 1000;
+const hal::hertz DOSING_PUMP_PWM_FREQUENCY = 32000;
+const hal::hertz AIR_PUMP_PWM_FREQUENCY = 32000;
 
 constexpr bool pwm_impl_exists = false;
 
@@ -30,8 +30,8 @@ hal::status pump_demo(science::hardware_map& p_map) {
     {
         PressureSensor pressure_sensor = PressureSensor(p_map.pressure_sensor_pin);
 
-        PumpPwmController dosing_pump = PumpPwmController(p_map.dosing_pump, DOSING_PUMP_PWM_FREQUENCY, pressure_sensor);
-        PumpPwmController air_pump = PumpPwmController(p_map.air_pump, AIR_PUMP_PWM_FREQUENCY, pressure_sensor);
+        PumpPwmController dosing_pump = PumpPwmController(p_map.dosing_pump, DOSING_PUMP_PWM_FREQUENCY);
+        PumpPwmController air_pump = PumpPwmController(p_map.air_pump, AIR_PUMP_PWM_FREQUENCY);
 
         hal::print<128>(*p_map.science_serial, "Dosing pump starting at: %f\n", dosing_pump.frequency());
         hal::print<128>(*p_map.science_serial, "Air pump starting at: %f\n", air_pump.frequency());
@@ -45,7 +45,7 @@ hal::status pump_demo(science::hardware_map& p_map) {
         
         hal::delay(*p_map.clock, 500ms);
         dosing_pump.stop_flow();
-        air_pump.release_all();
+        air_pump.release_all(pressure_sensor);
         hal::delay(*p_map.clock, 500ms);
     }
 
