@@ -5,6 +5,7 @@
 #include <libhal/steady_clock.hpp>
 #include <libhal/serial.hpp>
 #include <libhal/pwm.hpp>
+#include <libhal/i2c.hpp>
 
 namespace science {
 
@@ -17,6 +18,7 @@ struct hardware_map {
     hal::pwm* air_pump;
     hal::pwm* dosing_pump;
     hal::adc* pressure_sensor_pin;
+    hal::i2c* carbon_dioxide_sensor;
 };
 } // namespace science
 

@@ -45,7 +45,7 @@ hal::status pump_demo(science::hardware_map& p_map) {
         
         hal::delay(*p_map.clock, 500ms);
         dosing_pump.stop_flow();
-        air_pump.release_all(pressure_sensor);
+        air_pump.run_vacuum(pressure_sensor);
         hal::delay(*p_map.clock, 500ms);
     }
 

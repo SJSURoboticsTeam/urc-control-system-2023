@@ -11,6 +11,7 @@ using namespace std::chrono_literals;
 class PumpPwmController {
 private:
     hal::pwm* data_pin_;
+    float duty_cycle_;
     hal::hertz current_frequency_;
     
     
@@ -24,10 +25,13 @@ private:
     }
 
 
+    // The expected max voltage for the pumps is 6.0V. Electrical's board has a max of 12V. Therefore
+    // The duty cycle for this driver is capped at 50%
     hal::status set_duty_cycle(float duty_cycle) {
-        if (duty_cycle < 0 || duty_cycle > 1)
+        if (duty_cycle < 0 || duty_cycle > 0.5)
             return hal::new_error("Invalid percentage for duty cycle passed");
         HAL_CHECK(data_pin_->duty_cycle(duty_cycle));
+        duty_cycle_ = duty_cycle;
         return hal::success();
     }
 
@@ -45,6 +49,10 @@ public:
         return current_frequency_;
     }
 
+    float duty_cycle() {
+        return duty_cycle_;
+    }
+
     hal::status start_flow(float rate_percentage) {
         if (rate_percentage < 0) {
             return hal::new_error("Invalid rate_percentage passed");
@@ -60,9 +68,10 @@ public:
     }
 
     // TODO: Add way to give either negative or positive voltage (6V or 6V max)
-    hal::status release_all(PressureSensor& sensor) {
+    // Unsure if we're using a pressure sensor or not.
+    hal::status run_vacuum(PressureSensor& sensor) {
         return hal::new_error("Not implemented");
-        HAL_CHECK(start_flow(1));
+        HAL_CHECK(start_flow(0.5));
         while (!sensor.is_pressurized()) {
             continue;
         }
