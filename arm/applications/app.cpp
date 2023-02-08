@@ -78,7 +78,10 @@ hal::status application(drive::hardware_map& p_map)
                        left_wrist_motor,
                        right_wrist_motor);
 
+  auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c, 0b100'0000));
+
   Arm::mc_commands commands;
+  Arm::RR9Router rr9Router(pca9685);
   Arm::motors_feedback feedback;
   Arm::RulesEngine rules_engine;
   Arm::MissionControlHandler mission_control;

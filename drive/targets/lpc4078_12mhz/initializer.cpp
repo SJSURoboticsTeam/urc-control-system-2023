@@ -35,7 +35,7 @@ hal::result<drive::hardware_map> initialize_target()
 
   auto& in0 = HAL_CHECK((hal::lpc40xx::input_pin::get<1, 19>())); // home_b
   auto& in1 = HAL_CHECK((hal::lpc40xx::input_pin::get<1, 28>()));  // home_a
-  auto& in2 = HAL_CHECK((hal::lpc40xx::input_pin::get<2, 3>()));  // home_c
+  auto& in2 = HAL_CHECK((hal::lpc40xx::input_pin::get<2, 3>()));  // home_c this wheel pcb is broken
 
   // Get and initialize UART3 with a 8kB receive buffer
   auto& uart1 =
