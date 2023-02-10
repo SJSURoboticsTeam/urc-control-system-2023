@@ -9,6 +9,7 @@
 
 // demos
 #include "demos/methane_sensor.hpp"
+#include "demos/pump_demo.hpp"
 
 // Defined to use custom libhal units such as volts or milliseconds
 using namespace hal::literals;
@@ -19,7 +20,7 @@ hal::status science_app(science::hardware_map& p_map) {
     // We just have some demos for various drivers and components. To run them, include the right header
     // from the demos folder.
     
-    HAL_CHECK(demos::methane_sensor_demo(p_map));
+    HAL_CHECK(demos::pump_demo(p_map));
 }
 
 int main() {
@@ -41,6 +42,7 @@ int main() {
     if (!app_result) {
     p_map.reset();
     } else {
+        hal::write(*p_map.science_serial, "A HAL_CHECK has failed.");
         hal::halt(); // TODO: implement error handling (right now just enters an infinite loop)
     }
   
