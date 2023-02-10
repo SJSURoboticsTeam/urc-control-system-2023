@@ -91,16 +91,14 @@ public:
     while (HAL_CHECK(WheelNotHomeDoThis(left_)) |
            HAL_CHECK(WheelNotHomeDoThis(right_)) |
            HAL_CHECK(WheelNotHomeDoThis(back_))) {
-      HAL_CHECK(hal::write(
-        terminal,
-        std::string(
-          "HomingPins L = " + (HAL_CHECK(left_.magnet_.level())) +
-          std::string(" \t R = " + HAL_CHECK(right_.magnet_.level())) +
-          std::string("\t B = " + HAL_CHECK(back_.magnet_.level())))));
-      HAL_CHECK(hal::write(terminal,
-                           std::string("b = " + back_.wheel_offset_) +
-                             std::string("\tr = " + right_.wheel_offset_) +
-                             std::string("\tl = " + left_.wheel_offset_)));
+
+      hal::print<50>(terminal, "Homing Pins: L = %d | ", HAL_CHECK(left_.magnet_.level()));
+      hal::print<50>(terminal, "R = %d | ", HAL_CHECK(right_.magnet_.level()));
+      hal::print<50>(terminal, "B = %d ", HAL_CHECK(back_.magnet_.level()));
+      hal::print<50>(terminal, "Wheel Offset: L = %d | ", static_cast<int>(left_.wheel_offset_));
+      hal::print<50>(terminal, "R = %d | ", static_cast<int>(right_.wheel_offset_));
+      hal::print<50>(terminal, "B = %d \n", static_cast<int>(back_.wheel_offset_));
+
       angle_verification = HAL_CHECK(GetMotorFeedback());
       while ((angle_verification.left_steer_speed != 0) |
              (angle_verification.right_steer_speed != 0) |
@@ -180,6 +178,13 @@ private:
     } else {
       return false;
     }
+  }
+
+  std::string_view BoolToString(bool magnet_reading) {
+    if(magnet_reading) {
+      return "true";
+    }
+    return "false";
   }
 
   // member variables

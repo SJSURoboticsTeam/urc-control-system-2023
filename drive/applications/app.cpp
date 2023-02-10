@@ -61,7 +61,7 @@ hal::status application(drive::hardware_map& p_map)
     HAL_CHECK(hal::create_timeout(counter, 1s)),
     {
       .type = hal::socket::type::tcp,
-      .domain = "192.168.1.110",
+      .domain = "192.168.1.123",
       .port = "5000",
     });
 
@@ -102,7 +102,7 @@ hal::status application(drive::hardware_map& p_map)
   Drive::CommandLerper lerp;
 
   HAL_CHECK(hal::delay(counter, 1000ms));
-  // tri_wheel.HomeLegs(terminal);
+  tri_wheel.HomeLegs(terminal);
   HAL_CHECK(hal::delay(counter, 1000ms));
   HAL_CHECK(hal::write(terminal, "Starting control loop..."));
 
