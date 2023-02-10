@@ -28,24 +28,17 @@ hal::status application(drive::hardware_map& p_map)
 
   auto router = HAL_CHECK(hal::can_router::create(can));
   auto left_hub_motor = HAL_CHECK(hal::rmd::drc::create(router, 15.0, 0x141));
-
-  HAL_CHECK(hal::delay(*p_map.steady_clock, 1s));
-  left_hub_motor.system_control(hal::rmd::drc::system::running);
-
   
   HAL_CHECK(hal::delay(*p_map.steady_clock, 1s));
 
   HAL_CHECK(hal::write(terminal, "Starting!\n"));
 
-  left_hub_motor.position_control(180.0_deg, 5.0_rpm);
+  left_hub_motor.velocity_control(5.0_rpm);
 
   while (true) {
     HAL_CHECK(hal::delay(*p_map.steady_clock, 1s));
 
-    HAL_CHECK(left_hub_motor.feedback_request(hal::rmd::drc::read::acceleration_data));
-    HAL_CHECK(hal::delay(*p_map.steady_clock, 1s));
     speed = static_cast<int>(left_hub_motor.feedback().raw_speed);
-    
 
     hal::print<20>(terminal, "%d\n", speed);
 
