@@ -7,6 +7,8 @@
 using namespace hal::literals;
 using namespace std::chrono_literals;
 
+namespace science{
+
 /// @brief A driver to control a PWM controlled pump (motor). Built for electrical's new science bot PWM board
 class PumpPwmController {
 private:
@@ -92,3 +94,4 @@ public:
     }
     
 };
+}

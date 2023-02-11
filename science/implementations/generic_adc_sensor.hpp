@@ -4,6 +4,8 @@
 #include <libhal/adc.hpp>
 #include <cmath>
 
+namespace science{
+
 /// @brief A Generic ADC Driver. This is designed to be a higher level interface for analog devices.
 class GenericAdcSensor {
     
@@ -15,9 +17,8 @@ public:
     /// @brief Builds driver object
     /// @param adc_data libhal adc pin that has been initialized 
     /// @param digital_detector Optional digital pin for device that is to goes high when a signal is detected
-    GenericAdcSensor(
-        hal::adc* adc_data, 
-        hal::input_pin* digital_detector = nullptr): digital_detector_{digital_detector}, adc_data_{adc_data} {}
+    GenericAdcSensor(hal::adc* adc_data, hal::input_pin* digital_detector = nullptr): digital_detector_{digital_detector}, 
+    adc_data_{adc_data} {}
 
     /// @brief Returns true when a signal is being ran from device.
     /// @return The result of the status of the device.
@@ -49,5 +50,6 @@ public:
     /// Implementations of this method should include a mathmatical conversion formula that goes from raw voltage
     /// to desired units or units specified in device's datasheet. 
     /// @return Converted value from voltage to desired units.
-    virtual hal::result<float> read_data() = 0;
+    virtual hal::result<float> get_parsed_data() = 0;
 };
+} //namespace science

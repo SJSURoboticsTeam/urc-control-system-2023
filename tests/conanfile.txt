@@ -1,9 +1,0 @@
-[requires]
-boost-ext-ut/1.1.9
-libhal-mock/0.2.2
-libhal-util/0.2.4
-
-[generators]
-CMakeToolchain
-CMakeDeps
-VirtualRunEnv
