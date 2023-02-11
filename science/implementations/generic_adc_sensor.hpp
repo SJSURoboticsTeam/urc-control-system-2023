@@ -8,11 +8,6 @@ namespace science{
 
 /// @brief A Generic ADC Driver. This is designed to be a higher level interface for analog devices.
 class GenericAdcSensor {
-    
-protected:
-    hal::input_pin* digital_detector_ = nullptr;
-    hal::adc* adc_data_;
-
 public:
     /// @brief Builds driver object
     /// @param adc_data libhal adc pin that has been initialized 
@@ -51,5 +46,10 @@ public:
     /// to desired units or units specified in device's datasheet. 
     /// @return Converted value from voltage to desired units.
     virtual hal::result<float> get_parsed_data() = 0;
+        
+protected:
+    hal::input_pin* digital_detector_ = nullptr;
+    hal::adc* adc_data_;
+
 };
 } //namespace science
