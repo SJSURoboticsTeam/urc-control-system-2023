@@ -11,34 +11,6 @@ namespace science{
 
 /// @brief A driver to control a PWM controlled pump (motor). Built for electrical's new science bot PWM board
 class PumpPwmController {
-private:
-    hal::pwm* data_pin_;
-    float duty_cycle_;
-    hal::hertz current_frequency_;
-    
-    /// @brief Sets the underlying frequency our PWM is oscillating at.
-    /// @param frequency The frequency in hertz
-    /// @return void return, fails check if unable to interface with the hardware.
-    hal::status set_frequncy(float frequency) {
-        HAL_CHECK(data_pin_->frequency(frequency));
-        current_frequency_ = frequency;
-        return hal::success();
-    }
-
-
-    /// @brief Sets the duty cycle percentage. How much of the time the should PWM be HIGH.
-    /// @param duty_cycle The duty cycle percentage in decimal form. 
-    /// NOTE: The motors that this board will control has a max of 6V. The board however, can supply a max of 12V
-    /// duty cycle has been capped at 50% for this purpose.
-    /// @return void return, fails check if unable to interface with the hardware.
-    hal::status set_duty_cycle(float duty_cycle) {
-        if (duty_cycle < 0 || duty_cycle > 0.5) // electrical limitaiton
-            return hal::new_error("Invalid percentage for duty cycle passed");
-        HAL_CHECK(data_pin_->duty_cycle(duty_cycle));
-        duty_cycle_ = duty_cycle;
-        return hal::success();
-    }
-
 public:
     /// @brief A driver to control a PWM controlled pump (motor). Built for electrical's new science bot PWM board
     /// Duty cycle defaults to 0%. (Completely off)
@@ -92,6 +64,33 @@ public:
         HAL_CHECK(stop_flow());
         return hal::success();
     }
-    
+
+    private:
+    /// @brief Sets the underlying frequency our PWM is oscillating at.
+    /// @param frequency The frequency in hertz
+    /// @return void return, fails check if unable to interface with the hardware.
+    hal::status set_frequncy(float frequency) {
+        HAL_CHECK(data_pin_->frequency(frequency));
+        current_frequency_ = frequency;
+        return hal::success();
+    }
+
+
+    /// @brief Sets the duty cycle percentage. How much of the time the should PWM be HIGH.
+    /// @param duty_cycle The duty cycle percentage in decimal form. 
+    /// NOTE: The motors that this board will control has a max of 6V. The board however, can supply a max of 12V
+    /// duty cycle has been capped at 50% for this purpose.
+    /// @return void return, fails check if unable to interface with the hardware.
+    hal::status set_duty_cycle(float duty_cycle) {
+        if (duty_cycle < 0 || duty_cycle > 0.5) // electrical limitaiton
+            return hal::new_error("Invalid percentage for duty cycle passed");
+        HAL_CHECK(data_pin_->duty_cycle(duty_cycle));
+        duty_cycle_ = duty_cycle;
+        return hal::success();
+    }
+
+    hal::pwm* data_pin_;
+    float duty_cycle_;
+    hal::hertz current_frequency_;
 };
 }
