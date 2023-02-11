@@ -32,3 +32,4 @@ struct hardware_map {
 } // namespace science
 
 hal::result<science::hardware_map> initialize_target();
+hal::status application(science::hardware_map& p_map);
