@@ -16,6 +16,7 @@ find_package(libhal-lpc40xx REQUIRED CONFIG)
 find_package(libhal-rmd REQUIRED CONFIG)
 find_package(libhal-esp8266 REQUIRED CONFIG)
 find_package(libhal-util REQUIRED CONFIG)
+find_package(libhal-pca REQUIRED CONFIG)
 # find_package(libhal-armcortex REQUIRED CONFIG)
 
 # Set the path to the linekr scripts to the source directory or (..)
@@ -24,7 +25,7 @@ set(LINKER_SCRIPT_PATHS ${CMAKE_SOURCE_DIR}/)
 # List of demo applications
 # To add a new demo to the list, simply add its filename without the .cpp
 # extension to this list.
-set(DEMOS app)
+set(DEMOS pca-demo)
 
 # List of targets in the LPC40 series MCU
 set(TARGETS lpc4078)
@@ -50,7 +51,8 @@ foreach(target IN LISTS TARGETS)
             libhal::lpc4078
             libhal::rmd
             libhal::esp8266
-            libhal::util)
+            libhal::util
+            libhal::pca)
         arm_post_build(${current_project})
     endforeach()
 endforeach()
