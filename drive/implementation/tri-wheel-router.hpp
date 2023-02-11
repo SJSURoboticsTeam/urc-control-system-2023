@@ -11,6 +11,8 @@
 #include "../dto/motor-feedback-dto.hpp"
 #include "../soft-driver/rmd-encoder.hpp"
 
+#include "../hardware_map.hpp"
+
 namespace Drive {
 class TriWheelRouter
 {
@@ -68,7 +70,7 @@ public:
 
   /// At the moment, homing is where the legs turn on so we just calculate the
   /// initial encoder positions. ***Must be called in main
-  hal::status HomeLegs(hal::serial& terminal)
+  hal::status HomeLegs(hal::serial& terminal, drive::hardware_map& p_map)
   {
     motor_feedback angle_verification;
 
@@ -81,16 +83,16 @@ public:
          rightNotHome = HAL_CHECK(right_.magnet_.level()),
          backNotHome = HAL_CHECK(back_.magnet_.level());
 
-    while ((!leftNotHome && WheelNotNeg60DoThis(left_)) |
-           (!rightNotHome && WheelNotNeg60DoThis(right_)) |
-           (!backNotHome && WheelNotNeg60DoThis(back_))) {
+    // while ((!leftNotHome && WheelNotNeg60DoThis(left_, p_map)) |
+    //        (!rightNotHome && WheelNotNeg60DoThis(right_, p_map)) |
+    //        (!backNotHome && WheelNotNeg60DoThis(back_, p_map))) {
       // This loop moves wheels that were prematurely homed away from their
       // current position
-    }
+    // }
 
-    while (HAL_CHECK(WheelNotHomeDoThis(left_)) |
-           HAL_CHECK(WheelNotHomeDoThis(right_)) |
-           HAL_CHECK(WheelNotHomeDoThis(back_))) {
+    while (HAL_CHECK(WheelNotHomeDoThis(left_, 'L', terminal)) |
+           HAL_CHECK(WheelNotHomeDoThis(right_, 'R', terminal)) |
+           HAL_CHECK(WheelNotHomeDoThis(back_, 'B', terminal))) {
 
       hal::print<50>(terminal, "Homing Pins: L = %d | ", HAL_CHECK(left_.magnet_.level()));
       hal::print<50>(terminal, "R = %d | ", HAL_CHECK(right_.magnet_.level()));
@@ -100,11 +102,11 @@ public:
       hal::print<50>(terminal, "B = %d \n", static_cast<int>(back_.wheel_offset_));
 
       angle_verification = HAL_CHECK(GetMotorFeedback());
-      while ((angle_verification.left_steer_speed != 0) |
-             (angle_verification.right_steer_speed != 0) |
-             (angle_verification.back_steer_speed != 0)) {
-        angle_verification = HAL_CHECK(GetMotorFeedback());
-      }
+      // while ((angle_verification.left_steer_speed != 0) |
+      //        (angle_verification.right_steer_speed != 0) |
+      //        (angle_verification.back_steer_speed != 0)) {
+      //   angle_verification = HAL_CHECK(GetMotorFeedback());
+      // }
     }
     return hal::success();
   }
@@ -145,7 +147,7 @@ private:
     }
   }
 
-  hal::result<bool> WheelNotNeg60DoThis(leg& leg_)
+  hal::result<bool> WheelNotNeg60DoThis(leg& leg_, drive::hardware_map& p_map)
   {
     using namespace std::chrono_literals;
     using namespace hal::literals;
@@ -155,27 +157,31 @@ private:
 
     HAL_CHECK(leg_.steer_motor_.feedback_request(read_commands));
 
-    if (leg_.steer_motor_.feedback().speed() != 0.0_rpm) {
-      // This wheel is NOT at -60
-      return true;
-    } else {
-      // This wheel is at -60
-      return false;
-    }
+    // if (leg_.steer_motor_.feedback().speed() != 0.0_rpm) {
+    //   // This wheel is NOT at -60
+    //   return true;
+    // } else {
+    //   // This wheel is at -60
+    //   return false;
+    // }
+    HAL_CHECK(hal::delay(*p_map.steady_clock, 2s));
+    return false;
   }
 
-  hal::result<bool> WheelNotHomeDoThis(leg& leg_)
+  hal::result<bool> WheelNotHomeDoThis(leg& leg_, char l, hal::serial& terminal )
   {
     using namespace std::chrono_literals;
     using namespace hal::literals;
     // level returns true if it is high, and the magnet is high when it is not
     bool not_homed = HAL_CHECK(leg_.magnet_.level());
-    if (not_homed) {
+    hal::print<50>(terminal, "Magnet Detection: %c = %d | ", l, not_homed);
+    if (not_homed == 1) {
       leg_.wheel_offset_++;
-      leg_.steer_motor_.position_control(hal::degrees(leg_.wheel_offset_),
-                                         2.0_rpm);
+      leg_.steer_motor_.position_control(hal::degrees(leg_.wheel_offset_), 1.0_rpm);
       return true;
-    } else {
+    } 
+    else {
+      hal::print<50>(terminal, "\n RETURNING FALSE FOR %c \n", l);
       return false;
     }
   }
