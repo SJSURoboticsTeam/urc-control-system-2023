@@ -7,7 +7,6 @@
 #include <libhal-util/serial.hpp>
 
 #include "../hardware_map.hpp"
-// #include "../implementations/mq4_methane_sensor.hpp"
 
 
 using namespace hal::literals;
@@ -19,27 +18,12 @@ hal::status application(science::hardware_map& p_map) {
 
     while (true) {
 
+        //read from the halleffect sensor
         bool result = HAL_CHECK(p_map.halleffect->level());
+
+        //display the results every second. 1 means sensor detects no magnet. 0 means sensor detects magnet.
         hal::print<64>(*p_map.science_serial, "hall effect sensor: %d\n", result);
         HAL_CHECK(hal::delay(*p_map.clock, 1s));
-
-        
-        /*
-
-        // demo for methane sensor driver.
-        science::Mq4MethaneSensor methane_driver = science::Mq4MethaneSensor(p_map.methane_level, p_map.is_methane);
-
-        bool is_methane = HAL_CHECK(methane_driver.detect_signal());
-        float methane_value = HAL_CHECK(methane_driver.get_parsed_data());
-
-        if (is_methane) {
-            hal::print<64>(*p_map.science_serial, "CH4: %f\n", methane_value);
-        } else {
-            hal::print<64>(*p_map.science_serial, "No methane detected.\n");
-        }
-        HAL_CHECK(hal::delay(*p_map.clock, 100ms));
-        
-        */
         
     }
 
