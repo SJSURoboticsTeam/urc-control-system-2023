@@ -13,6 +13,10 @@ constexpr int METHANE_ANALOG_CHANNEL = 4;
 
 constexpr int PRESSURE_SENSOR_ANALOG = 5;
 
+//halleffect sensor port and pin
+constexpr int HALL_EFFECT_DIGITAL_PORT = 2;
+constexpr int HALL_EFFECT_DIGITAL_PIN = 1;
+
 hal::result<science::hardware_map> initialize_target() {
     hal::cortex_m::initialize_data_section();
     hal::cortex_m::system_control::initialize_floating_point_unit();
@@ -27,6 +31,9 @@ hal::result<science::hardware_map> initialize_target() {
     auto& methane_level = HAL_CHECK(hal::lpc40xx::adc::get<METHANE_ANALOG_CHANNEL>());
     auto& pressure_sensor_pin = HAL_CHECK(hal::lpc40xx::adc::get<PRESSURE_SENSOR_ANALOG>());
 
+    //halleffect sensor input pin. settings param to set active low with pull down resistor
+    auto& halleffect = HAL_CHECK((hal::lpc40xx::input_pin::get<HALL_EFFECT_DIGITAL_PORT, HALL_EFFECT_DIGITAL_PIN>()));//hal::input_pin::settings{hal::pin_resistor::pull_up}
+
     // Get and initialize UART0 for UART based terminal logging
     auto& uart0 = HAL_CHECK((hal::lpc40xx::uart::get<0, 64>(hal::serial::settings{
         .baud_rate = 38400,
@@ -37,6 +44,7 @@ hal::result<science::hardware_map> initialize_target() {
     return science::hardware_map {
         .is_methane = &is_methane,
         .methane_level = &methane_level,
+        .halleffect = &halleffect,//halleffect input
         .clock = &counter,
         .science_serial = &uart0,
         .reset = []() { hal::cortex_m::system_control::reset(); },
