@@ -13,6 +13,8 @@ constexpr int METHANE_ANALOG_CHANNEL = 4;
 
 constexpr int PRESSURE_SENSOR_ANALOG = 5;
 
+constexpr int CAN_BUS = 2;
+
 //halleffect sensor port and pin
 constexpr int HALL_EFFECT_DIGITAL_PORT = 2;
 constexpr int HALL_EFFECT_DIGITAL_PIN = 1;
@@ -32,6 +34,8 @@ hal::result<science::hardware_map> initialize_target() {
     auto& pressure_sensor_pin = HAL_CHECK(hal::lpc40xx::adc::get<PRESSURE_SENSOR_ANALOG>());
 
     auto& halleffect = HAL_CHECK((hal::lpc40xx::input_pin::get<HALL_EFFECT_DIGITAL_PORT, HALL_EFFECT_DIGITAL_PIN>()));
+    hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
+    auto& can = HAL_CHECK((hal::lpc40xx::can::get<CAN_BUS>(can_settings)));
 
     // Get and initialize UART0 for UART based terminal logging
     auto& uart0 = HAL_CHECK((hal::lpc40xx::uart::get<0, 64>(hal::serial::settings{
@@ -48,5 +52,6 @@ hal::result<science::hardware_map> initialize_target() {
         .science_serial = &uart0,
         .reset = []() { hal::cortex_m::system_control::reset(); },
         .pressure_sensor_pin = &pressure_sensor_pin,
+        .can = &can,
     };
 }

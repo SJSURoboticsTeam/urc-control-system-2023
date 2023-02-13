@@ -32,11 +32,11 @@ hal::status application(drive::hardware_map& p_map)
 
   auto& esp = *p_map.esp;
   auto& terminal = *p_map.terminal;
-  auto& counter = *p_map.steady_clock;  // check
+  auto& counter = *p_map.steady_clock; 
   auto& magnet0 = *p_map.in_pin0;
   auto& magnet1 = *p_map.in_pin1;
-  auto& magnet2 = *p_map.in_pin2;       //
-  auto& can = *p_map.can;          // check
+  auto& magnet2 = *p_map.in_pin2;       
+  auto& can = *p_map.can;        
 
   std::array<hal::byte, 8192> buffer{};
   static std::string_view get_request = "";

@@ -10,27 +10,17 @@
 namespace science {
 
 struct hardware_map {
-    // Methane Sensor
     hal::input_pin* is_methane;
     hal::adc* methane_level;
-
-    // Halleffect Sensor
     hal::input_pin* halleffect;
-    
-    // Various useful features to have on lpc4078
     hal::steady_clock* clock;
     hal::serial* science_serial;
-    hal::callback<void()> reset; // reset function
-
-    // Pump interfaces
+    hal::callback<void()> reset;
     hal::pwm* air_pump;
     hal::pwm* dosing_pump;
-    
-    // Pressure sensor for vacuume pump
     hal::adc* pressure_sensor_pin;
-
-    // CO2 sensor interface
     hal::i2c* carbon_dioxide_sensor;
+    hal::can* can;
 };
 } // namespace science
 
