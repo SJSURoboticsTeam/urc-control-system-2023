@@ -13,6 +13,9 @@ struct hardware_map {
     // Methane Sensor
     hal::input_pin* is_methane;
     hal::adc* methane_level;
+
+    // Halleffect Sensor
+    hal::input_pin* halleffect;
     
     // Various useful features to have on lpc4078
     hal::steady_clock* clock;
