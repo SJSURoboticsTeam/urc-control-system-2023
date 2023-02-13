@@ -1,5 +1,9 @@
 #pragma once
-
-bool moveRevolver() {
-    return false;
+namespace science{
+    bool moveRevolver() {
+        return false;
+    }
+    bool stopRevolver() {
+        return false;
+    }
 }

@@ -1,5 +1,9 @@
 #pragma once
-
-bool seal() {
-    return false;
+namespace science {
+    bool seal() {
+        return false;
+    }
+    bool stopSeal() {
+        return false;
+    }
 }
