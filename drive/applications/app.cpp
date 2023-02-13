@@ -87,9 +87,9 @@ hal::status application(drive::hardware_map& p_map)
   auto right_hub_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, 15.0, 0x144));
 
-  Drive::TriWheelRouter::leg right(right_steer_motor, right_hub_motor, magnet0);
+  Drive::TriWheelRouter::leg right(right_steer_motor, right_hub_motor, magnet2);
   Drive::TriWheelRouter::leg left(left_steer_motor, left_hub_motor, magnet1);
-  Drive::TriWheelRouter::leg back(back_steer_motor, back_hub_motor, magnet2);
+  Drive::TriWheelRouter::leg back(back_steer_motor, back_hub_motor, magnet0);
 
   Drive::TriWheelRouter tri_wheel{ right, left, back };
   Drive::MissionControlHandler mission_control;
@@ -102,7 +102,7 @@ hal::status application(drive::hardware_map& p_map)
   Drive::CommandLerper lerp;
 
   HAL_CHECK(hal::delay(counter, 1000ms));
-  // tri_wheel.HomeLegs(terminal);
+  tri_wheel.HomeLegs(terminal, counter);
   HAL_CHECK(hal::delay(counter, 1000ms));
   HAL_CHECK(hal::write(terminal, "Starting control loop..."));
 
