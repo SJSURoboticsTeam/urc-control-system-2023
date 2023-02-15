@@ -31,12 +31,13 @@ public:
     /// @return The voltage value on the analog data pin.
     hal::result<float> read_raw_adc() {
         float raw_ratio_average = 0;
-        for (int i = 0; i < 10; i++)
+        int read_count = 10;
+        for (int i = 0; i < read_count; i++)
         {
-            auto result = HAL_CHECK(adc_data_->read());
+            raw_ratio_average += HAL_CHECK(adc_data_->read());
         }
         
-        raw_ratio_average /= 10;
+        raw_ratio_average /= read_count;
 
         return raw_ratio_average;
     }

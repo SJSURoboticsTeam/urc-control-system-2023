@@ -10,18 +10,20 @@ namespace science{
     };
 
     struct science_status{
-        int move_revolver_status = 0;
-        int seal_status = 0;
-        int depressurize_status = 0;
-        int inject_status = 0;
-        int sensor_status = 0;
-        int clear_status = 0;
-        int unseal_status = 0;
+        int move_revolver_status = Status::NotStarted;
+        int seal_status = Status::NotStarted;
+        int depressurize_status = Status::NotStarted;
+        int inject_status = Status::NotStarted;
+        int sensor_status = Status::NotStarted;
+        int clear_status = Status::NotStarted;
+        int unseal_status = Status::NotStarted;
     };
-    // for status data
-        // 0 = not started
-        // 1 = in progress
-        // 2 = complete
+
+    enum Status {
+        NotStarted = 0,
+        InProgress = 1,
+        Complete = 2
+    };
 
     // science data is what we send mission control
     struct science_data{
