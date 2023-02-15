@@ -4,7 +4,7 @@
 #include <libhal/adc.hpp>
 #include <libhal/steady_clock.hpp>
 #include <libhal/serial.hpp>
-
+#include <libhal/i2c.hpp>
 namespace science {
 
 struct hardware_map {
@@ -12,6 +12,7 @@ struct hardware_map {
     hal::adc* methane_level;
     hal::steady_clock* clock;
     hal::serial* science_serial;
+    hal::i2c* co2i2c; 
     hal::callback<void()> reset; // reset function
 };
 } // namespace science

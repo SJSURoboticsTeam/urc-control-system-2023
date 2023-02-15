@@ -28,7 +28,7 @@ hal::result<science::hardware_map> initialize_target() {
         .baud_rate = 38400,
     })));
 
-    
+    //use i2c bus 2 for the dev 2 board while testing 
 
     return science::hardware_map {
         .is_methane = &is_methane,
