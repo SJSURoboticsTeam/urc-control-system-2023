@@ -1,10 +1,13 @@
 #pragma once
+
+#include "../implementations/pump_controller.hpp"
+
 namespace science {
-    bool suck() {
+    bool suck(science::PumpPwmController& air_pump) {
         return false;
     }
 
-    bool stopSucking() {
+    bool stopSucking(science::PumpPwmController& air_pump) {
         return false;
     }
 }

@@ -47,7 +47,8 @@ hal::result<science::hardware_map> initialize_target() {
     return science::hardware_map {
         .is_methane = &is_methane,
         .methane_level = &methane_level,
-        .halleffect = &halleffect,//halleffect input
+        .revolver_hall_effect = &halleffect,
+        .seal_hall_effect = &halleffect,
         .clock = &counter,
         .science_serial = &uart0,
         .reset = []() { hal::cortex_m::system_control::reset(); },
