@@ -54,48 +54,49 @@ hal::status application(science::hardware_map &p_map) {
     while(true) {
         mc_commands = HAL_CHECK(mc_handler.ParseMissionControlData(response, terminal));
         mc_data.pressure_level = pressure.get_parsed_data();
-        HAL_CHECK(hal::delay(counter, 10ms));
+        HAL_CHECK(hal::delay(counter, 5ms));
         mc_data.methane_level = methane.get_parsed_data();
-        HAL_CHECK(hal::delay(counter, 10ms));
+        HAL_CHECK(hal::delay(counter, 5ms));
         revolver_hall_value = revolver_hall_effect.level();
         seal_hall_value = seal_hall_effect.level();
-        HAL_CHECK(hal::delay(counter, 10ms));
+        HAL_CHECK(hal::delay(counter, 5ms));
 
         sate_machine.RunMachine(mc_data.status, mc_commands, pressure_data, revolver_hall_value, seal_hall_value);
         if(mc_data.status.move_revolver_status == 1) {
             MoveRevolver(revolver_spinner);
-            HAL_CHECK(hal::delay(counter, 10ms));
+            HAL_CHECK(hal::delay(counter, 5ms));
         }
         else if(mc_data.status.move_revolver_status == 2 && mc_data.status.seal_status == 0) {
             StopRevolver(revolver_spinner);
-            HAL_CHECK(hal::delay(counter, 10ms));
+            HAL_CHECK(hal::delay(counter, 5ms));
         }
         else if(mc_data.status.seal_status == 1) {
             Seal();
-            HAL_CHECK(hal::delay(counter, 10ms));
+            HAL_CHECK(hal::delay(counter, 5ms));
         }
         else if(mc_data.status.depressurize_status == 1) {
             Suck(air_pump);
-            HAL_CHECK(hal::delay(counter, 10ms));
+            HAL_CHECK(hal::delay(counter, 5ms));
         }
         else if(mc_data.status.depressurize_status == 2 && mc_data.status.inject_status == 0) {
             StopSucking(air_pump);
-            HAL_CHECK(hal::delay(counter, 10ms));
+            HAL_CHECK(hal::delay(counter, 5ms));
         }
         else if(mc_data.status.inject_status == 1) {
             Inject(dosing_pump, 2);
-            HAL_CHECK(hal::delay(counter, 10ms));
+            HAL_CHECK(hal::delay(counter, 5ms));
         }
         else if(mc_data.status.clear_status == 1) {
             Suck(air_pump);
-            HAL_CHECK(hal::delay(counter, 10ms));
+            HAL_CHECK(hal::delay(counter, 5ms));
         }
         else if(mc_data.status.clear_status == 2) {
             StopSucking(air_pump);
-            HAL_CHECK(hal::delay(counter, 10ms));
+            HAL_CHECK(hal::delay(counter, 5ms));
         }
         else if(mc_data.status.unseal_status == 1) {
             Unseal();
+            HAL_CHECK(hal::delay(counter, 5ms));
         }
         // send data to mission control
     }
