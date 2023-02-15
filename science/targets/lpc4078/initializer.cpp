@@ -4,6 +4,7 @@
 #include <libhal-lpc40xx/input_pin.hpp>
 #include <libhal-lpc40xx/uart.hpp>
 #include <libhal-lpc40xx/adc.hpp>
+#include <libhal-lpc40xx/can.hpp>
 
 #include "hardware_map.hpp"
 // TODO: update with proper hardware data
@@ -20,6 +21,8 @@ constexpr int HALL_EFFECT_DIGITAL_PORT = 2;
 constexpr int HALL_EFFECT_DIGITAL_PIN = 1;
 
 hal::result<science::hardware_map> initialize_target() {
+    using namespace std::chrono_literals;
+    using namespace hal::literals;
     hal::cortex_m::initialize_data_section();
     hal::cortex_m::system_control::initialize_floating_point_unit();
 

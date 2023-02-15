@@ -62,39 +62,39 @@ hal::status application(science::hardware_map &p_map) {
         HAL_CHECK(hal::delay(counter, 5ms));
 
         sate_machine.RunMachine(mc_data.status, mc_commands, pressure_data, revolver_hall_value, seal_hall_value);
-        if(mc_data.status.move_revolver_status == 1) {
+        if(mc_data.status.move_revolver_status == science::Status::InProgress) {
             MoveRevolver(revolver_spinner);
             HAL_CHECK(hal::delay(counter, 5ms));
         }
-        else if(mc_data.status.move_revolver_status == 2 && mc_data.status.seal_status == 0) {
+        else if(mc_data.status.move_revolver_status == science::Status::Complete && mc_data.status.seal_status == science::Status::NotStarted) {
             StopRevolver(revolver_spinner);
             HAL_CHECK(hal::delay(counter, 5ms));
         }
-        else if(mc_data.status.seal_status == 1) {
+        else if(mc_data.status.seal_status == science::Status::InProgress) {
             Seal();
             HAL_CHECK(hal::delay(counter, 5ms));
         }
-        else if(mc_data.status.depressurize_status == 1) {
+        else if(mc_data.status.depressurize_status == science::Status::InProgress) {
             Suck(air_pump);
             HAL_CHECK(hal::delay(counter, 5ms));
         }
-        else if(mc_data.status.depressurize_status == 2 && mc_data.status.inject_status == 0) {
+        else if(mc_data.status.depressurize_status == science::Status::Complete && mc_data.status.inject_status == science::Status::NotStarted) {
             StopSucking(air_pump);
             HAL_CHECK(hal::delay(counter, 5ms));
         }
-        else if(mc_data.status.inject_status == 1) {
+        else if(mc_data.status.inject_status == science::Status::InProgress) {
             Inject(dosing_pump, 2);
             HAL_CHECK(hal::delay(counter, 5ms));
         }
-        else if(mc_data.status.clear_status == 1) {
+        else if(mc_data.status.clear_status == science::Status::InProgress) {
             Suck(air_pump);
             HAL_CHECK(hal::delay(counter, 5ms));
         }
-        else if(mc_data.status.clear_status == 2) {
+        else if(mc_data.status.clear_status == science::Status::Complete && mc_data.status.unseal_status == science::Status::NotStarted) {
             StopSucking(air_pump);
             HAL_CHECK(hal::delay(counter, 5ms));
         }
-        else if(mc_data.status.unseal_status == 1) {
+        else if(mc_data.status.unseal_status == science::Status::InProgress) {
             Unseal();
             HAL_CHECK(hal::delay(counter, 5ms));
         }

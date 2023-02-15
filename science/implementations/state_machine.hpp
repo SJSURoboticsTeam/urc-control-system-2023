@@ -47,7 +47,7 @@ namespace science {
                 case States::MoveRevolver:
                     if(revolver_hall == 1) {
                         current_state_ = current_state_;
-                        status.move_revolver_status = 1;
+                        status.move_revolver_status = Status::InProgress;
                     }
                     else if(revolver_hall == 0 && commands.automatic == 1) {
                         current_state_ = States::StopRevolver;
@@ -55,7 +55,7 @@ namespace science {
                 break;
 
                 case States::StopRevolver:
-                status.move_revolver_status = 2;
+                status.move_revolver_status = Status::Complete;
                     if(commands.automatic == 0) {
                         previous_state_ = current_state_;
                         current_state_ = States::Wait;
@@ -68,7 +68,7 @@ namespace science {
                 case States::Seal:
                     if(seal_hall == 1) {
                         current_state_ = current_state_;
-                        status.seal_status = 1;
+                        status.seal_status = Status::InProgress;
                     }
                     else if(seal_hall == 0 && commands.automatic == 1) {
                         current_state_ = States::Depressurizing;
@@ -77,13 +77,13 @@ namespace science {
                         previous_state_ = current_state_;
                         current_state_ = States::Wait;
                     }
-                    if(seal_hall == 0) status.seal_status = 2;
+                    if(seal_hall == 0) status.seal_status = Status::Complete;
                 break;
 
                 case States::Depressurizing: 
                     if(pressure > kpressure_requirement) { // 90.0 is a place holder as of rn
                         current_state_ = current_state_;
-                        status.depressurize_status = 1;
+                        status.depressurize_status = Status::InProgress;
                     }
                     else if(pressure < kpressure_requirement) {
                         current_state_ = States::StopDepressurizing;
@@ -91,7 +91,7 @@ namespace science {
                 break;
 
                 case States::StopDepressurizing:
-                    status.depressurize_status = 2;
+                    status.depressurize_status = Status::Complete;
                     if(commands.automatic == 0) {
                         previous_state_ = current_state_;
                         current_state_ = States::Wait;
@@ -102,20 +102,20 @@ namespace science {
                 break;
 
                 case States::Inject:
-                    status.inject_status = 1; // status will have to be updated outside of state machine for injection
+                    status.inject_status = Status::InProgress; // status will have to be updated outside of state machine for injection
                     current_state_ = States::StopInjection;
                     // goto the wait state to choose when to stop the experiment
                 break;
 
                 case States::StopInjection:
-                    status.inject_status = 2;
+                    status.inject_status = Status::Complete;
                     previous_state_ = current_state_;
                     current_state_ = States::Wait;
                 break;
                 
                 case States::ClearingChamber:
                     if(pressure > kpressure_requirement) { // 90.0 is a place holder as of rn
-                        status.clear_status = 1;
+                        status.clear_status = Status::InProgress;
                         current_state_ = current_state_;
                     }
                     else if(pressure < kpressure_requirement) {
@@ -124,18 +124,18 @@ namespace science {
                 break;
 
                 case States::StopClearingChamber:
-                    status.clear_status = 2;
+                    status.clear_status = Status::Complete;
                     current_state_ = States::Unseal;
                 break;
 
                 case States::Unseal:
                     if(seal_hall == 0) {
                         current_state_ = current_state_;
-                        status.unseal_status = 1;
+                        status.unseal_status = Status::InProgress;
                     }
                     else if(seal_hall == 1) {
                         current_state_ = States::Start;
-                        status.unseal_status = 2;
+                        status.unseal_status = Status::Complete;
                     }
                 break;
 

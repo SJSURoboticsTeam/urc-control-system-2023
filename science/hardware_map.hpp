@@ -6,6 +6,7 @@
 #include <libhal/serial.hpp>
 #include <libhal/pwm.hpp>
 #include <libhal/i2c.hpp>
+#include <libhal/can.hpp>
 
 namespace science {
 
