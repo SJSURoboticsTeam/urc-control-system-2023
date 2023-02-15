@@ -3,13 +3,13 @@
 // need servo for this class
 
 namespace science {
-    bool seal() {
+    void Seal() {
         return false;
     }
-    bool stopSeal() {
+    void StopSeal() {
         return false;
     }
-    bool unseal() {
+    void Unseal() {
         return false;
     }
 }

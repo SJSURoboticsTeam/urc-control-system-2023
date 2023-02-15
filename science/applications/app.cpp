@@ -32,13 +32,9 @@ hal::status application(science::hardware_map &p_map) {
     auto& air_pump_pwm = *p_map.air_pump;
     auto& dosing_pump_pwm = *p_map.dosing_pump;
 
-    int automatic = 1; // data from mission control
-    int mcButtonPressed = 1;
-    float desiredPressure = 90;
-    bool sendToMissionControl = false;
     std::string_view response;
-    science::science_commands mc_commands{};
-    science::science_data mc_data{};
+    int revolver_hall_value = 1;
+    int seal_hall_value = 1;
 
 
     auto can_router = HAL_CHECK(hal::can_router::create(can));
@@ -50,65 +46,58 @@ hal::status application(science::hardware_map &p_map) {
     science::StateMachine state_machine();
 
     science::MissionControlHandler mc_handler;
+    science::science_commands mc_commands;
+    science::science_data mc_data;
 
     auto revolver_spinner = HAL_CHECK(hal::rmd::drc::create(can_router, 6.0, 0x141));       // RMD can addres may have to chage, this is a temp
 
     while(true) {
         mc_commands = HAL_CHECK(mc_handler.ParseMissionControlData(response, terminal));
-        if(mcButtonPressed == 1){
+        mc_data.pressure_level = pressure.get_parsed_data();
+        HAL_CHECK(hal::delay(counter, 10ms));
+        mc_data.methane_level = methane.get_parsed_data();
+        HAL_CHECK(hal::delay(counter, 10ms));
+        revolver_hall_value = revolver_hall_effect.level();
+        seal_hall_value = seal_hall_effect.level();
+        HAL_CHECK(hal::delay(counter, 10ms));
 
-            if(automatic == 1) {
-
-                //moving revolver to the soil sample
-                sendToMissionControl = science::moveRevolver(revolver_spinner);
-                while(!HAL_CHECK(revolver_hall_effect.level())){
-                    HAL_CHECK(hal::delay(counter, 10ms));
-                }
-                sendToMissionControl = science::stopRevolver(revolver_spinner);
-                HAL_CHECK(hal::delay(counter, 10ms));
-
-                // sealing super station
-                sendToMissionControl = science::seal();  // needs servo
-                while(!HAL_CHECK(seal_hall_effect.level())){
-                    HAL_CHECK(hal::delay(counter, 10ms)); //needs servo
-                }
-                sendToMissionControl = science::stopSeal();
-                HAL_CHECK(hal::delay(counter, 10ms));
-                
-                // depressurizing super station
-                sendToMissionControl = science::suck(air_pump);
-                while(HAL_CHECK(pressure.get_parsed_data()) > desiredPressure) {
-                    HAL_CHECK(hal::delay(counter, 10ms));
-                }
-                sendToMissionControl = science::stopSucking(air_pump);
-                HAL_CHECK(hal::delay(counter, 10ms));
-
-                // injecting chemicals into super station
-                sendToMissionControl = science::inject(dosing_pump, 3);
-                HAL_CHECK(hal::delay(counter, 10ms));
-
-                // Reading data from sensors
-                mcButtonPressed == 0;                                 // this will need to be removed when mc is done being implemented
-                while(!mcButtonPressed) {
-                    sendToMissionControl = methane.get_parsed_data(dosing_pump); // Maybe always have data being read from sensors?
-                    HAL_CHECK(hal::delay(counter, 10ms));             // or have it read for a set amount of time
-                    mcButtonPressed == 1;                             // this will need to be removed when mc is done being implemented
-                }
-                // Clearing chamber
-                sendToMissionControl = science::suck(air_pump);
-                while(HAL_CHECK(pressure.get_parsed_data()) > desiredPressure) {
-                    HAL_CHECK(hal::delay(counter, 10ms));
-                }
-                sendToMissionControl = science::stopSucking(air_pump);
-                HAL_CHECK(hal::delay(counter, 1s));
-
-                sendToMissionControl = science::unseal(); // need servo
-                HAL_CHECK(hal::delay(counter, 2s)); // wait a variable amound of time
-            }
-            else if(automatic == 0) {
-                // do alternative loop
-            }
+        sate_machine.RunMachine(mc_data.status, mc_commands, pressure_data, revolver_hall_value, seal_hall_value);
+        if(mc_data.status.move_revolver_status == 1) {
+            MoveRevolver(revolver_spinner);
+            HAL_CHECK(hal::delay(counter, 10ms));
         }
+        else if(mc_data.status.move_revolver_status == 2 && mc_data.status.seal_status == 0) {
+            StopRevolver(revolver_spinner);
+            HAL_CHECK(hal::delay(counter, 10ms));
+        }
+        else if(mc_data.status.seal_status == 1) {
+            Seal();
+            HAL_CHECK(hal::delay(counter, 10ms));
+        }
+        else if(mc_data.status.depressurize_status == 1) {
+            Suck(air_pump);
+            HAL_CHECK(hal::delay(counter, 10ms));
+        }
+        else if(mc_data.status.depressurize_status == 2 && mc_data.status.inject_status == 0) {
+            StopSucking(air_pump);
+            HAL_CHECK(hal::delay(counter, 10ms));
+        }
+        else if(mc_data.status.inject_status == 1) {
+            Inject(dosing_pump, 2);
+            HAL_CHECK(hal::delay(counter, 10ms));
+        }
+        else if(mc_data.status.clear_status == 1) {
+            Suck(air_pump);
+            HAL_CHECK(hal::delay(counter, 10ms));
+        }
+        else if(mc_data.status.clear_status == 2) {
+            StopSucking(air_pump);
+            HAL_CHECK(hal::delay(counter, 10ms));
+        }
+        else if(mc_data.status.unseal_status == 1) {
+            Unseal();
+        }
+        // send data to mission control
     }
     return hal::success();
 }
