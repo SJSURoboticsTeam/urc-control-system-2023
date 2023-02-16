@@ -39,7 +39,7 @@ hal::status application(science::hardware_map &p_map) {
 
     auto can_router = HAL_CHECK(hal::can_router::create(can));
 
-    science::PumpPwmController air_pump(air_pump_pwm, 1_kHz);                               //unknown freqeuncy atm change when this is figured out
+    science::PumpPwmController air_pump(air_pump_pwm, 1_kHz);                               // unknown freqeuncy atm change when this is figured out
     science::PumpPwmController dosing_pump(dosing_pump_pwm, 1_kHz);
     science::PressureSensor pressure(pressure_adc);
     science::Mq4MethaneSensor methane(methane_adc, methane_gpio);
@@ -61,7 +61,7 @@ hal::status application(science::hardware_map &p_map) {
         seal_hall_value = seal_hall_effect.level();
         HAL_CHECK(hal::delay(counter, 5ms));
 
-        sate_machine.RunMachine(mc_data.status, mc_commands, pressure_data, revolver_hall_value, seal_hall_value);
+        state_machine.RunMachine(mc_data.status, mc_commands, pressure_data, revolver_hall_value, seal_hall_value);
         if(mc_data.status.move_revolver_status == science::Status::InProgress) {
             MoveRevolver(revolver_spinner);
             HAL_CHECK(hal::delay(counter, 5ms));
@@ -98,7 +98,7 @@ hal::status application(science::hardware_map &p_map) {
             Unseal();
             HAL_CHECK(hal::delay(counter, 5ms));
         }
-        // send data to mission control
+        response = CreateGETRequestParameterWithRoverStatus(mc_data);
     }
     return hal::success();
 }
