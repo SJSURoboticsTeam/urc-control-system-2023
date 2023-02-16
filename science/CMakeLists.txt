@@ -1,17 +1,42 @@
-# NOTE EVERYTHING IS ONLY DESIGNED TO COMPILE FOR LPC40XX, SHOULD ADDITIONAL TARGETS BE DESIRED
-# PLEASE CREATE A TARGETS FOLDER WITHIN libhal_configurations AND ITERATE OVER EACH INITIALIZER AND TWEAKS
-
 cmake_minimum_required(VERSION 3.20)
 
-project(science-robot.elf VERSION 0.0.1 LANGUAGES CXX)
+if(NOT DEFINED CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Debug" CACHE INTERNAL "Default to Debug Build")
+endif(NOT DEFINED CMAKE_BUILD_TYPE)
+
+set(CMAKE_TOOLCHAIN_FILE conan_toolchain.cmake)
+
+project(demos VERSION 0.0.1 LANGUAGES CXX)
 
 find_package(libhal-lpc40xx REQUIRED CONFIG)
+find_package(libhal-rmd REQUIRED CONFIG)
+find_package(libhal-esp8266 REQUIRED CONFIG)
+find_package(libhal-util REQUIRED CONFIG)
 
-add_link_options(-lc -lrdimon -u _printf_float) # enables floating point string interpolation
-add_executable(${PROJECT_NAME} main.cpp libhal_configuration/newlib.cpp libhal_configuration/initializer.cpp)
-target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
-target_include_directories(${PROJECT_NAME} PUBLIC .)
-target_include_directories(${PROJECT_NAME} PUBLIC libhal_configuration)
-target_link_libraries(${PROJECT_NAME} PRIVATE libhal::lpc4078)
-arm_cortex_post_build(${PROJECT_NAME})
+set(DEMOS methane_sensor_demo pump_demo co2_sensor_demo)
+set(TARGETS lpc4078)
 
+add_link_options(-lc -lrdimon -u _printf_float)
+
+foreach(target IN LISTS TARGETS)
+    foreach(demo IN LISTS DEMOS)
+        set(current_project ${target}_${demo})
+        message(STATUS "Generating Demo for \"${current_project}\"")
+        add_executable(${current_project}
+            main.cpp
+            third_party/newlib.cpp
+            targets/${target}/initializer.cpp
+            applications/${demo}.cpp)
+        target_include_directories(${current_project} PUBLIC
+            ./
+            targets/${target})
+        target_compile_features(${current_project} PRIVATE cxx_std_20)
+
+        target_link_libraries(${current_project} PRIVATE
+            libhal::lpc4078
+            libhal::rmd
+            libhal::esp8266
+            libhal::util)
+        arm_post_build(${current_project})
+    endforeach()
+endforeach()

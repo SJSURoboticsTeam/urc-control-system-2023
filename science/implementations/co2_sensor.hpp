@@ -8,6 +8,7 @@
 //3 things to get from the i2c bus 
 //use std::span<hal::byte> for buffer to get data
 //use i2c bus 2 for the dev 2 board while testing 
+namespace science {
 class Co2Sensor {
     
     //constructor
@@ -31,7 +32,6 @@ public:
         //start periodic measurement //write to hex 0x21b1
         hal::write(m_i2c, Addresses::address, std::array{Addresses::start},hal::never_timeout());
         // hal::transaction(sensor_address, start_address, nullptr, )
-
     }
     
     hal::result<hal::byte> read_co2(){
@@ -56,4 +56,5 @@ public:
     
     hal::i2c* m_i2c;//initializing the i2c driver
 
+};
 }

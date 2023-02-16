@@ -19,7 +19,7 @@ hal::result<drive::hardware_map> initialize_target()
   hal::cortex_m::initialize_data_section();
   hal::cortex_m::system_control::initialize_floating_point_unit();
 
-  HAL_CHECK(hal::lpc40xx::clock::maximum(10.0_MHz));
+  HAL_CHECK(hal::lpc40xx::clock::maximum(12.0_MHz));
 
   // Clock declaration
   auto& clock = hal::lpc40xx::clock::get();
@@ -31,15 +31,15 @@ hal::result<drive::hardware_map> initialize_target()
   })));
 
   hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
-  auto& can = HAL_CHECK((hal::lpc40xx::can::get<1>(can_settings)));
+  auto& can = HAL_CHECK((hal::lpc40xx::can::get<2>(can_settings)));
 
-  auto& in0 = HAL_CHECK((hal::lpc40xx::input_pin::get<2, 1>()));
-  auto& in1 = HAL_CHECK((hal::lpc40xx::input_pin::get<2, 2>()));
-  auto& in2 = HAL_CHECK((hal::lpc40xx::input_pin::get<2, 0>()));
+  auto& in0 = HAL_CHECK((hal::lpc40xx::input_pin::get<1, 19>())); // home_b
+  auto& in1 = HAL_CHECK((hal::lpc40xx::input_pin::get<1, 28>()));  // home_a
+  auto& in2 = HAL_CHECK((hal::lpc40xx::input_pin::get<2, 3>()));  // home_c
 
   // Get and initialize UART3 with a 8kB receive buffer
-  auto& uart3 =
-    HAL_CHECK((hal::lpc40xx::uart::get<3, 8192>(hal::serial::settings{
+  auto& uart1 =
+    HAL_CHECK((hal::lpc40xx::uart::get<1, 8192>(hal::serial::settings{
       .baud_rate = 115200,
     })));
 
@@ -48,7 +48,7 @@ hal::result<drive::hardware_map> initialize_target()
                               .in_pin0 = &in0,
                               .in_pin1 = &in1,
                               .in_pin2 = &in2,
-                              .esp = &uart3,
+                              .esp = &uart1,
                               .steady_clock = &counter,
                               .reset = []() {
                                 hal::cortex_m::system_control::reset();

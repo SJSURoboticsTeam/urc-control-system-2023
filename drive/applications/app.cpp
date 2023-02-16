@@ -32,11 +32,11 @@ hal::status application(drive::hardware_map& p_map)
 
   auto& esp = *p_map.esp;
   auto& terminal = *p_map.terminal;
-  auto& counter = *p_map.steady_clock;  // check
+  auto& counter = *p_map.steady_clock; 
   auto& magnet0 = *p_map.in_pin0;
   auto& magnet1 = *p_map.in_pin1;
-  auto& magnet2 = *p_map.in_pin2;  //
-  auto& can = *p_map.can;          // check
+  auto& magnet2 = *p_map.in_pin2;       
+  auto& can = *p_map.can;        
 
   std::array<hal::byte, 8192> buffer{};
   static std::string_view get_request = "";
@@ -61,7 +61,7 @@ hal::status application(drive::hardware_map& p_map)
     HAL_CHECK(hal::create_timeout(counter, 1s)),
     {
       .type = hal::socket::type::tcp,
-      .domain = "192.168.1.183",
+      .domain = "192.168.1.110",
       .port = "5000",
     });
 
@@ -78,18 +78,18 @@ hal::status application(drive::hardware_map& p_map)
     HAL_CHECK(hal::rmd::drc::create(can_router, 6.0, 0x141));
   auto left_hub_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, 15.0, 0x142));
-  auto right_steer_motor =
-    HAL_CHECK(hal::rmd::drc::create(can_router, 6.0, 0x143));
-  auto right_hub_motor =
-    HAL_CHECK(hal::rmd::drc::create(can_router, 15.0, 0x144));
   auto back_steer_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, 6.0, 0x145));
   auto back_hub_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, 15.0, 0x146));
+  auto right_steer_motor =
+    HAL_CHECK(hal::rmd::drc::create(can_router, 6.0, 0x143));
+  auto right_hub_motor =
+    HAL_CHECK(hal::rmd::drc::create(can_router, 15.0, 0x144));
 
-  Drive::TriWheelRouter::leg right(right_steer_motor, right_hub_motor, magnet0);
+  Drive::TriWheelRouter::leg right(right_steer_motor, right_hub_motor, magnet2);
   Drive::TriWheelRouter::leg left(left_steer_motor, left_hub_motor, magnet1);
-  Drive::TriWheelRouter::leg back(back_steer_motor, back_hub_motor, magnet2);
+  Drive::TriWheelRouter::leg back(back_steer_motor, back_hub_motor, magnet0);
 
   Drive::TriWheelRouter tri_wheel{ right, left, back };
   Drive::MissionControlHandler mission_control;
@@ -102,7 +102,7 @@ hal::status application(drive::hardware_map& p_map)
   Drive::CommandLerper lerp;
 
   HAL_CHECK(hal::delay(counter, 1000ms));
-  // tri_wheel.HomeLegs(terminal);
+  tri_wheel.HomeLegs(terminal, counter);
   HAL_CHECK(hal::delay(counter, 1000ms));
   HAL_CHECK(hal::write(terminal, "Starting control loop..."));
 
@@ -110,7 +110,7 @@ hal::status application(drive::hardware_map& p_map)
     buffer.fill('.');
     get_request = "GET /drive" + get_rover_status() +
                   " HTTP/1.1\r\n"
-                  "Host: 192.168.1.183:5000/\r\n"
+                  "Host: 192.168.1.110:5000/\r\n"
                   "\r\n";
 
     auto write_result =
@@ -134,10 +134,8 @@ hal::status application(drive::hardware_map& p_map)
     HAL_CHECK(hal::write(terminal, "\r\n\n"));
 
     std::string json_string(json);
-
     commands =
       HAL_CHECK(mission_control.ParseMissionControlData(json_string, terminal));
-
     commands = rules_engine.ValidateCommands(commands);
     commands = mode_switch.SwitchSteerMode(commands, arguments, motor_speeds);
     commands = lerp.Lerp(commands);
