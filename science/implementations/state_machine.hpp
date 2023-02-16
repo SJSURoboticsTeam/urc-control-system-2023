@@ -27,10 +27,11 @@ namespace science {
             };
 
         void RunMachine(science_status& status, science_commands commands, float pressure, int revolver_hall, int seal_hall) {
-            if(commands.e_stop == 1) {
+            if(commands.is_operational == 0) {
                 previous_state_ = States::Start;
                 current_state_ = States::Start;
                 status = science_status{}; // reset the status durring e_stop
+                return;
             }
             switch(current_state_) {
                 case States::Start:
@@ -50,14 +51,14 @@ namespace science {
                         current_state_ = current_state_;
                         status.move_revolver_status = Status::InProgress;
                     }
-                    else if(revolver_hall == 0 && commands.automatic == 1) {
+                    else if(revolver_hall == 0 && commands.mode == 1) {
                         current_state_ = States::StopRevolver;
                     }
                 break;
 
                 case States::StopRevolver:
                     status.move_revolver_status = Status::Complete;
-                    if(commands.automatic == 0) {
+                    if(commands.mode == 'M') {
                         previous_state_ = current_state_;
                         current_state_ = States::Wait;
                         desired_button_value++;
@@ -72,10 +73,10 @@ namespace science {
                         current_state_ = current_state_;
                         status.seal_status = Status::InProgress;
                     }
-                    else if(seal_hall == 0 && commands.automatic == 1) {
+                    else if(seal_hall == 0 && commands.mode == 'A') {
                         current_state_ = States::Depressurizing;
                     }
-                    else if(seal_hall == 0 && commands.automatic == 0) {
+                    else if(seal_hall == 0 && commands.mode == 'M') {
                         previous_state_ = current_state_;
                         current_state_ = States::Wait;
                         desired_button_value++;
@@ -95,7 +96,7 @@ namespace science {
 
                 case States::StopDepressurizing:
                     status.depressurize_status = Status::Complete;
-                    if(commands.automatic == 0) {
+                    if(commands.mode == 'M') {
                         previous_state_ = current_state_;
                         current_state_ = States::Wait;
                         desired_button_value++;
@@ -141,6 +142,7 @@ namespace science {
                     else if(seal_hall == 1) {
                         current_state_ = States::Start;
                         status.unseal_status = Status::Complete;
+                        desired_button_value = 1;
                     }
                 break;
 

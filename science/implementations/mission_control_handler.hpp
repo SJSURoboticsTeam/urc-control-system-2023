@@ -28,7 +28,7 @@ namespace science
             response = response.substr(response.find('{'));
             int actual_arguments = sscanf(
                 response.c_str(), kResponseBodyFormat,
-                &commands_.state_step, &commands_.automatic, &commands_.e_stop);
+                &commands_.state_step, &commands_.mode, &commands_.is_operational);
             if (actual_arguments != kExpectedNumberOfArguments)
             {
                 HAL_CHECK(hal::write(terminal, std::string("Received " + actual_arguments) + std::string("arguments, expected " + kExpectedNumberOfArguments)));
