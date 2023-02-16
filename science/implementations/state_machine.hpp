@@ -41,7 +41,6 @@ namespace science {
                     }
                     else if(commands.state_step == desired_button_value) {
                         current_state_ = States::MoveRevolver;
-                        desired_button_value++;
                     }
                 break;
                 // revolver_hall will come back as low when we start, this will need to be fixed with some weird logic
@@ -51,7 +50,7 @@ namespace science {
                         current_state_ = current_state_;
                         status.move_revolver_status = Status::InProgress;
                     }
-                    else if(revolver_hall == 0 && commands.mode == 1) {
+                    else if(revolver_hall == 0) {
                         current_state_ = States::StopRevolver;
                     }
                 break;
