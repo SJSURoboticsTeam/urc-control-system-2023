@@ -5,8 +5,8 @@ namespace science{
     // commands are parsed from mission control
     struct science_commands{
         int state_step = 0;
-        int automatic = 1;
-        int e_stop = 0;
+        char mode = 'A';
+        int is_operational = 0;
     };
     
     enum Status {
@@ -33,7 +33,7 @@ namespace science{
     };
 
     const char kResponseBodyFormat[] =
-  "{\"state_step\":%d,\"automatic\":%d,\"e_stop\":%d}\n";
+  "{\"state_step\":%d,\"mode\":%c,\"is_operational\":%d}\n";
 
     const char kGETRequestFormat[] =
   "science?rev_status=%d&seal_status=%d&depressure_status=%d&inj_status=%d&clear_status=%d&"
