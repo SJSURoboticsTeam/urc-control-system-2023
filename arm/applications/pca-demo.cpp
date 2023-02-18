@@ -10,6 +10,18 @@
 #include <string>
 #include <string_view>
 
+float convertAngleToDutyCycle(int angle)
+{
+  // operating travel 500us to 2500us
+  // 0 degrees = 500us
+  // 180 degrees = 2500
+  // return (angle * 2.0f + 500.0f) / 20000.0f;
+  // return angles map to 0.05 to 0.25
+  return (angle * 0.001f + 0.05f);
+  // result of angle  180 = 0.25
+  // result of angle 0 = 0.05
+}
+
 hal::status application(drive::hardware_map& p_map)
 {
 
@@ -25,44 +37,26 @@ hal::status application(drive::hardware_map& p_map)
   hal::print(console, "[pca9685] Application Starting...\n\n");
   auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c, 0b100'0000));
   auto pwm0 = pca9685.get_pwm_channel<0>();
-  auto pwm1 = pca9685.get_pwm_channel<1>();
-  auto pwm2 = pca9685.get_pwm_channel<2>();
-  auto pwm3 = pca9685.get_pwm_channel<3>();
-  auto pwm4 = pca9685.get_pwm_channel<4>();
-  auto pwm5 = pca9685.get_pwm_channel<5>();
-  auto pwm6 = pca9685.get_pwm_channel<6>();
-  auto pwm7 = pca9685.get_pwm_channel<7>();
-  auto pwm8 = pca9685.get_pwm_channel<8>();
-  auto pwm9 = pca9685.get_pwm_channel<9>();
-  auto pwm10 = pca9685.get_pwm_channel<10>();
-  auto pwm11 = pca9685.get_pwm_channel<11>();
-  auto pwm12 = pca9685.get_pwm_channel<12>();
-  auto pwm13 = pca9685.get_pwm_channel<13>();
-  auto pwm14 = pca9685.get_pwm_channel<14>();
-  auto pwm15 = pca9685.get_pwm_channel<15>();
 
   // Setting the frequency of one channel will set the frequency of all channels
-  HAL_CHECK(pwm0.frequency(1.0_kHz));
+  HAL_CHECK(pwm0.frequency(50.0_Hz));
 
   while (true) {
-    for (float duty_cycle = 0.0f; duty_cycle < 1.05f; duty_cycle += 0.05f) {
+    // for (int i = 0; i < 180; i += 10) {
+    //   HAL_CHECK(hal::delay(clock, 50ms));
+    //   HAL_CHECK(pwm0.duty_cycle(convertAngleToDutyCycle(i)));
+    // }
+    // for (float duty_cycle = 0.0f; duty_cycle < 1.05f; duty_cycle += 0.05f) {
+    //   HAL_CHECK(hal::delay(clock, 50ms));
+    //   HAL_CHECK(pwm0.duty_cycle(duty_cycle));
+    // }
+    for (int i = 0; i < 180; i += 1) {
       HAL_CHECK(hal::delay(clock, 50ms));
-      HAL_CHECK(pwm0.duty_cycle(duty_cycle));
-      HAL_CHECK(pwm1.duty_cycle(duty_cycle));
-      HAL_CHECK(pwm2.duty_cycle(duty_cycle));
-      HAL_CHECK(pwm3.duty_cycle(duty_cycle));
-      HAL_CHECK(pwm4.duty_cycle(duty_cycle));
-      HAL_CHECK(pwm5.duty_cycle(duty_cycle));
-      HAL_CHECK(pwm6.duty_cycle(duty_cycle));
-      HAL_CHECK(pwm7.duty_cycle(duty_cycle));
-      HAL_CHECK(pwm8.duty_cycle(duty_cycle));
-      HAL_CHECK(pwm9.duty_cycle(duty_cycle));
-      HAL_CHECK(pwm10.duty_cycle(duty_cycle));
-      HAL_CHECK(pwm11.duty_cycle(duty_cycle));
-      HAL_CHECK(pwm12.duty_cycle(duty_cycle));
-      HAL_CHECK(pwm13.duty_cycle(duty_cycle));
-      HAL_CHECK(pwm14.duty_cycle(duty_cycle));
-      HAL_CHECK(pwm15.duty_cycle(duty_cycle));
+      // cast i to string
+      std::string str = std::to_string(i);
+      HAL_CHECK(hal::write(console, i));
+
+      HAL_CHECK(pwm0.duty_cycle(convertAngleToDutyCycle(i)));
     }
   }
 
