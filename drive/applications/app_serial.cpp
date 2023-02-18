@@ -1,6 +1,4 @@
-#include <libhal-esp8266/at/socket.hpp>
-#include <libhal-esp8266/at/wlan_client.hpp>
-#include <libhal-esp8266/util.hpp>
+
 #include <libhal-lpc40xx/can.hpp>
 #include <libhal-lpc40xx/input_pin.hpp>
 #include <libhal-rmd/drc.hpp>
@@ -15,10 +13,6 @@
 #include "../implementation/tri-wheel-router.hpp"
 
 #include "../hardware_map.hpp"
-
-#include <libhal-esp8266/at/socket.hpp>
-#include <libhal-esp8266/at/wlan_client.hpp>
-#include <libhal-esp8266/util.hpp>
 
 #include <string>
 #include <string_view>
@@ -70,7 +64,7 @@ hal::status application(drive::hardware_map& p_map)
   Drive::RulesEngine rules_engine;
   Drive::ModeSwitch mode_switch;
   Drive::CommandLerper lerp;
-  std::string_view json;
+  std::string_view json{"{\"HB\":0,\"IO\":0,\"WO\":0,\"DM\":\"D\",\"CMD\":[0,0]}"};
 
   HAL_CHECK(hal::delay(counter, 1000ms));
   // tri_wheel.HomeLegs(terminal, counter);
@@ -78,7 +72,7 @@ hal::status application(drive::hardware_map& p_map)
   HAL_CHECK(hal::write(terminal, "Starting control loop..."));
 
   while (true) {
-    buffer.fill('.');
+    // buffer.fill('.');
 
     HAL_CHECK(hal::delay(counter, 100ms));
     auto received = HAL_CHECK(terminal.read(buffer)).data;
@@ -86,13 +80,9 @@ hal::status application(drive::hardware_map& p_map)
     hal::print<200>(terminal, "%.*s", static_cast<int>(result.size()), result.data());
     auto start = result.find('{');
     auto end = result.find('}');
-    if(std::isnan(end)) {
+    if(end != std::string_view::npos) {
       json = result.substr(start, end - start + 1);
     } 
-    else {
-      json = std::string_view("no result");
-    }
-    
 
     hal::print<200>(terminal, "%.*s", static_cast<int>(json.size()), json.data());
     HAL_CHECK(hal::write(terminal, "\r\n\n"));
