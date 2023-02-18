@@ -63,11 +63,11 @@ hal::status application(science::hardware_map &p_map) {
 
         state_machine.RunMachine(mc_data.status, mc_commands, pressure_data, revolver_hall_value, seal_hall_value);
         if(mc_data.status.move_revolver_status == science::Status::InProgress) {
-            MoveRevolver(revolver_spinner);
+            revolver_spinner.velocity_control(3.0_rpm);
             HAL_CHECK(hal::delay(counter, 5ms));
         }
         else if(mc_data.status.move_revolver_status == science::Status::Complete && mc_data.status.seal_status == science::Status::NotStarted) {
-            StopRevolver(revolver_spinner);
+            revolver_spinner.velocity_control(0.0_rpm);
             HAL_CHECK(hal::delay(counter, 5ms));
         }
         else if(mc_data.status.seal_status == science::Status::InProgress) {
