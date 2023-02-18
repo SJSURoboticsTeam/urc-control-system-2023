@@ -65,7 +65,7 @@ namespace science {
                         desired_button_value++;
                     }
                     else if(revolver_hall == 0 && commands.mode == 'A') {
-                        current_state_ == States::Seal;
+                        current_state_ = States::Seal;
                     }
                     if(revolver_hall == 0) status.move_revolver_status = Status::Complete;
                 break;
