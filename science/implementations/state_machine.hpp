@@ -46,25 +46,28 @@ namespace science {
                 // revolver_hall will come back as low when we start, this will need to be fixed with some weird logic
                 
                 case States::MoveRevolver:
-                    if(revolver_hall == 1) {
+                    if(revolver_hall == 0) {
                         current_state_ = current_state_;
                         status.move_revolver_status = Status::InProgress;
                     }
-                    else if(revolver_hall == 0) {
+                    else if(revolver_hall == 1) {
                         current_state_ = States::StopRevolver;
                     }
                 break;
 
                 case States::StopRevolver:
-                    status.move_revolver_status = Status::Complete;
-                    if(commands.mode == 'M') {
+                    if(revolver_hall == 1) {
+                        current_state_ = current_state_;
+                    }
+                    else if(revolver_hall == 0 && commands.mode == 'M') {
                         previous_state_ = current_state_;
                         current_state_ = States::Wait;
                         desired_button_value++;
                     }
-                    else {
+                    else if(revolver_hall == 0 && commands.mode == 'A') {
                         current_state_ = States::Seal;
                     }
+                    if(revolver_hall == 0) status.move_revolver_status = Status::Complete;
                 break;
 
                 case States::Seal:
