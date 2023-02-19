@@ -33,9 +33,9 @@ hal::result<drive::hardware_map> initialize_target()
   hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
   auto& can = HAL_CHECK((hal::lpc40xx::can::get<2>(can_settings)));
 
-  auto& in0 = HAL_CHECK((hal::lpc40xx::input_pin::get<1, 19>())); // home_b
-  auto& in1 = HAL_CHECK((hal::lpc40xx::input_pin::get<1, 28>()));  // home_a
-  auto& in2 = HAL_CHECK((hal::lpc40xx::input_pin::get<2, 3>()));  // home_c
+  auto& in0 = HAL_CHECK((hal::lpc40xx::input_pin::get<1, 15>())); // home_c
+  auto& in1 = HAL_CHECK((hal::lpc40xx::input_pin::get<1, 23>()));  // home_b
+  auto& in2 = HAL_CHECK((hal::lpc40xx::input_pin::get<1, 22>()));  // home_a
 
   // Get and initialize UART3 with a 8kB receive buffer
   auto& uart1 =
