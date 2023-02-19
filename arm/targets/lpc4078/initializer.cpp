@@ -9,7 +9,7 @@
 #include <libhal-lpc40xx/uart.hpp>
 
 #include <libhal-lpc40xx/can.hpp>
-// #include <libhal-lpc40xx/i2c.hpp>
+#include <libhal-lpc40xx/i2c.hpp>
 // #include <libhal-lpc40xx/pwm.hpp>
 
 #include "../../hardware_map.hpp"
@@ -42,7 +42,9 @@ hal::result<drive::hardware_map> initialize_target()
       .baud_rate = 115200,
     })));
 
-  // auto& i2c = HAL_CHECK((hal::lpc40xx::i2c::get<0>()));
+  auto& i2c = HAL_CHECK((hal::lpc40xx::i2c::get<2>(hal::i2c::settings{
+    .clock_rate = 100.0_kHz,
+  })));
 
   // auto& pwm0 = HAL_CHECK((hal::lpc40xx::pwm::get<2, 0>()));
 
@@ -50,7 +52,7 @@ hal::result<drive::hardware_map> initialize_target()
                               .can = &can,
                               .esp = &uart3,
                               // .pwm0 = &pwm0,
-                              // .i2c = &i2c,
+                              .i2c = &i2c,
                               .steady_clock = &counter,
                               .reset = []() {
                                 hal::cortex_m::system_control::reset();

@@ -118,7 +118,6 @@ hal::status application(drive::hardware_map& p_map)
 
     commands = rules_engine.ValidateCommands(commands);
     arm.SetJointArguments(commands);
-
   }
 
   return hal::success();
