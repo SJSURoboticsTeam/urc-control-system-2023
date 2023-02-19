@@ -17,20 +17,20 @@ using namespace std::chrono_literals;
 hal::status application(science::hardware_map& p_map) {
     // science robot entry point here. This function may yield an error.
     // configure drivers
+    hal::print<64>(*p_map.science_serial, "before while loop");
+    science::Co2Sensor co2_driver = science::Co2Sensor(*p_map.carbon_dioxide_sensor);
+    
+    // hal::byte co2 = HAL_CHECK(co2_driver.read_co2());
 
     while (true) {
-        // demo for methane sensor driver.
-        science::Co2Sensor co2_driver = science::Co2Sensor(*p_map.carbon_dioxide_sensor);
+        hal::byte co2 = HAL_CHECK(co2_driver.read_co2());
 
-        hal::byte is_co2 = HAL_CHECK(co2_driver.read_co2());
-        // float methane_value = HAL_CHECK(c02_driver.read());
+    //     hal::print(*p_map.science_serial, "pls work");
 
-        // if (is_methane) {
-        //     hal::print<64>(*p_map.science_serial, "CH4: %f\n", methane_value);
-        // } else {
-        //     hal::print<64>(*p_map.science_serial, "No methane detected.\n");
-        // }
-        hal::print<64>(*p_map.science_serial, "C02: %d\n", is_co2);
+        // possibly convert from hex first
+        // hal::print(*p_map.science_serial, co2);
+        
+        hal::print<64>(*p_map.science_serial, "C02: %d\n", co2);
 
         HAL_CHECK(hal::delay(*p_map.clock, 100ms));
 

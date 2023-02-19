@@ -22,7 +22,7 @@ struct hardware_map {
     hal::pwm* dosing_pump;
     hal::adc* pressure_sensor_pin;
     hal::i2c* carbon_dioxide_sensor;
-    hal::can* can;
+    // hal::can* can;
 };
 } // namespace science
 
