@@ -17,7 +17,7 @@ constexpr int PRESSURE_SENSOR_ANALOG = 5;
 
 constexpr int CAN_BUS = 2;
 
-constexpr int I2C_CHANNEL = 1;
+constexpr int I2C_CHANNEL = 2;
 
 //halleffect sensor port and pin
 constexpr int HALL_EFFECT_DIGITAL_PORT = 2;

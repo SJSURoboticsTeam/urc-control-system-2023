@@ -19,10 +19,11 @@ hal::status application(science::hardware_map& p_map) {
     // configure drivers
     hal::print<64>(*p_map.science_serial, "before while loop");
     science::Co2Sensor co2_driver = science::Co2Sensor(*p_map.carbon_dioxide_sensor);
-    
+    hal::print(*p_map.science_serial, "after initialization");
     // hal::byte co2 = HAL_CHECK(co2_driver.read_co2());
 
     while (true) {
+        // hal::print(*p_map.science_serial, "inside while loop");
         hal::byte co2 = HAL_CHECK(co2_driver.read_co2());
 
     //     hal::print(*p_map.science_serial, "pls work");
