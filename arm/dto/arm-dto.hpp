@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cstdint>
+#include <libhal-util/serial.hpp>
 
 namespace Arm {
 // joint_angles order [rotunda, shoulder, elbow, wrist_pitch, wrist_yaw]
@@ -13,11 +13,6 @@ const char kGETRequestFormat[] =
   "angle=%d&elbow_angle=%d&wrist_pitch_angle=%d&wrist_roll_angle=%d&rr9_angle=%"
   "d";
 
-struct rr9_arguments
-{
-  int angle = 0;
-};
-
 struct mc_commands
 {
   int heartbeat_count = 0;
@@ -29,9 +24,11 @@ struct mc_commands
   int wrist_pitch_angle = 0;
   int wrist_roll_angle = 0;
   int rr9_angle = 0;
-  void Print()
+  void Print(hal::serial& terminal)
   {
-    printf("%d, %d, %d, %d, %d, %d, %d, %d, %d",
+    hal::print<150>(
+           terminal,
+           kResponseBodyFormat,
            heartbeat_count,
            is_operational,
            speed,
