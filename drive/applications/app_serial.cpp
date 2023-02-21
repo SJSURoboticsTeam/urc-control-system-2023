@@ -33,7 +33,6 @@ hal::status application(drive::hardware_map& p_map)
   auto& can = *p_map.can;        
 
   std::array<hal::byte, 8192> buffer{};
-  static std::string_view get_request = "";
 
   auto can_router = hal::can_router::create(can).value();
 
@@ -66,7 +65,7 @@ hal::status application(drive::hardware_map& p_map)
   std::string_view json{"{\"HB\":0,\"IO\":0,\"WO\":0,\"DM\":\"D\",\"CMD\":[0,0]}"};
 
   HAL_CHECK(hal::delay(counter, 1000ms));
-  // tri_wheel.HomeLegs(terminal, counter);
+  tri_wheel.HomeLegs(terminal, counter);
   HAL_CHECK(hal::delay(counter, 1000ms));
   HAL_CHECK(hal::write(terminal, "Starting control loop..."));
 
@@ -95,7 +94,7 @@ hal::status application(drive::hardware_map& p_map)
     arguments = tri_wheel.SetLegArguments(arguments);
 
     motor_speeds = HAL_CHECK(tri_wheel.GetMotorFeedback());
-    HAL_CHECK(hal::delay(counter, 50ms));
+    HAL_CHECK(hal::delay(counter, 30ms));
   }
 
   return hal::success();
