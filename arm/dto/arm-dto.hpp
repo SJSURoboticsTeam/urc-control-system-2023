@@ -24,20 +24,20 @@ struct mc_commands
   int wrist_pitch_angle = 0;
   int wrist_roll_angle = 0;
   int rr9_angle = 0;
+
   void Print(hal::serial& terminal)
   {
-    hal::print<150>(
-           terminal,
-           kResponseBodyFormat,
-           heartbeat_count,
-           is_operational,
-           speed,
-           rotunda_angle,
-           shoulder_angle,
-           elbow_angle,
-           wrist_pitch_angle,
-           wrist_roll_angle,
-           rr9_angle);
+    hal::print<150>(terminal,
+                    kResponseBodyFormat,
+                    heartbeat_count,
+                    is_operational,
+                    speed,
+                    rotunda_angle,
+                    shoulder_angle,
+                    elbow_angle,
+                    wrist_pitch_angle,
+                    wrist_roll_angle,
+                    rr9_angle);
   }
 };
 }  // namespace Arm

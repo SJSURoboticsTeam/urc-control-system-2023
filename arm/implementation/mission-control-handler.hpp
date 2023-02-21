@@ -42,10 +42,10 @@ public:
                                   &commands_.wrist_roll_angle,
                                   &commands_.rr9_angle);
     if (actual_arguments != kExpectedNumberOfArguments) {
-      HAL_CHECK(hal::write(
-        terminal,
-        std::string("Received " + actual_arguments) +
-          std::string("arguments, expected " + kExpectedNumberOfArguments)));
+      hal::print<200>(terminal,
+                      "Received %d arguments, expected %d\n",
+                      actual_arguments,
+                      kExpectedNumberOfArguments);
     }
     return commands_;
   }

@@ -31,9 +31,5 @@ struct motors_feedback
   hal::degrees shoulder_angle = hal::degrees(0);
   hal::degrees elbow_angle = hal::degrees(0);
   hal::degrees wrist_angle = hal::degrees(0);
-
-  void Print()
-  {
-  }
 };
 }  // namespace Arm

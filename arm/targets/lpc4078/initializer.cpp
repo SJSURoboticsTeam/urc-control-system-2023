@@ -21,7 +21,7 @@ hal::result<drive::hardware_map> initialize_target()
   hal::cortex_m::initialize_data_section();
   hal::cortex_m::system_control::initialize_floating_point_unit();
 
-  HAL_CHECK(hal::lpc40xx::clock::maximum(12.0_MHz));
+  HAL_CHECK(hal::lpc40xx::clock::maximum(10.0_MHz));
 
   // Clock declaration
   auto& clock = hal::lpc40xx::clock::get();

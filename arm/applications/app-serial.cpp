@@ -20,7 +20,6 @@ hal::status application(drive::hardware_map& p_map)
   using namespace std::chrono_literals;
   using namespace hal::literals;
 
-
   auto& terminal = *p_map.terminal;
   auto& counter = *p_map.steady_clock;
   auto& can = *p_map.can;
@@ -42,16 +41,22 @@ hal::status application(drive::hardware_map& p_map)
   auto right_wrist_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, 8.0, 0x145));
 
-  auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c, 0b100'0000));
-  auto pwm0 = pca9685.get_pwm_channel<0>();
-  HAL_CHECK(pwm0.frequency(50.0_Hz));
+  // auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c, 0b100'0000));
+  // auto pwm0 = pca9685.get_pwm_channel<0>();
+  // HAL_CHECK(pwm0.frequency(50.0_Hz));
+
+  // Arm::JointRouter arm(rotunda_motor,
+  //                      shoulder_motor,
+  //                      elbow_motor,
+  //                      left_wrist_motor,
+  //                      right_wrist_motor,
+  //                      pwm0);
 
   Arm::JointRouter arm(rotunda_motor,
                        shoulder_motor,
                        elbow_motor,
                        left_wrist_motor,
-                       right_wrist_motor,
-                       pwm0);
+                       right_wrist_motor);
 
   Arm::mc_commands commands;
   Arm::motors_feedback feedback;
@@ -59,11 +64,9 @@ hal::status application(drive::hardware_map& p_map)
   Arm::MissionControlHandler mission_control;
 
   HAL_CHECK(hal::write(terminal, "Starting control loop..."));
-  HAL_CHECK(hal::delay(counter, 1000ms));
+  HAL_CHECK(hal::delay(counter, 1s));
 
   while (true) {
-    buffer.fill('.');
-
     auto received = HAL_CHECK(terminal.read(buffer)).data;
     auto result = std::string(reinterpret_cast<const char*>(received.data()),
                               received.size());
@@ -73,6 +76,7 @@ hal::status application(drive::hardware_map& p_map)
 
     if (start != std::string::npos && end != std::string::npos) {
       result = result.substr(start, end - start + 1);
+      hal::print<200>(terminal, "Received data!\n");
       commands =
         HAL_CHECK(mission_control.ParseMissionControlData(result, terminal));
     }
@@ -80,6 +84,7 @@ hal::status application(drive::hardware_map& p_map)
     commands = rules_engine.ValidateCommands(commands);
     arm.SetJointArguments(commands);
     commands.Print(terminal);
+    HAL_CHECK(hal::delay(counter, 1s));
   }
 
   return hal::success();
