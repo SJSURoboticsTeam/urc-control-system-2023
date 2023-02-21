@@ -25,7 +25,6 @@ hal::status application(drive::hardware_map& p_map)
   using namespace std::chrono_literals;
   using namespace hal::literals;
 
-  auto& esp = *p_map.esp;
   auto& terminal = *p_map.terminal;
   auto& counter = *p_map.steady_clock; 
   auto& magnet0 = *p_map.in_pin0;
@@ -72,8 +71,7 @@ hal::status application(drive::hardware_map& p_map)
   HAL_CHECK(hal::write(terminal, "Starting control loop..."));
 
   while (true) {
-    // buffer.fill('.');
-
+    // buffer.fill(' ');
     HAL_CHECK(hal::delay(counter, 100ms));
     auto received = HAL_CHECK(terminal.read(buffer)).data;
     auto result = to_string_view(received);
@@ -85,6 +83,7 @@ hal::status application(drive::hardware_map& p_map)
     } 
 
     hal::print<200>(terminal, "%.*s", static_cast<int>(json.size()), json.data());
+    hal::print(terminal, "here");
     HAL_CHECK(hal::write(terminal, "\r\n\n"));
 
     std::string json_string(json);
