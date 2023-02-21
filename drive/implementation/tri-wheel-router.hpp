@@ -44,19 +44,19 @@ public:
       hal::degrees(-tri_wheel_arguments.left.steer.angle + left_.wheel_offset_),
       hal::rpm(tri_wheel_arguments.left.steer.speed));
     left_.drive_motor_.velocity_control(
-      hal::rpm(tri_wheel_arguments.left.hub.speed));
+      -hal::rpm(tri_wheel_arguments.left.hub.speed));
 
     right_.steer_motor_.position_control(
       hal::degrees(-tri_wheel_arguments.right.steer.angle + right_.wheel_offset_),
       hal::rpm(tri_wheel_arguments.right.steer.speed));
     right_.drive_motor_.velocity_control(
-      hal::rpm(tri_wheel_arguments.right.hub.speed));
+      -hal::rpm(tri_wheel_arguments.right.hub.speed));
 
     back_.steer_motor_.position_control(
       hal::degrees(-tri_wheel_arguments.back.steer.angle + back_.wheel_offset_),
       hal::rpm(tri_wheel_arguments.back.steer.speed));
     back_.drive_motor_.velocity_control(
-      hal::rpm(tri_wheel_arguments.back.hub.speed));
+      -hal::rpm(tri_wheel_arguments.back.hub.speed));
 
     tri_wheel_arguments_ = tri_wheel_arguments;
     return tri_wheel_arguments_;
