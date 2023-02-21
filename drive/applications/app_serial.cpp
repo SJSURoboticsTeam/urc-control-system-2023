@@ -71,33 +71,31 @@ hal::status application(drive::hardware_map& p_map)
   HAL_CHECK(hal::write(terminal, "Starting control loop..."));
 
   while (true) {
-    // buffer.fill(' ');
-    HAL_CHECK(hal::delay(counter, 100ms));
+    // serial
     auto received = HAL_CHECK(terminal.read(buffer)).data;
-    auto result = to_string_view(received);
-    hal::print<200>(terminal, "%.*s", static_cast<int>(result.size()), result.data());
+    auto result = std::string(reinterpret_cast<const char*>(received.data()),
+                              received.size());
+
     auto start = result.find('{');
     auto end = result.find('}');
-    if(end != std::string_view::npos) {
-      json = result.substr(start, end - start + 1);
-    } 
 
-    hal::print<200>(terminal, "%.*s", static_cast<int>(json.size()), json.data());
-    hal::print(terminal, "here");
-    HAL_CHECK(hal::write(terminal, "\r\n\n"));
-
-    std::string json_string(json);
-    commands =
-      HAL_CHECK(mission_control.ParseMissionControlData(json_string, terminal));
+    if (start != std::string::npos && end != std::string::npos) {
+      result = result.substr(start, end - start + 1);
+      commands =
+        HAL_CHECK(mission_control.ParseMissionControlData(result, terminal));
+      commands.Print(terminal);
+    }
+    // end of serial
     commands = rules_engine.ValidateCommands(commands);
     commands = mode_switch.SwitchSteerMode(commands, arguments, motor_speeds);
     commands = lerp.Lerp(commands);
 
-    // commands.Print();
+    commands.Print(terminal);
     arguments = Drive::ModeSelect::SelectMode(commands);
     arguments = tri_wheel.SetLegArguments(arguments);
 
     motor_speeds = HAL_CHECK(tri_wheel.GetMotorFeedback());
+    HAL_CHECK(hal::delay(counter, 50ms));
   }
 
   return hal::success();
