@@ -13,7 +13,7 @@ find_package(libhal-rmd REQUIRED CONFIG)
 find_package(libhal-esp8266 REQUIRED CONFIG)
 find_package(libhal-util REQUIRED CONFIG)
 
-set(DEMOS rmd-demo app magnet-demo)
+set(DEMOS rmd-demo app magnet-demo serial-demo)
 set(TARGETS lpc4078_10mhz lpc4078_12mhz)
 
 add_link_options(-lc -lrdimon -u _printf_float)
