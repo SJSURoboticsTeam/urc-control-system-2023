@@ -27,42 +27,47 @@ namespace science {
             };
 
         void RunMachine(science_status& status, science_commands commands, float pressure, int revolver_hall, int seal_hall) {
-            if(commands.e_stop == 1) {
+            if(commands.is_operational == 0) {
                 previous_state_ = States::Start;
                 current_state_ = States::Start;
                 status = science_status{}; // reset the status durring e_stop
+                return;
             }
             switch(current_state_) {
                 case States::Start:
                     status = science_status{}; // reset the status if it goes back to the first state
-                    if(commands.mc_button == 0) {
+                    if(commands.state_step == desired_button_value-1) {
                         current_state_ = States::Start;
                     }
-                    else if(commands.mc_button == 1) {
+                    else if(commands.state_step == desired_button_value) {
                         current_state_ = States::MoveRevolver;
                     }
                 break;
                 // revolver_hall will come back as low when we start, this will need to be fixed with some weird logic
                 
                 case States::MoveRevolver:
-                    if(revolver_hall == 1) {
+                    if(revolver_hall == 0) {
                         current_state_ = current_state_;
                         status.move_revolver_status = Status::InProgress;
                     }
-                    else if(revolver_hall == 0 && commands.automatic == 1) {
+                    else if(revolver_hall == 1) {
                         current_state_ = States::StopRevolver;
                     }
                 break;
 
                 case States::StopRevolver:
-                status.move_revolver_status = Status::Complete;
-                    if(commands.automatic == 0) {
+                    if(revolver_hall == 1) {
+                        current_state_ = current_state_;
+                    }
+                    else if(revolver_hall == 0 && commands.mode == 'M') {
                         previous_state_ = current_state_;
                         current_state_ = States::Wait;
+                        desired_button_value++;
                     }
-                    else {
+                    else if(revolver_hall == 0 && commands.mode == 'A') {
                         current_state_ = States::Seal;
                     }
+                    if(revolver_hall == 0) status.move_revolver_status = Status::Complete;
                 break;
 
                 case States::Seal:
@@ -70,12 +75,13 @@ namespace science {
                         current_state_ = current_state_;
                         status.seal_status = Status::InProgress;
                     }
-                    else if(seal_hall == 0 && commands.automatic == 1) {
+                    else if(seal_hall == 0 && commands.mode == 'A') {
                         current_state_ = States::Depressurizing;
                     }
-                    else if(seal_hall == 0 && commands.automatic == 0) {
+                    else if(seal_hall == 0 && commands.mode == 'M') {
                         previous_state_ = current_state_;
                         current_state_ = States::Wait;
+                        desired_button_value++;
                     }
                     if(seal_hall == 0) status.seal_status = Status::Complete;
                 break;
@@ -92,9 +98,10 @@ namespace science {
 
                 case States::StopDepressurizing:
                     status.depressurize_status = Status::Complete;
-                    if(commands.automatic == 0) {
+                    if(commands.mode == 'M') {
                         previous_state_ = current_state_;
                         current_state_ = States::Wait;
+                        desired_button_value++;
                     }
                     else{
                         current_state_ = States::Inject;
@@ -111,6 +118,7 @@ namespace science {
                     status.inject_status = Status::Complete;
                     previous_state_ = current_state_;
                     current_state_ = States::Wait;
+                    desired_button_value++;
                 break;
                 
                 case States::ClearingChamber:
@@ -136,14 +144,15 @@ namespace science {
                     else if(seal_hall == 1) {
                         current_state_ = States::Start;
                         status.unseal_status = Status::Complete;
+                        desired_button_value = 1;
                     }
                 break;
 
                 case States::Wait: 
-                    if(commands.mc_button == 0) {
+                    if(commands.state_step == desired_button_value-1) {
                         current_state_ = current_state_;
                     }
-                    else if(commands.mc_button == 1) {
+                    else if(commands.state_step == desired_button_value) {
                         current_state_ = previous_state_ + 1;
                     }
                 break;
@@ -151,7 +160,8 @@ namespace science {
         }
 
     private:
-        int current_state_ = 0;
         int previous_state_ = 0;
+        int current_state_ = 0;
+        int desired_button_value = 1; // any time the button is clicked, increment this
     };
 }
