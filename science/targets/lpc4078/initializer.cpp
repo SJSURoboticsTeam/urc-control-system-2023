@@ -5,6 +5,7 @@
 #include <libhal-lpc40xx/uart.hpp>
 #include <libhal-lpc40xx/adc.hpp>
 #include <libhal-lpc40xx/can.hpp>
+#include <libhal-lpc40xx/pwm.hpp>
 
 #include "hardware_map.hpp"
 // TODO: update with proper hardware data
@@ -39,7 +40,7 @@ hal::result<science::hardware_map> initialize_target() {
     auto& halleffect = HAL_CHECK((hal::lpc40xx::input_pin::get<HALL_EFFECT_DIGITAL_PORT, HALL_EFFECT_DIGITAL_PIN>()));
     hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
     auto& can = HAL_CHECK((hal::lpc40xx::can::get<CAN_BUS>(can_settings)));
-
+    auto& pwm = HAL_CHECK((hal::lpc40xx::pwm::get<0,1>()))
     // Get and initialize UART0 for UART based terminal logging
     auto& uart0 = HAL_CHECK((hal::lpc40xx::uart::get<0, 64>(hal::serial::settings{
         .baud_rate = 38400,
@@ -55,7 +56,9 @@ hal::result<science::hardware_map> initialize_target() {
         .clock = &counter,
         .science_serial = &uart0,
         .reset = []() { hal::cortex_m::system_control::reset(); },
+        .revolver_spinner = &pwm,
         .pressure_sensor_pin = &pressure_sensor_pin,
         .can = &can,
+        
     };
 }

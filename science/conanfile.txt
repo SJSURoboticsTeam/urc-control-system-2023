@@ -1,5 +1,5 @@
 [requires]
-libhal-lpc40xx/0.3.9
+libhal-lpc40xx/1.1.0
 libhal-rmd/0.3.6
 libhal-esp8266/0.3.4
 libhal-util/0.3.8

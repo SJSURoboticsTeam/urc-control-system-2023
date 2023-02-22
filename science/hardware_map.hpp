@@ -18,6 +18,7 @@ struct hardware_map {
     hal::steady_clock* clock;
     hal::serial* science_serial;
     hal::callback<void()> reset;
+    hal::pwm* revolver_spinner;
     hal::pwm* air_pump;
     hal::pwm* dosing_pump;
     hal::adc* pressure_sensor_pin;
