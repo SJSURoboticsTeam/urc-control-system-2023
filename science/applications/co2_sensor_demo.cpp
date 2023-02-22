@@ -32,32 +32,32 @@ hal::status application(science::hardware_map& p_map) {
     // hal::byte co2 = HAL_CHECK(co2_driver.read_co2());
 
     while (true) {
-        // HAL_CHECK(hal::delay(*p_map.clock, 50ms));
+        HAL_CHECK(hal::delay(*p_map.clock, 500ms));
 
         // hal::print(*p_map.science_serial, "inside while loop");
-        std::array<hal::byte,9> co2 = HAL_CHECK(co2_driver.read_co2());
+        auto co2 = HAL_CHECK(co2_driver.read_co2());
 
     //     hal::print(*p_map.science_serial, "pls work");
 
         // possibly convert from hex first
         // hal::print(*p_map.science_serial, co2);
         
-        hal::print<64>(*p_map.science_serial, "C02: %d\n", co2[0]);
-        hal::print<64>(*p_map.science_serial, "C02: %d\n", co2[1]);
-        hal::print<64>(*p_map.science_serial, "C02: %d\n", co2[2]);
+        hal::print<64>(*p_map.science_serial, "C02: %d\n", co2);
+        // hal::print<64>(*p_map.science_serial, "C02: %d\n", co2[1]);
+        // hal::print<64>(*p_map.science_serial, "C02: %d\n", co2[2]);
 
-        hal::print<64>(*p_map.science_serial, "T %d\n", co2[3]);
+        // hal::print<64>(*p_map.science_serial, "T %d\n", co2[3]);
 
-        hal::print<64>(*p_map.science_serial, "T %d\n", co2[4]);
+        // hal::print<64>(*p_map.science_serial, "T %d\n", co2[4]);
 
-        hal::print<64>(*p_map.science_serial, "T %d\n", co2[5]);
+        // hal::print<64>(*p_map.science_serial, "T %d\n", co2[5]);
 
-        hal::print<64>(*p_map.science_serial, "H: %d\n", co2[6]);
+        // hal::print<64>(*p_map.science_serial, "H: %d\n", co2[6]);
 
-        hal::print<64>(*p_map.science_serial, "H %d\n", co2[7]);
-        hal::print<64>(*p_map.science_serial, "H %d\n", co2[8]);
+        // hal::print<64>(*p_map.science_serial, "H %d\n", co2[7]);
+        // hal::print<64>(*p_map.science_serial, "H %d\n", co2[8]);
 
-        HAL_CHECK(hal::delay(*p_map.clock, 100ms));
+        HAL_CHECK(hal::delay(*p_map.clock, 1000ms));
 
     }
 
