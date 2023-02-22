@@ -69,8 +69,8 @@ public:
         hal::delay(*clock,50ms);
 
         HAL_CHECK(hal::read(*m_i2c, Addresses::address, buffer, hal::never_timeout()));
-        return buffer[0] << 16 | buffer[1] << 8 | buffer[2];
-        // return buffer[0];
+        // return buffer[0] << 16 | buffer[1] << 8 | buffer[2];
+        return buffer[0];
     }
 
 

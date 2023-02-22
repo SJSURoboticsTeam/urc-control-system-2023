@@ -44,7 +44,7 @@ hal::status application(science::hardware_map& p_map) {
         
         hal::print<64>(*p_map.science_serial, "C02: %d\n", co2);
 
-        HAL_CHECK(hal::delay(*p_map.clock, 50ms));
+        HAL_CHECK(hal::delay(*p_map.clock, 15ms));
 
     }
 
