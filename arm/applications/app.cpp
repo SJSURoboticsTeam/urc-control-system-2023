@@ -2,6 +2,7 @@
 #include <libhal-esp8266/at/wlan_client.hpp>
 #include <libhal-esp8266/util.hpp>
 #include <libhal-lpc40xx/can.hpp>
+#include <libhal-pca/pca9685.hpp>
 #include <libhal-rmd/drc.hpp>
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
@@ -25,6 +26,7 @@ hal::status application(drive::hardware_map& p_map)
   auto& terminal = *p_map.terminal;
   auto& counter = *p_map.steady_clock;
   auto& can = *p_map.can;
+  auto& i2c = *p_map.i2c;
 
   std::array<hal::byte, 8192> buffer{};
   static std::string_view get_request = "";
@@ -72,11 +74,16 @@ hal::status application(drive::hardware_map& p_map)
   auto right_wrist_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, 8.0, 0x145));
 
+  auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c, 0b100'0000));
+  auto pwm0 = pca9685.get_pwm_channel<0>();
+  HAL_CHECK(pwm0.frequency(50.0_Hz));
+
   Arm::JointRouter arm(rotunda_motor,
                        shoulder_motor,
                        elbow_motor,
                        left_wrist_motor,
-                       right_wrist_motor);
+                       right_wrist_motor,
+                       pwm0);
 
   Arm::mc_commands commands;
   Arm::motors_feedback feedback;
@@ -118,7 +125,6 @@ hal::status application(drive::hardware_map& p_map)
 
     commands = rules_engine.ValidateCommands(commands);
     arm.SetJointArguments(commands);
-
   }
 
   return hal::success();
