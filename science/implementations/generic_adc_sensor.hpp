@@ -21,7 +21,7 @@ public:
         if (digital_detector_ == nullptr) {
             return hal::new_error("Undefined digital pin");
         }
-        bool result = HAL_CHECK(digital_detector_->level());
+        bool result = HAL_CHECK(digital_detector_->level()).state;
         return result;
     }
 
@@ -34,7 +34,7 @@ public:
         int read_count = 10;
         for (int i = 0; i < read_count; i++)
         {
-            raw_ratio_average += HAL_CHECK(adc_data_->read());
+            raw_ratio_average += HAL_CHECK(adc_data_->read()).sample;
         }
         
         raw_ratio_average /= read_count;
