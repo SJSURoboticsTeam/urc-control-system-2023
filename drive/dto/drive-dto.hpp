@@ -1,5 +1,7 @@
 #pragma once
 
+#include <libhal-util/serial.hpp>
+
 namespace Drive {
 const char kResponseBodyFormat[] =
   "{\"HB\":%d,\"IO\":%d,\"WO\":%d,\"DM\":\"%c\",\"CMD\":[%d,%d]}\n";
@@ -16,15 +18,16 @@ struct drive_commands
   int is_operational = 0;
   int heartbeat_count = 0;
 
-  void Print()
+  void Print(hal::serial& terminal)
   {
-    printf(kResponseBodyFormat,
-           heartbeat_count,
-           is_operational,
-           wheel_orientation,
-           mode,
-           speed,
-           angle);
+    hal::print<100>(terminal,
+                    kResponseBodyFormat,
+                    heartbeat_count,
+                    is_operational,
+                    wheel_orientation,
+                    mode,
+                    speed,
+                    angle);
   }
 };
 
