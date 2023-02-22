@@ -36,7 +36,6 @@ hal::status application(drive::hardware_map& p_map)
 
   auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c, 0b100'0000));
   auto pwm0 = pca9685.get_pwm_channel<0>();
-
   HAL_CHECK(pwm0.frequency(50.0_Hz));
   hal::print(console, "pca9685 Application Starting...\n\n");
 
