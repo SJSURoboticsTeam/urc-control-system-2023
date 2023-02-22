@@ -58,7 +58,7 @@ public:
 
     }
     
-    hal::result<int32_t> read_co2(){
+    hal::result<std::array<hal::byte,9>> read_co2(){
         // std::array<hal::byte,9> buffer; //3 bytes for co2, temperature and humidity
         std::array<const hal::byte, 2> burrito {read_first_half, read_second_half} ;
         
@@ -66,11 +66,12 @@ public:
         
         // hal::write_then_read(m_i2c, Addresses::address, burrito, buffer, hal::never_timeout());
         HAL_CHECK(hal::write(*m_i2c, Addresses::address, burrito));
-        hal::delay(*clock,50ms);
+        hal::delay(*clock,1ms);
 
         HAL_CHECK(hal::read(*m_i2c, Addresses::address, buffer, hal::never_timeout()));
         // return buffer[0] << 16 | buffer[1] << 8 | buffer[2];
-        return buffer[0];
+        return buffer;
+        // return buffer[0];
     }
 
 
