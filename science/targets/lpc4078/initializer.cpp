@@ -40,7 +40,7 @@ hal::result<science::hardware_map> initialize_target() {
     auto& halleffect = HAL_CHECK((hal::lpc40xx::input_pin::get<HALL_EFFECT_DIGITAL_PORT, HALL_EFFECT_DIGITAL_PIN>()));
     hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
     auto& can = HAL_CHECK((hal::lpc40xx::can::get<CAN_BUS>(can_settings)));
-    auto& pwm = HAL_CHECK((hal::lpc40xx::pwm::get<0,1>()));
+    auto& pwm = HAL_CHECK((hal::lpc40xx::pwm::get<1,3>()));
     // Get and initialize UART0 for UART based terminal logging
     auto& uart0 = HAL_CHECK((hal::lpc40xx::uart::get<0, 64>(hal::serial::settings{
         .baud_rate = 38400,
