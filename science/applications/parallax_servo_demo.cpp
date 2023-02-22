@@ -17,12 +17,12 @@ hal::status application(science::hardware_map& p_map) {
     auto& clock = *p_map.clock;
     HAL_CHECK(pwm.frequency(50.0_Hz));
     while (true) {
-        HAL_CHECK(pwm.duty_cycle(0.061f));
-        HAL_CHECK(hal::delay(clock, 5s));
-        HAL_CHECK(pwm.duty_cycle(0.0697f));
-        HAL_CHECK(hal::delay(clock, 5s));
-        HAL_CHECK(pwm.duty_cycle(0.078f));
-        HAL_CHECK(hal::delay(clock, 5s));
+        HAL_CHECK(pwm.duty_cycle(0.065f));
+        HAL_CHECK(hal::delay(clock, 2s));
+        HAL_CHECK(pwm.duty_cycle(0.075f));
+        HAL_CHECK(hal::delay(clock, 2s));
+        HAL_CHECK(pwm.duty_cycle(0.085f));
+        HAL_CHECK(hal::delay(clock, 2s));
     }
 
     return hal::success();
