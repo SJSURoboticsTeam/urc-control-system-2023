@@ -40,6 +40,9 @@ hal::status application(science::hardware_map &p_map) {
     int revolver_hall_value = 1;
     int seal_hall_value = 1;
 
+    // Constants
+    const float MIN_SEAL_DUTY_CYCLE = 0.065f;
+    const float MAX_SEAL_DUTY_CYCLE = 0.085f;
 
     auto can_router = HAL_CHECK(hal::can_router::create(can));
 
@@ -55,6 +58,8 @@ hal::status application(science::hardware_map &p_map) {
     science::science_data mc_data;
 
     HAL_CHECK(revolver_spinner.frequency(50.0_Hz));
+    HAL_CHECK(p_map.seal_servo->frequency(50._Hz));
+
     while(true) {
         mc_commands = HAL_CHECK(mc_handler.ParseMissionControlData(response, terminal));
         mc_data.pressure_level = HAL_CHECK(pressure.get_parsed_data());
@@ -79,7 +84,7 @@ hal::status application(science::hardware_map &p_map) {
             HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.seal_status == science::Status::InProgress) {
-            science::Seal();
+            HAL_CHECK(p_map.seal_servo->duty_cycle(MAX_SEAL_DUTY_CYCLE));
             HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.depressurize_status == science::Status::InProgress) {
@@ -103,7 +108,7 @@ hal::status application(science::hardware_map &p_map) {
             HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.unseal_status == science::Status::InProgress) {
-            science::Unseal();
+            HAL_CHECK(p_map.seal_servo->duty_cycle(MIN_SEAL_DUTY_CYCLE));
             HAL_CHECK(hal::delay(clock, 5ms));
         }
         response = mc_handler.CreateGETRequestParameterWithRoverStatus(mc_data);
