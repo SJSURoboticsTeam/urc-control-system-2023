@@ -44,7 +44,7 @@ public:
     };
 
     
-    static hal::result<Co2Sensor> create(hal::i2c& p_i2c, hal::steady_clock* c){
+    static hal::result<Co2Sensor> create(hal::i2c& p_i2c, hal::steady_clock& c){
 
         Co2Sensor co2sensor(p_i2c, c);
         HAL_CHECK(co2sensor.start());

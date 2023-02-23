@@ -45,7 +45,7 @@ hal::status application(science::hardware_map &p_map) {
     // science::PumpPwmController air_pump(pca_pwm_0, 1000.0_Hz);                               // unknown freqeuncy atm change when this is figured out
     // science::PumpPwmController dosing_pump(pca_pwm_1, 1000.0_Hz);
     science::PressureSensor pressure(pressure_adc);
-    science::Mq4MethaneSensor methane(methane_adc, methane_gpio);
+    science::Mq4MethaneSensor methane(methane_adc);
     auto carbon_dioxide = HAL_CHECK(science::Co2Sensor::create(*p_map.i2c, clock));
     science::StateMachine state_machine;
 
