@@ -6,8 +6,11 @@
 #include <libhal-lpc40xx/adc.hpp>
 #include <libhal-lpc40xx/can.hpp>
 #include <libhal-lpc40xx/pwm.hpp>
+#include <libhal-lpc40xx/i2c.hpp>
+#include <libhal-pca/pca9685.hpp>
 
-#include "hardware_map.hpp"
+#include "../../hardware_map.hpp"
+
 // TODO: update with proper hardware data
 constexpr int METHANE_DIGITAL_PORT = 0;
 constexpr int METHANE_DIGITAL_PIN = 0;
@@ -61,7 +64,7 @@ hal::result<science::hardware_map> initialize_target() {
         .reset = []() { hal::cortex_m::system_control::reset(); },
         .revolver_spinner = &pwm,
         .pressure_sensor_pin = &pressure_sensor_pin,
-        .i2c = &i2c;
+        .i2c = &i2c,
         .can = &can,
         
     };

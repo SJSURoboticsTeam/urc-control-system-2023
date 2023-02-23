@@ -2,8 +2,8 @@
 #include "../implementations/pressure_sensor_driver.hpp"
 #include "../implementations/pump_controller.hpp"
 #include "../implementations/seal.hpp"
-#include "../implementations/suck.hpp"
-#include "../implementations/inject.hpp"
+// #include "../implementations/suck.hpp"
+// #include "../implementations/inject.hpp"
 #include "../implementations/mission_control_handler.hpp"
 #include "../implementations/state_machine.hpp"
 
@@ -23,7 +23,7 @@ hal::status application(science::hardware_map &p_map) {
 
     auto& pressure_adc = *p_map.pressure_sensor_pin;
     auto& methane_gpio = *p_map.is_methane;
-    auto& methane_adc = *methane_level;
+    auto& methane_adc = *p_map.methane_level;
     auto& revolver_hall_effect = *p_map.revolver_hall_effect;
     auto& revolver_spinner = *p_map.revolver_spinner;
     auto& seal_hall_effect = *p_map.seal_hall_effect;
@@ -33,8 +33,6 @@ hal::status application(science::hardware_map &p_map) {
     auto pca_pwm_0 = pca9685.get_pwm_channel<0>();
     auto pca_pwm_1 = pca9685.get_pwm_channel<1>();
     auto pca_pwm_2 = pca9685.get_pwm_channel<2>();
-
-
     auto& counter = *p_map.clock;
 
     std::string response;
@@ -44,8 +42,8 @@ hal::status application(science::hardware_map &p_map) {
 
     auto can_router = HAL_CHECK(hal::can_router::create(can));
 
-    science::PumpPwmController air_pump(pca_pwm_0, 1000.0_Hz);                               // unknown freqeuncy atm change when this is figured out
-    science::PumpPwmController dosing_pump(pca_pwm_1, 1000.0_Hz);
+    // science::PumpPwmController air_pump(pca_pwm_0, 1000.0_Hz);                               // unknown freqeuncy atm change when this is figured out
+    // science::PumpPwmController dosing_pump(pca_pwm_1, 1000.0_Hz);
     science::PressureSensor pressure(pressure_adc);
     science::Mq4MethaneSensor methane(methane_adc, methane_gpio);
     science::StateMachine state_machine;
@@ -79,23 +77,23 @@ hal::status application(science::hardware_map &p_map) {
             HAL_CHECK(hal::delay(counter, 5ms));
         }
         else if(mc_data.status.depressurize_status == science::Status::InProgress) {
-            Suck(air_pump);
+            // Suck(air_pump);
             HAL_CHECK(hal::delay(counter, 5ms));
         }
         else if(mc_data.status.depressurize_status == science::Status::Complete && mc_data.status.inject_status == science::Status::NotStarted) {
-            StopSucking(air_pump);
+            // StopSucking(air_pump);
             HAL_CHECK(hal::delay(counter, 5ms));
         }
         else if(mc_data.status.inject_status == science::Status::InProgress) {
-            Inject(dosing_pump, 2);
+            // Inject(dosing_pump, 2);
             HAL_CHECK(hal::delay(counter, 5ms));
         }
         else if(mc_data.status.clear_status == science::Status::InProgress) {
-            Suck(air_pump);
+            // Suck(air_pump);
             HAL_CHECK(hal::delay(counter, 5ms));
         }
         else if(mc_data.status.clear_status == science::Status::Complete && mc_data.status.unseal_status == science::Status::NotStarted) {
-            StopSucking(air_pump);
+            // StopSucking(air_pump);
             HAL_CHECK(hal::delay(counter, 5ms));
         }
         else if(mc_data.status.unseal_status == science::Status::InProgress) {

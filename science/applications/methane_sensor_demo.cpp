@@ -14,7 +14,7 @@ using namespace std::chrono_literals;
 hal::status application(science::hardware_map& p_map) {
     // science robot entry point here. This function may yield an error.
     // configure drivers
-
+    
     while (true) {
         // demo for methane sensor driver.
         science::Mq4MethaneSensor methane_driver = science::Mq4MethaneSensor(p_map.methane_level, p_map.is_methane);

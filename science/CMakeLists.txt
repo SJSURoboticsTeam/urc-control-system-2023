@@ -12,8 +12,9 @@ find_package(libhal-lpc40xx REQUIRED CONFIG)
 find_package(libhal-rmd REQUIRED CONFIG)
 find_package(libhal-esp8266 REQUIRED CONFIG)
 find_package(libhal-util REQUIRED CONFIG)
+find_package(libhal-pca REQUIRED CONFIG)
 
-set(DEMOS methane_sensor_demo pump_demo parallax_servo_demo app)
+set(DEMOS parallax_servo_demo app)
 set(TARGETS lpc4078)
 
 add_link_options(-lc -lrdimon -u _printf_float)
@@ -36,7 +37,8 @@ foreach(target IN LISTS TARGETS)
             libhal::lpc4078
             libhal::rmd
             libhal::esp8266
-            libhal::util)
+            libhal::util
+            libhal::pca)
         arm_post_build(${current_project})
     endforeach()
 endforeach()
