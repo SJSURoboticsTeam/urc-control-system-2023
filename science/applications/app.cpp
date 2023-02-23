@@ -6,6 +6,7 @@
 // #include "../implementations/inject.hpp"
 #include "../implementations/mission_control_handler.hpp"
 #include "../implementations/state_machine.hpp"
+#include "../implementations/co2_sensor.hpp"
 
 #include <libhal/input_pin.hpp>
 #include <libhal/adc.hpp>
@@ -22,7 +23,6 @@ hal::status application(science::hardware_map &p_map) {
     using namespace hal::literals;
 
     auto& pressure_adc = *p_map.pressure_sensor_pin;
-    auto& methane_gpio = *p_map.is_methane;
     auto& methane_adc = *p_map.methane_level;
     auto& revolver_hall_effect = *p_map.revolver_hall_effect;
     auto& revolver_spinner = *p_map.revolver_spinner;
@@ -33,7 +33,7 @@ hal::status application(science::hardware_map &p_map) {
     auto pca_pwm_0 = pca9685.get_pwm_channel<0>();
     auto pca_pwm_1 = pca9685.get_pwm_channel<1>();
     auto pca_pwm_2 = pca9685.get_pwm_channel<2>();
-    auto& counter = *p_map.clock;
+    auto& clock = *p_map.clock;
 
     std::string response;
     int revolver_hall_value = 1;
@@ -57,53 +57,53 @@ hal::status application(science::hardware_map &p_map) {
     while(true) {
         mc_commands = HAL_CHECK(mc_handler.ParseMissionControlData(response, terminal));
         mc_data.pressure_level = HAL_CHECK(pressure.get_parsed_data());
-        HAL_CHECK(hal::delay(counter, 5ms));
+        HAL_CHECK(hal::delay(clock, 5ms));
         mc_data.methane_level = HAL_CHECK(methane.get_parsed_data());
-        HAL_CHECK(hal::delay(counter, 5ms));
+        HAL_CHECK(hal::delay(clock, 5ms));
         revolver_hall_value = HAL_CHECK(revolver_hall_effect.level()).state;
         seal_hall_value = HAL_CHECK(seal_hall_effect.level()).state;
-        HAL_CHECK(hal::delay(counter, 5ms));
+        HAL_CHECK(hal::delay(clock, 5ms));
         HAL_CHECK(hal::delay(*p_map.clock, 500ms));
-        mc_data.co2_level = HAL_CHECK(co2_driver.read_co2());
+        mc_data.co2_level = HAL_CHECK(carbon_dioxide.read_co2());
         HAL_CHECK(hal::delay(*p_map.clock, 1000ms));
 
 
         state_machine.RunMachine(mc_data.status, mc_commands, mc_data.pressure_level, revolver_hall_value, seal_hall_value);
         if(mc_data.status.move_revolver_status == science::Status::InProgress) {
             HAL_CHECK(revolver_spinner.duty_cycle(0.085f));
-            HAL_CHECK(hal::delay(counter, 5ms));
+            HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.move_revolver_status == science::Status::Complete && mc_data.status.seal_status == science::Status::NotStarted) {
             HAL_CHECK(revolver_spinner.duty_cycle(0.075f));
-            HAL_CHECK(hal::delay(counter, 5ms));
+            HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.seal_status == science::Status::InProgress) {
             science::Seal();
-            HAL_CHECK(hal::delay(counter, 5ms));
+            HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.depressurize_status == science::Status::InProgress) {
             // Suck(air_pump);
-            HAL_CHECK(hal::delay(counter, 5ms));
+            HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.depressurize_status == science::Status::Complete && mc_data.status.inject_status == science::Status::NotStarted) {
             // StopSucking(air_pump);
-            HAL_CHECK(hal::delay(counter, 5ms));
+            HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.inject_status == science::Status::InProgress) {
             // Inject(dosing_pump, 2);
-            HAL_CHECK(hal::delay(counter, 5ms));
+            HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.clear_status == science::Status::InProgress) {
             // Suck(air_pump);
-            HAL_CHECK(hal::delay(counter, 5ms));
+            HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.clear_status == science::Status::Complete && mc_data.status.unseal_status == science::Status::NotStarted) {
             // StopSucking(air_pump);
-            HAL_CHECK(hal::delay(counter, 5ms));
+            HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.unseal_status == science::Status::InProgress) {
             science::Unseal();
-            HAL_CHECK(hal::delay(counter, 5ms));
+            HAL_CHECK(hal::delay(clock, 5ms));
         }
         response = mc_handler.CreateGETRequestParameterWithRoverStatus(mc_data);
     }
