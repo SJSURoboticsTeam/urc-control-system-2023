@@ -13,7 +13,7 @@ find_package(libhal-rmd REQUIRED CONFIG)
 find_package(libhal-esp8266 REQUIRED CONFIG)
 find_package(libhal-util REQUIRED CONFIG)
 
-set(DEMOS methane_sensor_demo pump_demo)
+set(DEMOS methane_sensor_demo pump_demo parallax_servo_demo app)
 set(TARGETS lpc4078)
 
 add_link_options(-lc -lrdimon -u _printf_float)

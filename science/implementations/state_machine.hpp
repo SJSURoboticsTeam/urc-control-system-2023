@@ -9,7 +9,7 @@ namespace science {
 
     class StateMachine {
     public:
-        static constexpr kpressure_requirement = 90.0;
+        static constexpr float kpressure_requirement = 90.0;
 
         enum States {
             Start = 0,

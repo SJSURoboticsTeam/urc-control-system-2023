@@ -1,8 +1,8 @@
 [requires]
-libhal-lpc40xx/1.1.0
-libhal-rmd/0.3.6
-libhal-esp8266/0.3.4
-libhal-util/0.3.8
+libhal-lpc40xx/[^1.1.0]
+libhal-rmd/[^1.0.0]
+libhal-esp8266/[^1.0.0]
+libhal-util/[^1.0.0]
 
 [tool_requires]
 gnu-arm-embedded-toolchain/11.3.0

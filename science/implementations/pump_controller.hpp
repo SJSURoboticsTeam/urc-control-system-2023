@@ -16,7 +16,7 @@ public:
     /// Duty cycle defaults to 0%. (Completely off)
     /// @param data_pin The PWM pin to control the pump.
     /// @param frequency The oscillating frequency for PWM communication.
-    PumpPwmController(hal::pwm* data_pin, hal::hertz frequency): 
+    PumpPwmController(hal::pwm* data_pin, float frequency): 
     data_pin_{data_pin}, 
     current_frequency_{frequency} {
         set_duty_cycle(0);

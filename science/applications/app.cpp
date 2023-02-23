@@ -1,8 +1,6 @@
-#pragma once
 #include "../implementations/mq4_methane_sensor.hpp"
 #include "../implementations/pressure_sensor_driver.hpp"
 #include "../implementations/pump_controller.hpp"
-#include "../implementations/move_revolver.hpp"
 #include "../implementations/seal.hpp"
 #include "../implementations/suck.hpp"
 #include "../implementations/inject.hpp"
@@ -12,6 +10,7 @@
 #include <libhal/input_pin.hpp>
 #include <libhal/adc.hpp>
 #include <libhal-rmd/drc.hpp>
+#include <libhal-pca/pca9685.hpp>
 
 #include "../hardware_map.hpp"
 #include "../dto/science_dto.hpp"
@@ -23,55 +22,60 @@ hal::status application(science::hardware_map &p_map) {
     using namespace hal::literals;
 
     auto& pressure_adc = *p_map.pressure_sensor_pin;
-    auto& methane_gpio = *pmap.is_methane;
+    auto& methane_gpio = *p_map.is_methane;
     auto& methane_adc = *methane_level;
     auto& revolver_hall_effect = *p_map.revolver_hall_effect;
+    auto& revolver_spinner = *p_map.revolver_spinner;
     auto& seal_hall_effect = *p_map.seal_hall_effect;
     auto& can = *p_map.can;
     auto& terminal = *p_map.terminal;
-    auto& air_pump_pwm = *p_map.air_pump;
-    auto& dosing_pump_pwm = *p_map.dosing_pump;
+    auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(*p_map.i2c, 0b100'0000));
+    auto pca_pwm_0 = pca9685.get_pwm_channel<0>();
+    auto pca_pwm_1 = pca9685.get_pwm_channel<1>();
+    auto pca_pwm_2 = pca9685.get_pwm_channel<2>();
 
-    std::string_view response;
+
+    auto& counter = *p_map.clock;
+
+    std::string response;
     int revolver_hall_value = 1;
     int seal_hall_value = 1;
 
 
     auto can_router = HAL_CHECK(hal::can_router::create(can));
 
-    science::PumpPwmController air_pump(air_pump_pwm, 1_kHz);                               // unknown freqeuncy atm change when this is figured out
-    science::PumpPwmController dosing_pump(dosing_pump_pwm, 1_kHz);
+    science::PumpPwmController air_pump(pca_pwm_0, 1000.0_Hz);                               // unknown freqeuncy atm change when this is figured out
+    science::PumpPwmController dosing_pump(pca_pwm_1, 1000.0_Hz);
     science::PressureSensor pressure(pressure_adc);
     science::Mq4MethaneSensor methane(methane_adc, methane_gpio);
-    science::StateMachine state_machine();
+    science::StateMachine state_machine;
 
     science::MissionControlHandler mc_handler;
     science::science_commands mc_commands;
     science::science_data mc_data;
 
-    auto revolver_spinner = HAL_CHECK(hal::rmd::drc::create(can_router, 6.0, 0x141));       // RMD can addres may have to chage, this is a temp
-
+    HAL_CHECK(revolver_spinner.frequency(50.0_Hz));
     while(true) {
         mc_commands = HAL_CHECK(mc_handler.ParseMissionControlData(response, terminal));
-        mc_data.pressure_level = pressure.get_parsed_data();
+        mc_data.pressure_level = HAL_CHECK(pressure.get_parsed_data());
         HAL_CHECK(hal::delay(counter, 5ms));
-        mc_data.methane_level = methane.get_parsed_data();
+        mc_data.methane_level = HAL_CHECK(methane.get_parsed_data());
         HAL_CHECK(hal::delay(counter, 5ms));
-        revolver_hall_value = revolver_hall_effect.level();
-        seal_hall_value = seal_hall_effect.level();
+        revolver_hall_value = HAL_CHECK(revolver_hall_effect.level()).state;
+        seal_hall_value = HAL_CHECK(seal_hall_effect.level()).state;
         HAL_CHECK(hal::delay(counter, 5ms));
 
-        state_machine.RunMachine(mc_data.status, mc_commands, pressure_data, revolver_hall_value, seal_hall_value);
+        state_machine.RunMachine(mc_data.status, mc_commands, mc_data.pressure_level, revolver_hall_value, seal_hall_value);
         if(mc_data.status.move_revolver_status == science::Status::InProgress) {
-            MoveRevolver(revolver_spinner);
+            HAL_CHECK(revolver_spinner.duty_cycle(0.085f));
             HAL_CHECK(hal::delay(counter, 5ms));
         }
         else if(mc_data.status.move_revolver_status == science::Status::Complete && mc_data.status.seal_status == science::Status::NotStarted) {
-            StopRevolver(revolver_spinner);
+            HAL_CHECK(revolver_spinner.duty_cycle(0.075f));
             HAL_CHECK(hal::delay(counter, 5ms));
         }
         else if(mc_data.status.seal_status == science::Status::InProgress) {
-            Seal();
+            science::Seal();
             HAL_CHECK(hal::delay(counter, 5ms));
         }
         else if(mc_data.status.depressurize_status == science::Status::InProgress) {
@@ -95,10 +99,10 @@ hal::status application(science::hardware_map &p_map) {
             HAL_CHECK(hal::delay(counter, 5ms));
         }
         else if(mc_data.status.unseal_status == science::Status::InProgress) {
-            Unseal();
+            science::Unseal();
             HAL_CHECK(hal::delay(counter, 5ms));
         }
-        response = CreateGETRequestParameterWithRoverStatus(mc_data);
+        response = mc_handler.CreateGETRequestParameterWithRoverStatus(mc_data);
     }
     return hal::success();
 }
