@@ -40,8 +40,8 @@ hal::status application(science::hardware_map &p_map) {
     int seal_hall_value = 1;
 
     // Constants
-    const float MIN_SEAL_DUTY_CYCLE = 0.065f;
-    const float MAX_SEAL_DUTY_CYCLE = 0.085f;
+    static constexpr float MIN_SEAL_DUTY_CYCLE = 0.065f;
+    static constexpr float MAX_SEAL_DUTY_CYCLE = 0.085f;
 
     auto can_router = HAL_CHECK(hal::can_router::create(can));
 
