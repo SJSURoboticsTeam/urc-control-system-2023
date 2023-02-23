@@ -6,8 +6,8 @@ libhal-util/[^1.0.0]
 libhal-pca/[^0.4.0]
 
 [tool_requires]
-gnu-arm-embedded-toolchain/11.3.0
-cmake-arm-embedded/0.1.0
+gnu-arm-embedded-toolchain/12.2.0
+cmake-arm-embedded/0.1.1
 
 [generators]
 CMakeToolchain

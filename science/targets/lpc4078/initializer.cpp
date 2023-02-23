@@ -20,6 +20,8 @@ constexpr int PRESSURE_SENSOR_ANALOG = 5;
 
 constexpr int CAN_BUS = 2;
 
+constexpr int I2C_CHANNEL = 2;
+
 //halleffect sensor port and pin
 constexpr int HALL_EFFECT_DIGITAL_PORT = 2;
 constexpr int HALL_EFFECT_DIGITAL_PIN = 1;
@@ -29,7 +31,7 @@ hal::result<science::hardware_map> initialize_target() {
     using namespace hal::literals;
     hal::cortex_m::initialize_data_section();
     hal::cortex_m::system_control::initialize_floating_point_unit();
-
+    HAL_CHECK(hal::lpc40xx::clock::maximum(10.0_MHz));
     // Create a hardware counter
     HAL_CHECK(hal::lpc40xx::clock::maximum(10.0_MHz));
     auto& clock = hal::lpc40xx::clock::get();
@@ -52,7 +54,9 @@ hal::result<science::hardware_map> initialize_target() {
         .baud_rate = 38400,
     })));
 
-    
+    // Use i2c bus 2 for the dev 2 board while testing 
+    auto& carbon_dioxide_sensor = HAL_CHECK((hal::lpc40xx::i2c::get<I2C_CHANNEL>()));
+    // auto& i2c = HAL_CHECK((hal::lpc40xx::i2c::get<0>()));
 
     return science::hardware_map {
         .is_methane = &is_methane,
