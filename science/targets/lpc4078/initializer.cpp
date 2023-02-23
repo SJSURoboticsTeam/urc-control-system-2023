@@ -39,7 +39,6 @@ hal::result<science::hardware_map> initialize_target() {
     static hal::cortex_m::dwt_counter counter(cpu_frequency);
     
     // create output data pins
-    auto& is_methane = HAL_CHECK((hal::lpc40xx::input_pin::get<METHANE_DIGITAL_PORT, METHANE_DIGITAL_PIN>()));
     auto& methane_level = HAL_CHECK(hal::lpc40xx::adc::get<METHANE_ANALOG_CHANNEL>());
     auto& pressure_sensor_pin = HAL_CHECK(hal::lpc40xx::adc::get<PRESSURE_SENSOR_ANALOG>());
 
@@ -63,7 +62,6 @@ hal::result<science::hardware_map> initialize_target() {
     auto& seal_servo = HAL_CHECK((hal::lpc40xx::pwm::get<1, 2>()));
 
     return science::hardware_map {
-        .is_methane = &is_methane,
         .methane_level = &methane_level,
         .revolver_hall_effect = &halleffect,
         .seal_hall_effect = &halleffect,
