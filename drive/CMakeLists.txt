@@ -16,8 +16,6 @@ find_package(libhal-util REQUIRED CONFIG)
 set(DEMOS rmd-demo app magnet-demo serial-demo app_serial)
 set(TARGETS lpc4078_10mhz lpc4078_12mhz)
 
-add_link_options(-lc -lrdimon -u _printf_float)
-
 foreach(target IN LISTS TARGETS)
     foreach(demo IN LISTS DEMOS)
         set(current_project ${target}_${demo})
@@ -31,7 +29,7 @@ foreach(target IN LISTS TARGETS)
             ./
             targets/${target})
         target_compile_features(${current_project} PRIVATE cxx_std_20)
-
+        target_link_options(${current_project} PRIVATE -u _printf_float)
         target_link_libraries(${current_project} PRIVATE
             libhal::lpc4078
             libhal::rmd
