@@ -16,13 +16,13 @@ struct hardware_map {
     hal::input_pin* revolver_hall_effect;
     hal::input_pin* seal_hall_effect;
     hal::steady_clock* clock;
-    hal::serial* science_serial;
+    hal::serial* terminal;
     hal::callback<void()> reset;
-    hal::pwm* air_pump;
-    hal::pwm* dosing_pump;
+    hal::pwm* revolver_spinner;
+    
     hal::adc* pressure_sensor_pin;
-    hal::i2c* carbon_dioxide_sensor;
-    // hal::can* can;
+    hal::i2c* i2c;
+    hal::can* can;
 };
 } // namespace science
 
