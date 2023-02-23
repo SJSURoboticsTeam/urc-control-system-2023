@@ -31,6 +31,9 @@ hal::status application(science::hardware_map &p_map) {
     auto& terminal = *p_map.terminal;
     auto& air_pump_pwm = *p_map.air_pump;
     auto& dosing_pump_pwm = *p_map.dosing_pump;
+    auto& carbon_dioxide_sensor = *p_map.carbon_dioxide_sensor;
+    auto& clock = p_map.clock;
+    
 
     std::string_view response;
     int revolver_hall_value = 1;
@@ -44,6 +47,7 @@ hal::status application(science::hardware_map &p_map) {
     science::PressureSensor pressure(pressure_adc);
     science::Mq4MethaneSensor methane(methane_adc, methane_gpio);
     science::StateMachine state_machine();
+    auto carbon_dioxide = HAL_CHECK(science::Co2Sensor::create(carbon_dioxide_sensor, clock));
 
     science::MissionControlHandler mc_handler;
     science::science_commands mc_commands;
@@ -60,6 +64,10 @@ hal::status application(science::hardware_map &p_map) {
         revolver_hall_value = revolver_hall_effect.level();
         seal_hall_value = seal_hall_effect.level();
         HAL_CHECK(hal::delay(counter, 5ms));
+        HAL_CHECK(hal::delay(*p_map.clock, 500ms));
+        mc_data.co2_level = HAL_CHECK(co2_driver.read_co2());
+        HAL_CHECK(hal::delay(*p_map.clock, 1000ms));
+
 
         state_machine.RunMachine(mc_data.status, mc_commands, pressure_data, revolver_hall_value, seal_hall_value);
         if(mc_data.status.move_revolver_status == science::Status::InProgress) {
