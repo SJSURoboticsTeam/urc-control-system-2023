@@ -18,8 +18,8 @@ float convert_to_duty_cycle(int angle)
   std::pair<float, float> to;
   from.first = 0.0f;
   from.second = 180.0f;
-  to.first = 0.025f;
-  to.second = 0.125f;
+  to.first = 0.065f;
+  to.second = 0.085f;
   return hal::map(static_cast<float>(angle), from, to);
 }
 
@@ -36,7 +36,6 @@ hal::status application(drive::hardware_map& p_map)
 
   auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c, 0b100'0000));
   auto pwm0 = pca9685.get_pwm_channel<0>();
-
   HAL_CHECK(pwm0.frequency(50.0_Hz));
   hal::print(console, "pca9685 Application Starting...\n\n");
 
@@ -49,11 +48,11 @@ hal::status application(drive::hardware_map& p_map)
 
     // set to angle 0
     HAL_CHECK(pwm0.duty_cycle(convert_to_duty_cycle(0)));
-    HAL_CHECK(hal::delay(clock, 2s));
+    HAL_CHECK(hal::delay(clock, 5s));
 
     // set to angle 180
     HAL_CHECK(pwm0.duty_cycle(convert_to_duty_cycle(180)));
-    HAL_CHECK(hal::delay(clock, 2s));
+    HAL_CHECK(hal::delay(clock, 5s));
   }
 
   return hal::success();

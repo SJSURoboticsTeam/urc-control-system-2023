@@ -4,26 +4,26 @@
 
 #include <string_view>
 
-#include "../dto/science-dto.hpp"
+#include "../dto/science_dto.hpp"
 
 namespace science
 {
     class MissionControlHandler
     {
     public:
-        std::string_view CreateGETRequestParameterWithRoverStatus(science_data commands)
+        std::string_view CreateGETRequestParameterWithRoverStatus(science_data data)
         {
             char request_parameter[200];
             snprintf(
                 request_parameter, 200, kGETRequestFormat,
-                commands_.move_revolver_status, commands_.seal_status, commands_.depressurize_status,
-                commands_.inject_status, commands_.clear_status, commands_.unseal_status, 
-                commands_.methane_level, commands_.co2_level, commands_.pressure_level
+                data.status.move_revolver_status, data.status.seal_status, data.status.depressurize_status,
+                data.status.inject_status, data.status.clear_status, data.status.unseal_status, 
+                data.methane_level, data.co2_level, data.pressure_level
                 );
             return request_parameter;
         }
 
-        hal::result<science_commands> ParseMissionControlData(std::string_view& response, hal::serial& terminal)
+        hal::result<science_commands> ParseMissionControlData(std::string& response, hal::serial& terminal)
         {
             response = response.substr(response.find('{'));
             int actual_arguments = sscanf(

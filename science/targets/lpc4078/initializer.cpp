@@ -5,8 +5,12 @@
 #include <libhal-lpc40xx/uart.hpp>
 #include <libhal-lpc40xx/adc.hpp>
 #include <libhal-lpc40xx/can.hpp>
+#include <libhal-lpc40xx/pwm.hpp>
+#include <libhal-lpc40xx/i2c.hpp>
+#include <libhal-pca/pca9685.hpp>
 
-#include "hardware_map.hpp"
+#include "../../hardware_map.hpp"
+
 // TODO: update with proper hardware data
 constexpr int METHANE_DIGITAL_PORT = 0;
 constexpr int METHANE_DIGITAL_PIN = 0;
@@ -27,6 +31,7 @@ hal::result<science::hardware_map> initialize_target() {
     hal::cortex_m::system_control::initialize_floating_point_unit();
 
     // Create a hardware counter
+    HAL_CHECK(hal::lpc40xx::clock::maximum(10.0_MHz));
     auto& clock = hal::lpc40xx::clock::get();
     auto cpu_frequency = clock.get_frequency(hal::lpc40xx::peripheral::cpu);
     static hal::cortex_m::dwt_counter counter(cpu_frequency);
@@ -39,7 +44,9 @@ hal::result<science::hardware_map> initialize_target() {
     auto& halleffect = HAL_CHECK((hal::lpc40xx::input_pin::get<HALL_EFFECT_DIGITAL_PORT, HALL_EFFECT_DIGITAL_PIN>()));
     hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
     auto& can = HAL_CHECK((hal::lpc40xx::can::get<CAN_BUS>(can_settings)));
-
+    auto& pwm = HAL_CHECK((hal::lpc40xx::pwm::get<1,1>()));
+    auto& i2c = HAL_CHECK((hal::lpc40xx::i2c::get<2>(hal::i2c::settings{
+    .clock_rate = 100.0_kHz,})));
     // Get and initialize UART0 for UART based terminal logging
     auto& uart0 = HAL_CHECK((hal::lpc40xx::uart::get<0, 64>(hal::serial::settings{
         .baud_rate = 38400,
@@ -53,9 +60,12 @@ hal::result<science::hardware_map> initialize_target() {
         .revolver_hall_effect = &halleffect,
         .seal_hall_effect = &halleffect,
         .clock = &counter,
-        .science_serial = &uart0,
+        .terminal = &uart0,
         .reset = []() { hal::cortex_m::system_control::reset(); },
+        .revolver_spinner = &pwm,
         .pressure_sensor_pin = &pressure_sensor_pin,
+        .i2c = &i2c,
         .can = &can,
+        
     };
 }

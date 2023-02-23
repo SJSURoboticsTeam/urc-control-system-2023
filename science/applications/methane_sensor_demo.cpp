@@ -14,7 +14,7 @@ using namespace std::chrono_literals;
 hal::status application(science::hardware_map& p_map) {
     // science robot entry point here. This function may yield an error.
     // configure drivers
-
+    
     while (true) {
         // demo for methane sensor driver.
         science::Mq4MethaneSensor methane_driver = science::Mq4MethaneSensor(p_map.methane_level, p_map.is_methane);
@@ -23,9 +23,9 @@ hal::status application(science::hardware_map& p_map) {
         float methane_value = HAL_CHECK(methane_driver.get_parsed_data());
 
         if (is_methane) {
-            hal::print<64>(*p_map.science_serial, "CH4: %f\n", methane_value);
+            hal::print<64>(*p_map.terminal, "CH4: %f\n", methane_value);
         } else {
-            hal::print<64>(*p_map.science_serial, "No methane detected.\n");
+            hal::print<64>(*p_map.terminal, "No methane detected.\n");
         }
         HAL_CHECK(hal::delay(*p_map.clock, 100ms));
 
