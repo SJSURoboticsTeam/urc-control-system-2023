@@ -23,7 +23,6 @@ hal::status application(science::hardware_map &p_map) {
     using namespace hal::literals;
 
     auto& pressure_adc = *p_map.pressure_sensor_pin;
-    auto& methane_gpio = *p_map.is_methane;
     auto& methane_adc = *p_map.methane_level;
     auto& revolver_hall_effect = *p_map.revolver_hall_effect;
     auto& revolver_spinner = *p_map.revolver_spinner;
@@ -46,7 +45,7 @@ hal::status application(science::hardware_map &p_map) {
     // science::PumpPwmController air_pump(pca_pwm_0, 1000.0_Hz);                               // unknown freqeuncy atm change when this is figured out
     // science::PumpPwmController dosing_pump(pca_pwm_1, 1000.0_Hz);
     science::PressureSensor pressure(pressure_adc);
-    science::Mq4MethaneSensor methane(methane_adc, methane_gpio);
+    science::Mq4MethaneSensor methane(methane_adc);
     auto carbon_dioxide = HAL_CHECK(science::Co2Sensor::create(*p_map.i2c, clock));
     science::StateMachine state_machine;
 
