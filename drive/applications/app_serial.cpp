@@ -85,15 +85,15 @@ hal::status application(drive::hardware_map& p_map)
     }
     // end of serial
     commands = rules_engine.ValidateCommands(commands);
-    commands = mode_switch.SwitchSteerMode(commands, arguments, motor_speeds);
+    commands = mode_switch.SwitchSteerMode(commands, arguments, motor_speeds, terminal);
     commands = lerp.Lerp(commands);
 
     commands.Print(terminal);
     arguments = Drive::ModeSelect::SelectMode(commands);
-    arguments = tri_wheel.SetLegArguments(arguments);
+    arguments = HAL_CHECK(tri_wheel.SetLegArguments(arguments, clock));
 
-    motor_speeds = HAL_CHECK(tri_wheel.GetMotorFeedback());
-    motor_speeds.print(terminal);
+    motor_speeds = HAL_CHECK(tri_wheel.GetMotorFeedback(clock));
+    // motor_speeds.Print(terminal);
     HAL_CHECK(hal::delay(clock, 30ms));
   }
 

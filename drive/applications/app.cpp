@@ -137,14 +137,14 @@ hal::status application(drive::hardware_map& p_map)
     commands =
       HAL_CHECK(mission_control.ParseMissionControlData(json_string, terminal));
     commands = rules_engine.ValidateCommands(commands);
-    commands = mode_switch.SwitchSteerMode(commands, arguments, motor_speeds);
+    commands = mode_switch.SwitchSteerMode(commands, arguments, motor_speeds, terminal);
     commands = lerp.Lerp(commands);
 
     // commands.Print();
     arguments = Drive::ModeSelect::SelectMode(commands);
-    arguments = tri_wheel.SetLegArguments(arguments);
+    arguments = HAL_CHECK(tri_wheel.SetLegArguments(arguments, clock));
 
-    motor_speeds = HAL_CHECK(tri_wheel.GetMotorFeedback());
+    motor_speeds = HAL_CHECK(tri_wheel.GetMotorFeedback(clock));
   }
 
   return hal::success();

@@ -7,14 +7,17 @@ namespace Drive
 {
     struct motor_feedback
     {
-        hal::rpm left_steer_speed = hal::rpm(5);
-        hal::rpm right_steer_speed = hal::rpm(5);
-        hal::rpm back_steer_speed = hal::rpm(5);
+        float left_steer_speed = 5.0;
+        float right_steer_speed = 5.0;
+        float back_steer_speed = 5.0;
+        float left_drive_speed = 5.0;
+        float right_drive_speed = 5.0;
+        float back_drive_speed = 5.0;
 
-        hal::status print(hal::serial& terminal)
+        hal::status Print(hal::serial& terminal)
         {
-            HAL_CHECK(hal::print<50>(terminal, "left speed: %f right speed: %f back speed: %f\n", 
-            static_cast<float>(left_steer_speed), static_cast<float>(right_steer_speed), static_cast<float>(back_steer_speed)));
+            hal::print<50>(terminal, "\nSteers: left speed: %f right speed: %f back speed: %f Drives: Steers: left speed: %f right speed: %f back speed: %f\n", 
+            static_cast<float>(left_steer_speed), static_cast<float>(right_steer_speed), static_cast<float>(back_steer_speed),static_cast<float>(left_drive_speed), static_cast<float>(right_drive_speed), static_cast<float>(back_drive_speed));
             return hal::success();
         }
     };
