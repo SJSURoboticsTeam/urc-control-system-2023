@@ -10,7 +10,6 @@
 
 #include "../dto/drive-dto.hpp"
 #include "../dto/motor-feedback-dto.hpp"
-#include "../soft-driver/rmd-encoder.hpp"
 
 namespace Drive {
 class TriWheelRouter
@@ -86,9 +85,9 @@ public:
     HAL_CHECK(hal::delay(counter, 6s));
 
     // these are active high
-    bool leftPinLow = !(HAL_CHECK(left_.magnet_.level())),
-         rightPinLow = !(HAL_CHECK(right_.magnet_.level())),
-         backPinLow = !(HAL_CHECK(back_.magnet_.level()));
+    bool leftPinLow = !(HAL_CHECK(left_.magnet_.level()).state),
+         rightPinLow = !(HAL_CHECK(right_.magnet_.level()).state),
+         backPinLow = !(HAL_CHECK(back_.magnet_.level()).state);
       
     HAL_CHECK(hal::delay(counter, 10ms));
 
@@ -144,14 +143,6 @@ public:
   hal::result<motor_feedback> GetMotorFeedback()
   {
     motor_feedback motor_speeds;
-    // Creating this enum from the drc class allows us to read all data from the
-    // rmd when it is passed into the feedback_request function
-    hal::rmd::drc::read read_commands;
-
-    HAL_CHECK(left_.steer_motor_.feedback_request(read_commands));
-    HAL_CHECK(right_.steer_motor_.feedback_request(read_commands));
-    HAL_CHECK(left_.steer_motor_.feedback_request(read_commands));
-
     motor_speeds.left_steer_speed = left_.steer_motor_.feedback().speed();
     motor_speeds.right_steer_speed = right_.steer_motor_.feedback().speed();
     motor_speeds.back_steer_speed = back_.steer_motor_.feedback().speed();
@@ -166,7 +157,7 @@ private:
     using namespace hal::literals;
 
     // level returns true if it is high, and the magnet is high when it is not
-    bool not_homed = HAL_CHECK(leg_.magnet_.level());
+    bool not_homed = HAL_CHECK(leg_.magnet_.level()).state;
     HAL_CHECK(hal::delay(counter, 10ms));
 
     if (not_homed) {
