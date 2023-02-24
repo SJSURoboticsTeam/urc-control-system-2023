@@ -93,6 +93,7 @@ hal::status application(drive::hardware_map& p_map)
     arguments = tri_wheel.SetLegArguments(arguments);
 
     motor_speeds = HAL_CHECK(tri_wheel.GetMotorFeedback());
+    motor_speeds.print(terminal);
     HAL_CHECK(hal::delay(clock, 30ms));
   }
 

@@ -36,26 +36,31 @@ public:
   {
   }
 
-  tri_wheel_router_arguments SetLegArguments(
-    tri_wheel_router_arguments tri_wheel_arguments)
+  tri_wheel_router_arguments SetLegArguments(tri_wheel_router_arguments tri_wheel_arguments, hal::steady_clock& clock)
   {
     left_.steer_motor_.position_control(
       hal::degrees(-tri_wheel_arguments.left.steer.angle + left_.wheel_offset_),
       hal::rpm(tri_wheel_arguments.left.steer.speed));
+    HAL_CHECK(hal::delay(clock, 5ms));
     left_.drive_motor_.velocity_control(
       -hal::rpm(tri_wheel_arguments.left.hub.speed));
+    HAL_CHECK(hal::delay(clock, 5ms));
 
     right_.steer_motor_.position_control(
       hal::degrees(-tri_wheel_arguments.right.steer.angle + right_.wheel_offset_),
       hal::rpm(tri_wheel_arguments.right.steer.speed));
+      HAL_CHECK(hal::delay(clock, 5ms));
     right_.drive_motor_.velocity_control(
       -hal::rpm(tri_wheel_arguments.right.hub.speed));
+      HAL_CHECK(hal::delay(clock, 5ms));
 
     back_.steer_motor_.position_control(
       hal::degrees(-tri_wheel_arguments.back.steer.angle + back_.wheel_offset_),
       hal::rpm(tri_wheel_arguments.back.steer.speed));
+      HAL_CHECK(hal::delay(clock, 5ms));
     back_.drive_motor_.velocity_control(
       -hal::rpm(tri_wheel_arguments.back.hub.speed));
+      HAL_CHECK(hal::delay(clock, 5ms));
 
     tri_wheel_arguments_ = tri_wheel_arguments;
     return tri_wheel_arguments_;

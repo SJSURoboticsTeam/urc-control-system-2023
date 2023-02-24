@@ -13,9 +13,8 @@ namespace Drive
 
         hal::status print(hal::serial& terminal)
         {
-            HAL_CHECK(hal::write(terminal, "left steer speed:" + static_cast<int>(left_steer_speed)));
-            HAL_CHECK(hal::write(terminal, "right steer speed:" + static_cast<int>(right_steer_speed)));
-            HAL_CHECK(hal::write(terminal, "back steer speed: " + static_cast<int>(back_steer_speed)));
+            HAL_CHECK(hal::print<50>(terminal, "left speed: %f right speed: %f back speed: %f\n", 
+            static_cast<float>(left_steer_speed), static_cast<float>(right_steer_speed), static_cast<float>(back_steer_speed)));
             return hal::success();
         }
     };
