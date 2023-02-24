@@ -4,7 +4,7 @@ libhal-esp8266/1.0.0
 libhal-util/1.0.0
 libhal-pca/0.4.0
 libhal-lpc40xx/1.1.0
-
+libhal-mpu/1.0.1
 [tool_requires]
 gnu-arm-embedded-toolchain/11.3.0
 cmake-arm-embedded/0.1.1

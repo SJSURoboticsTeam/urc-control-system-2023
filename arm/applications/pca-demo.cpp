@@ -23,18 +23,18 @@ float convert_to_duty_cycle(int angle)
   return hal::map(static_cast<float>(angle), from, to);
 }
 
-hal::status application(drive::hardware_map& p_map)
+hal::status application(arm::hardware_map& p_map)
 {
   using namespace std::chrono_literals;
   using namespace hal::literals;
 
   auto& console = *p_map.terminal;
   auto& clock = *p_map.steady_clock;
-  auto& i2c = *p_map.i2c;
+  auto& i2c1 = *p_map.i2c1;
 
   HAL_CHECK(hal::write(console, "Starting program new...\n"));
 
-  auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c, 0b100'0000));
+  auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c1, 0b100'0000));
   auto pwm0 = pca9685.get_pwm_channel<0>();
   HAL_CHECK(pwm0.frequency(50.0_Hz));
   hal::print(console, "pca9685 Application Starting...\n\n");

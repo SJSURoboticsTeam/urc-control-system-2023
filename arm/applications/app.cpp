@@ -16,7 +16,7 @@
 #include <string>
 #include <string_view>
 
-hal::status application(drive::hardware_map& p_map)
+hal::status application(arm::hardware_map& p_map)
 {
 
   using namespace std::chrono_literals;
@@ -26,7 +26,8 @@ hal::status application(drive::hardware_map& p_map)
   auto& terminal = *p_map.terminal;
   auto& counter = *p_map.steady_clock;
   auto& can = *p_map.can;
-  auto& i2c = *p_map.i2c;
+  auto& i2c0 = *p_map.i2c0;
+  auto& i2c1 = *p_map.i2c1;
 
   std::array<hal::byte, 8192> buffer{};
   static std::string_view get_request = "";
@@ -66,15 +67,15 @@ hal::status application(drive::hardware_map& p_map)
 
   auto rotunda_motor = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x141));
   auto shoulder_motor =
-    HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8 * 65 / 16, 0x142));
+    HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0 * 65.0 / 16.0, 0x142));
   auto elbow_motor =
-    HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8 * 5 / 2, 0x143));
+    HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0 * 5.0 / 2.0, 0x143));
   auto left_wrist_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x144));
   auto right_wrist_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x145));
 
-  auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c, 0b100'0000));
+  auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c0, 0b100'0000));
   auto pwm0 = pca9685.get_pwm_channel<0>();
   HAL_CHECK(pwm0.frequency(50.0_Hz));
 

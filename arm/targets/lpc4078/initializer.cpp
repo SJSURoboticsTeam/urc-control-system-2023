@@ -14,14 +14,14 @@
 
 #include "../../hardware_map.hpp"
 
-hal::result<drive::hardware_map> initialize_target()
+hal::result<arm::hardware_map> initialize_target()
 {
   using namespace hal::literals;
 
   hal::cortex_m::initialize_data_section();
   hal::cortex_m::system_control::initialize_floating_point_unit();
 
-  HAL_CHECK(hal::lpc40xx::clock::maximum(10.0_MHz));
+  HAL_CHECK(hal::lpc40xx::clock::maximum(12.0_MHz));
 
   // Clock declaration
   auto& clock = hal::lpc40xx::clock::get();
@@ -42,17 +42,21 @@ hal::result<drive::hardware_map> initialize_target()
       .baud_rate = 115200,
     })));
 
-  auto& i2c = HAL_CHECK((hal::lpc40xx::i2c::get<2>(hal::i2c::settings{
+  auto& i2c0 = HAL_CHECK((hal::lpc40xx::i2c::get<1>(hal::i2c::settings{
+    .clock_rate = 100.0_kHz,
+  })));
+    auto& i2c1 = HAL_CHECK((hal::lpc40xx::i2c::get<2>(hal::i2c::settings{
     .clock_rate = 100.0_kHz,
   })));
 
   // auto& pwm0 = HAL_CHECK((hal::lpc40xx::pwm::get<2, 0>()));
 
-  return drive::hardware_map{ .terminal = &uart0,
+  return arm::hardware_map{ .terminal = &uart0,
                               .can = &can,
                               .esp = &uart3,
                               // .pwm0 = &pwm0,
-                              .i2c = &i2c,
+                              .i2c0 = &i2c0,
+                              .i2c1 = &i2c1,
                               .steady_clock = &counter,
                               .reset = []() {
                                 hal::cortex_m::system_control::reset();
