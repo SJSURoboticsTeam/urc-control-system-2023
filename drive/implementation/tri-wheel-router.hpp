@@ -10,7 +10,6 @@
 
 #include "../dto/drive-dto.hpp"
 #include "../dto/motor-feedback-dto.hpp"
-#include "../soft-driver/rmd-encoder.hpp"
 
 namespace Drive {
 class TriWheelRouter
@@ -37,26 +36,33 @@ public:
   {
   }
 
-  tri_wheel_router_arguments SetLegArguments(
-    tri_wheel_router_arguments tri_wheel_arguments)
+  hal::result<tri_wheel_router_arguments> SetLegArguments(tri_wheel_router_arguments tri_wheel_arguments, hal::steady_clock& clock)
   {
+    using namespace std::chrono_literals;
+    using namespace hal::literals;
     left_.steer_motor_.position_control(
       hal::degrees(-tri_wheel_arguments.left.steer.angle + left_.wheel_offset_),
       hal::rpm(tri_wheel_arguments.left.steer.speed));
+    HAL_CHECK(hal::delay(clock, 10ms));
     left_.drive_motor_.velocity_control(
       -hal::rpm(tri_wheel_arguments.left.hub.speed));
+    HAL_CHECK(hal::delay(clock, 10ms));
 
     right_.steer_motor_.position_control(
       hal::degrees(-tri_wheel_arguments.right.steer.angle + right_.wheel_offset_),
       hal::rpm(tri_wheel_arguments.right.steer.speed));
+      HAL_CHECK(hal::delay(clock, 10ms));
     right_.drive_motor_.velocity_control(
       -hal::rpm(tri_wheel_arguments.right.hub.speed));
+      HAL_CHECK(hal::delay(clock, 10ms));
 
     back_.steer_motor_.position_control(
       hal::degrees(-tri_wheel_arguments.back.steer.angle + back_.wheel_offset_),
       hal::rpm(tri_wheel_arguments.back.steer.speed));
+      HAL_CHECK(hal::delay(clock, 10ms));
     back_.drive_motor_.velocity_control(
       -hal::rpm(tri_wheel_arguments.back.hub.speed));
+      HAL_CHECK(hal::delay(clock, 10ms));
 
     tri_wheel_arguments_ = tri_wheel_arguments;
     return tri_wheel_arguments_;
@@ -86,9 +92,9 @@ public:
     HAL_CHECK(hal::delay(counter, 6s));
 
     // these are active high
-    bool leftPinLow = !(HAL_CHECK(left_.magnet_.level())),
-         rightPinLow = !(HAL_CHECK(right_.magnet_.level())),
-         backPinLow = !(HAL_CHECK(back_.magnet_.level()));
+    bool leftPinLow = !(HAL_CHECK(left_.magnet_.level()).state),
+         rightPinLow = !(HAL_CHECK(right_.magnet_.level()).state),
+         backPinLow = !(HAL_CHECK(back_.magnet_.level()).state);
       
     HAL_CHECK(hal::delay(counter, 10ms));
 
@@ -141,20 +147,25 @@ public:
     return hal::success();
   }
 
-  hal::result<motor_feedback> GetMotorFeedback()
+  hal::result<motor_feedback> GetMotorFeedback(hal::steady_clock& clock)
   {
+    using namespace std::chrono_literals;
+    using namespace hal::literals;
     motor_feedback motor_speeds;
-    // Creating this enum from the drc class allows us to read all data from the
-    // rmd when it is passed into the feedback_request function
-    hal::rmd::drc::read read_commands;
-
-    HAL_CHECK(left_.steer_motor_.feedback_request(read_commands));
-    HAL_CHECK(right_.steer_motor_.feedback_request(read_commands));
-    HAL_CHECK(left_.steer_motor_.feedback_request(read_commands));
-
+    left_.steer_motor_.feedback_request(hal::rmd::drc::read::status_2);
+    HAL_CHECK(hal::delay(clock, 10ms));
+    right_.steer_motor_.feedback_request(hal::rmd::drc::read::status_2);
+     HAL_CHECK(hal::delay(clock, 10ms));
+    back_.steer_motor_.feedback_request(hal::rmd::drc::read::status_2);
+     HAL_CHECK(hal::delay(clock, 10ms));
+    // theory: I don't think rmds return speed through set position and only through set velocity, therefore 
+    // we always have to request for feedback from the steers
     motor_speeds.left_steer_speed = left_.steer_motor_.feedback().speed();
     motor_speeds.right_steer_speed = right_.steer_motor_.feedback().speed();
     motor_speeds.back_steer_speed = back_.steer_motor_.feedback().speed();
+    motor_speeds.left_drive_speed = left_.drive_motor_.feedback().speed();
+    motor_speeds.right_drive_speed = right_.drive_motor_.feedback().speed();
+    motor_speeds.back_drive_speed = back_.drive_motor_.feedback().speed();
     return motor_speeds;
   }
 
@@ -166,7 +177,7 @@ private:
     using namespace hal::literals;
 
     // level returns true if it is high, and the magnet is high when it is not
-    bool not_homed = HAL_CHECK(leg_.magnet_.level());
+    bool not_homed = HAL_CHECK(leg_.magnet_.level()).state;
     HAL_CHECK(hal::delay(counter, 10ms));
 
     if (not_homed) {

@@ -32,7 +32,7 @@ hal::status application(drive::hardware_map& p_map)
 
   auto& esp = *p_map.esp;
   auto& terminal = *p_map.terminal;
-  auto& counter = *p_map.steady_clock; 
+  auto& clock = *p_map.steady_clock; 
   auto& magnet0 = *p_map.in_pin0;
   auto& magnet1 = *p_map.in_pin1;
   auto& magnet2 = *p_map.in_pin2;       
@@ -47,7 +47,7 @@ hal::status application(drive::hardware_map& p_map)
     esp,
     "SJSU Robotics 2.4GHz",
     "R0Bot1cs3250",
-    HAL_CHECK(hal::create_timeout(counter, 10s)));
+    HAL_CHECK(hal::create_timeout(clock, 10s)));
 
   if (!wifi_result) {
     HAL_CHECK(hal::write(terminal, "Failed to create wifi client!\n"));
@@ -58,7 +58,7 @@ hal::status application(drive::hardware_map& p_map)
 
   auto socket_result = hal::esp8266::at::socket::create(
     wifi,
-    HAL_CHECK(hal::create_timeout(counter, 1s)),
+    HAL_CHECK(hal::create_timeout(clock, 1s)),
     {
       .type = hal::socket::type::tcp,
       .domain = "10.250.103.205",
@@ -75,17 +75,17 @@ hal::status application(drive::hardware_map& p_map)
   auto can_router = hal::can_router::create(can).value();
 
   auto left_steer_motor =
-    HAL_CHECK(hal::rmd::drc::create(can_router, 6.0, 0x141));
+    HAL_CHECK(hal::rmd::drc::create(can_router, clock, 6.0, 0x141));
   auto left_hub_motor =
-    HAL_CHECK(hal::rmd::drc::create(can_router, 15.0, 0x142));
+    HAL_CHECK(hal::rmd::drc::create(can_router, clock, 15.0, 0x142));
   auto back_steer_motor =
-    HAL_CHECK(hal::rmd::drc::create(can_router, 6.0, 0x145));
+    HAL_CHECK(hal::rmd::drc::create(can_router, clock, 6.0, 0x145));
   auto back_hub_motor =
-    HAL_CHECK(hal::rmd::drc::create(can_router, 15.0, 0x146));
+    HAL_CHECK(hal::rmd::drc::create(can_router, clock, 15.0, 0x146));
   auto right_steer_motor =
-    HAL_CHECK(hal::rmd::drc::create(can_router, 6.0, 0x143));
+    HAL_CHECK(hal::rmd::drc::create(can_router, clock, 6.0, 0x143));
   auto right_hub_motor =
-    HAL_CHECK(hal::rmd::drc::create(can_router, 15.0, 0x144));
+    HAL_CHECK(hal::rmd::drc::create(can_router, clock, 15.0, 0x144));
 
   Drive::TriWheelRouter::leg right(right_steer_motor, right_hub_motor, magnet0);
   Drive::TriWheelRouter::leg left(left_steer_motor, left_hub_motor, magnet2);
@@ -101,9 +101,9 @@ hal::status application(drive::hardware_map& p_map)
   Drive::ModeSwitch mode_switch;
   Drive::CommandLerper lerp;
 
-  HAL_CHECK(hal::delay(counter, 1000ms));
-  tri_wheel.HomeLegs(terminal, counter);
-  HAL_CHECK(hal::delay(counter, 1000ms));
+  HAL_CHECK(hal::delay(clock, 1000ms));
+  tri_wheel.HomeLegs(terminal, clock);
+  HAL_CHECK(hal::delay(clock, 1000ms));
   HAL_CHECK(hal::write(terminal, "Starting control loop..."));
 
   while (true) {
@@ -115,12 +115,12 @@ hal::status application(drive::hardware_map& p_map)
 
     auto write_result =
       socket.write(hal::as_bytes(get_request),
-                   HAL_CHECK(hal::create_timeout(counter, 500ms)));
+                   HAL_CHECK(hal::create_timeout(clock, 500ms)));
     if (!write_result) {
       continue;
     }
 
-    HAL_CHECK(hal::delay(counter, 100ms));
+    HAL_CHECK(hal::delay(clock, 100ms));
 
     auto received = HAL_CHECK(socket.read(buffer)).data;
 
@@ -137,14 +137,14 @@ hal::status application(drive::hardware_map& p_map)
     commands =
       HAL_CHECK(mission_control.ParseMissionControlData(json_string, terminal));
     commands = rules_engine.ValidateCommands(commands);
-    commands = mode_switch.SwitchSteerMode(commands, arguments, motor_speeds);
+    commands = mode_switch.SwitchSteerMode(commands, arguments, motor_speeds, terminal);
     commands = lerp.Lerp(commands);
 
     // commands.Print();
     arguments = Drive::ModeSelect::SelectMode(commands);
-    arguments = tri_wheel.SetLegArguments(arguments);
+    arguments = HAL_CHECK(tri_wheel.SetLegArguments(arguments, clock));
 
-    motor_speeds = HAL_CHECK(tri_wheel.GetMotorFeedback());
+    motor_speeds = HAL_CHECK(tri_wheel.GetMotorFeedback(clock));
   }
 
   return hal::success();

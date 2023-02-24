@@ -26,7 +26,7 @@ hal::status application(drive::hardware_map& p_map)
   using namespace hal::literals;
 
   auto& terminal = *p_map.terminal;
-  auto& counter = *p_map.steady_clock; 
+  auto& clock = *p_map.steady_clock; 
   auto& magnet0 = *p_map.in_pin0;
   auto& magnet1 = *p_map.in_pin1;
   auto& magnet2 = *p_map.in_pin2;       
@@ -37,21 +37,21 @@ hal::status application(drive::hardware_map& p_map)
   auto can_router = hal::can_router::create(can).value();
 
   auto left_steer_motor =
-    HAL_CHECK(hal::rmd::drc::create(can_router, 6.0, 0x141));
+    HAL_CHECK(hal::rmd::drc::create(can_router, clock, 6.0, 0x141));
   auto left_hub_motor =
-    HAL_CHECK(hal::rmd::drc::create(can_router, 15.0, 0x142));
+    HAL_CHECK(hal::rmd::drc::create(can_router, clock, 15.0, 0x142));
   auto back_steer_motor =
-    HAL_CHECK(hal::rmd::drc::create(can_router, 6.0, 0x145));
+    HAL_CHECK(hal::rmd::drc::create(can_router, clock, 6.0, 0x145));
   auto back_hub_motor =
-    HAL_CHECK(hal::rmd::drc::create(can_router, 15.0, 0x146));
+    HAL_CHECK(hal::rmd::drc::create(can_router, clock, 15.0, 0x146));
   auto right_steer_motor =
-    HAL_CHECK(hal::rmd::drc::create(can_router, 6.0, 0x143));
+    HAL_CHECK(hal::rmd::drc::create(can_router, clock, 6.0, 0x143));
   auto right_hub_motor =
-    HAL_CHECK(hal::rmd::drc::create(can_router, 15.0, 0x144));
+    HAL_CHECK(hal::rmd::drc::create(can_router, clock, 15.0, 0x144));
 
-  Drive::TriWheelRouter::leg right(right_steer_motor, right_hub_motor, magnet2);
-  Drive::TriWheelRouter::leg left(left_steer_motor, left_hub_motor, magnet1);
-  Drive::TriWheelRouter::leg back(back_steer_motor, back_hub_motor, magnet0);
+  Drive::TriWheelRouter::leg right(right_steer_motor, right_hub_motor, magnet0);
+  Drive::TriWheelRouter::leg left(left_steer_motor, left_hub_motor, magnet2);
+  Drive::TriWheelRouter::leg back(back_steer_motor, back_hub_motor, magnet1);
 
   Drive::TriWheelRouter tri_wheel{ right, left, back };
   Drive::MissionControlHandler mission_control;
@@ -64,9 +64,9 @@ hal::status application(drive::hardware_map& p_map)
   Drive::CommandLerper lerp;
   std::string_view json{"{\"HB\":0,\"IO\":0,\"WO\":0,\"DM\":\"D\",\"CMD\":[0,0]}"};
 
-  HAL_CHECK(hal::delay(counter, 1000ms));
-  tri_wheel.HomeLegs(terminal, counter);
-  HAL_CHECK(hal::delay(counter, 1000ms));
+  HAL_CHECK(hal::delay(clock, 1000ms));
+  tri_wheel.HomeLegs(terminal, clock);
+  HAL_CHECK(hal::delay(clock, 1000ms));
   HAL_CHECK(hal::write(terminal, "Starting control loop..."));
 
   while (true) {
@@ -74,7 +74,6 @@ hal::status application(drive::hardware_map& p_map)
     auto received = HAL_CHECK(terminal.read(buffer)).data;
     auto result = std::string(reinterpret_cast<const char*>(received.data()),
                               received.size());
-
     auto start = result.find('{');
     auto end = result.find('}');
 
@@ -86,15 +85,16 @@ hal::status application(drive::hardware_map& p_map)
     }
     // end of serial
     commands = rules_engine.ValidateCommands(commands);
-    commands = mode_switch.SwitchSteerMode(commands, arguments, motor_speeds);
+    commands = mode_switch.SwitchSteerMode(commands, arguments, motor_speeds, terminal);
     commands = lerp.Lerp(commands);
 
     commands.Print(terminal);
     arguments = Drive::ModeSelect::SelectMode(commands);
-    arguments = tri_wheel.SetLegArguments(arguments);
+    arguments = HAL_CHECK(tri_wheel.SetLegArguments(arguments, clock));
 
-    motor_speeds = HAL_CHECK(tri_wheel.GetMotorFeedback());
-    HAL_CHECK(hal::delay(counter, 30ms));
+    motor_speeds = HAL_CHECK(tri_wheel.GetMotorFeedback(clock));
+    // motor_speeds.Print(terminal);
+    HAL_CHECK(hal::delay(clock, 30ms));
   }
 
   return hal::success();
