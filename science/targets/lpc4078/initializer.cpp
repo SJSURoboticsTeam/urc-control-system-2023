@@ -46,7 +46,7 @@ hal::result<science::hardware_map> initialize_target() {
     auto& can = HAL_CHECK((hal::lpc40xx::can::get<CAN_BUS>(can_settings)));
     auto& seal_pwm = HAL_CHECK((hal::lpc40xx::pwm::get<1,5>()));
     auto& pwm = HAL_CHECK((hal::lpc40xx::pwm::get<1,6>()));
-    auto& i2c = HAL_CHECK((hal::lpc40xx::i2c::get<0>(hal::i2c::settings{
+    auto& i2c = HAL_CHECK((hal::lpc40xx::i2c::get<2>(hal::i2c::settings{
     .clock_rate = 100.0_kHz,})));
     // Get and initialize UART0 for UART based terminal logging
     auto& uart0 = HAL_CHECK((hal::lpc40xx::uart::get<0, 64>(hal::serial::settings{

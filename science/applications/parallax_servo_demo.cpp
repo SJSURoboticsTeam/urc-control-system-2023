@@ -18,18 +18,15 @@ hal::status application(science::hardware_map& p_map) {
     auto& seal_pwm = *p_map.seal;
     auto& clock = *p_map.clock;
     auto& i2c = *p_map.i2c;
-    (void)hal::write(*p_map.terminal, "moving in1");
     auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c, 0b100'0000));
-    (void)hal::write(*p_map.terminal, "moving in1");
     HAL_CHECK(hal::delay(clock, 10ms));
     auto pca_pwm_0 = pca9685.get_pwm_channel<0>();
-
+    (void)hal::write(*p_map.terminal, "moving in 5");
     HAL_CHECK(pwm.frequency(50.0_Hz));
-    HAL_CHECK(pca_pwm_0.frequency(1500.0_kHz));
-    // HAL_CHECK(seal_pwm.frequency(50.0_Hz));
+    HAL_CHECK(pca_pwm_0.frequency(1.50_kHz));
     
     while (true) {
-        (void)hal::write(*p_map.terminal, "moving in");
+        (void)hal::write(*p_map.terminal, "we are inside of the loop");
         HAL_CHECK(pwm.duty_cycle(0.065f));
         HAL_CHECK(hal::delay(clock, 10ms));
         HAL_CHECK(pca_pwm_0.duty_cycle(0.45f));
