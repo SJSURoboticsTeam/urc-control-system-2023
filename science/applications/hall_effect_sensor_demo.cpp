@@ -15,7 +15,7 @@ using namespace std::chrono_literals;
 hal::status application(science::hardware_map& p_map) {
     // science robot entry point here. This function may yield an error.
     // configure drivers
-
+    hal::print<64>(*p_map.terminal,"Hello\n");
     while (true) {
 
         //read from the halleffect sensor

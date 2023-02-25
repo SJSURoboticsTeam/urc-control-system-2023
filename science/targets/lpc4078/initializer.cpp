@@ -23,17 +23,16 @@ constexpr int CAN_BUS = 2;
 constexpr int I2C_CHANNEL = 2;
 
 //halleffect sensor port and pin
-constexpr int HALL_EFFECT_DIGITAL_PORT = 2;
-constexpr int HALL_EFFECT_DIGITAL_PIN = 1;
+constexpr int HALL_EFFECT_DIGITAL_PORT = 1;
+constexpr int HALL_EFFECT_DIGITAL_PIN = 15;
 
 hal::result<science::hardware_map> initialize_target() {
     using namespace std::chrono_literals;
     using namespace hal::literals;
     hal::cortex_m::initialize_data_section();
     hal::cortex_m::system_control::initialize_floating_point_unit();
-    HAL_CHECK(hal::lpc40xx::clock::maximum(10.0_MHz));
+    HAL_CHECK(hal::lpc40xx::clock::maximum(12.0_MHz));
     // Create a hardware counter
-    HAL_CHECK(hal::lpc40xx::clock::maximum(10.0_MHz));
     auto& clock = hal::lpc40xx::clock::get();
     auto cpu_frequency = clock.get_frequency(hal::lpc40xx::peripheral::cpu);
     static hal::cortex_m::dwt_counter counter(cpu_frequency);
