@@ -14,7 +14,7 @@ find_package(libhal-esp8266 REQUIRED CONFIG)
 find_package(libhal-util REQUIRED CONFIG)
 find_package(libhal-pca REQUIRED CONFIG)
 
-set(DEMOS parallax_servo_demo app)
+set(DEMOS parallax_servo_demo app hall_effect_sensor_demo)
 set(TARGETS lpc4078)
 
 add_link_options(-lc -lrdimon -u _printf_float)

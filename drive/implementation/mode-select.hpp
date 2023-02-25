@@ -21,6 +21,9 @@ namespace Drive
             case 'T':
                 return SteerModes::TranslateSteering(commands);
                 break;
+            case 'H':
+                // do nothing to get it into drive mode
+                break;
             default:
                 return tri_wheel_router_arguments{};
                 break;
