@@ -23,8 +23,10 @@ constexpr int CAN_BUS = 2;
 constexpr int I2C_CHANNEL = 2;
 
 //halleffect sensor port and pin
-constexpr int HALL_EFFECT_DIGITAL_PORT = 1;
-constexpr int HALL_EFFECT_DIGITAL_PIN = 15;
+constexpr int REVOLVER_HALL_EFFECT_DIGITAL_PORT = 1;
+constexpr int REVOLVER_HALL_EFFECT_DIGITAL_PIN = 15; 
+constexpr int SEAL_HALL_EFFECT_DIGITAL_PORT = 1;
+constexpr int SEAL_HALL_EFFECT_DIGITAL_PIN = 23;
 
 hal::result<science::hardware_map> initialize_target() {
     using namespace std::chrono_literals;
@@ -41,7 +43,9 @@ hal::result<science::hardware_map> initialize_target() {
     auto& methane_level = HAL_CHECK(hal::lpc40xx::adc::get<METHANE_ANALOG_CHANNEL>());
     auto& pressure_sensor_pin = HAL_CHECK(hal::lpc40xx::adc::get<PRESSURE_SENSOR_ANALOG>());
 
-    auto& halleffect = HAL_CHECK((hal::lpc40xx::input_pin::get<HALL_EFFECT_DIGITAL_PORT, HALL_EFFECT_DIGITAL_PIN>()));
+    auto& revolver_hall_effect = HAL_CHECK((hal::lpc40xx::input_pin::get<REVOLVER_HALL_EFFECT_DIGITAL_PORT, REVOLVER_HALL_EFFECT_DIGITAL_PIN>()));
+    auto& seal_hall_effect = HAL_CHECK((hal::lpc40xx::input_pin::get<SEAL_HALL_EFFECT_DIGITAL_PORT, SEAL_HALL_EFFECT_DIGITAL_PIN>()));
+
     hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
     auto& can = HAL_CHECK((hal::lpc40xx::can::get<CAN_BUS>(can_settings)));
     auto& pwm = HAL_CHECK((hal::lpc40xx::pwm::get<1,1>()));
@@ -58,8 +62,8 @@ hal::result<science::hardware_map> initialize_target() {
 
     return science::hardware_map {
         .methane_level = &methane_level,
-        .revolver_hall_effect = &halleffect,
-        .seal_hall_effect = &halleffect,
+        .revolver_hall_effect = &revolver_hall_effect,
+        .seal_hall_effect = &seal_hall_effect,
         .clock = &counter,
         .terminal = &uart0,
         .reset = []() { hal::cortex_m::system_control::reset(); },
