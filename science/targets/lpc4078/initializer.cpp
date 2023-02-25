@@ -48,7 +48,8 @@ hal::result<science::hardware_map> initialize_target() {
 
     hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
     auto& can = HAL_CHECK((hal::lpc40xx::can::get<CAN_BUS>(can_settings)));
-    auto& pwm = HAL_CHECK((hal::lpc40xx::pwm::get<1,1>()));
+    auto& seal_pwm = HAL_CHECK((hal::lpc40xx::pwm::get<1,5>()));
+    auto& pwm = HAL_CHECK((hal::lpc40xx::pwm::get<1,6>()));
     auto& i2c = HAL_CHECK((hal::lpc40xx::i2c::get<2>(hal::i2c::settings{
     .clock_rate = 100.0_kHz,})));
     // Get and initialize UART0 for UART based terminal logging
@@ -57,7 +58,6 @@ hal::result<science::hardware_map> initialize_target() {
     })));
 
     // Use i2c bus 2 for the dev 2 board while testing 
-    auto& carbon_dioxide_sensor = HAL_CHECK((hal::lpc40xx::i2c::get<I2C_CHANNEL>()));
     // auto& i2c = HAL_CHECK((hal::lpc40xx::i2c::get<0>()));
 
     return science::hardware_map {
@@ -68,6 +68,7 @@ hal::result<science::hardware_map> initialize_target() {
         .terminal = &uart0,
         .reset = []() { hal::cortex_m::system_control::reset(); },
         .revolver_spinner = &pwm,
+        .seal = &seal_pwm,
         .pressure_sensor_pin = &pressure_sensor_pin,
         .i2c = &i2c,
         .can = &can,
