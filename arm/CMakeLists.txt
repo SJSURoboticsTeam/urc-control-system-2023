@@ -1,15 +1,14 @@
 cmake_minimum_required(VERSION 3.20)
 
 # Toolchain file which uses arm-none-eabi-gcc toolchain
-set(CMAKE_TOOLCHAIN_FILE ${CMAKE_SOURCE_DIR}/arm_toolchain.cmake)
+if(NOT DEFINED CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Debug" CACHE INTERNAL "Default to Debug Build")
+endif(NOT DEFINED CMAKE_BUILD_TYPE)
+
+set(CMAKE_TOOLCHAIN_FILE conan_toolchain.cmake)
 
 # Set project name to demos
 project(demos VERSION 0.0.1 LANGUAGES CXX)
-
-# In order for find_package to work, the prefix path must be set to the
-# location of the generated conan package reside. In this case they will reside
-# at the root of the "build" directory or the CMAKE_BINARY_DIR
-list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 
 # Import the liblpc40xx library (and all of its dependencies)
 find_package(libhal-lpc40xx REQUIRED CONFIG)
@@ -45,6 +44,8 @@ foreach(target IN LISTS TARGETS)
             ./
             targets/${target})
         target_compile_features(${current_project} PRIVATE cxx_std_20)
+
+        target_link_options(${current_project} PRIVATE -u _printf_float)
         
         # TODO(#3): This will not work for libstm32 and other target libraries.
         target_link_libraries(${current_project} PRIVATE

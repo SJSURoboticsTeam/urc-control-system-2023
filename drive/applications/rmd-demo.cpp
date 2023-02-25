@@ -11,7 +11,6 @@
 #include "../dto/drive-dto.hpp"
 #include "../hardware_map.hpp"
 #include "../implementation/mission-control-handler.hpp"
-#include "../soft-driver/rmd-encoder.hpp"
 #include "src/util.hpp"
 
 hal::status application(drive::hardware_map& p_map)
@@ -22,14 +21,15 @@ hal::status application(drive::hardware_map& p_map)
   Drive::MissionControlHandler mission_control;
   auto& can = *p_map.can;
   auto& terminal = *p_map.terminal;
+  auto& clock = *p_map.steady_clock;
   float encoderData;
   // auto& esp = *p_map.esp;
 
   // HAL_CHECK(hal::write(terminal, "Starting RMD + WiFi Demo...\n"));
-  HAL_CHECK(hal::delay(*p_map.steady_clock, 1s));
+  HAL_CHECK(hal::delay(clock, 1s));
 
   auto router = HAL_CHECK(hal::can_router::create(can));
-  auto left_hub_motor = HAL_CHECK(hal::rmd::drc::create(router, 15.0, 0x142));
+  auto left_hub_motor = HAL_CHECK(hal::rmd::drc::create(router, clock, 15.0, 0x142));
   // auto right_hub_motor = HAL_CHECK(hal::rmd::drc::create(router, 15.0, 0x144));
   // auto back_hub_motor = HAL_CHECK(hal::rmd::drc::create(router, 15.0, 0x146));
 
@@ -83,7 +83,6 @@ hal::status application(drive::hardware_map& p_map)
     HAL_CHECK(hal::delay(*p_map.steady_clock, 1s));
 
     // HAL_CHECK(left_hub_motor.feedback_request(hal::rmd::drc::read::encoder_data));
-    encoderData = Drive::RmdEncoder::CalcEncoderPositions(left_hub_motor);
     hal::print<20>(terminal, "%f\n", encoderData);
     // HAL_CHECK(hal::write(terminal, encoder));
     // buffer.fill('.');

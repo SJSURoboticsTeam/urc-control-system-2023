@@ -10,7 +10,6 @@
 
 #include "../dto/drive-dto.hpp"
 #include "../dto/motor-feedback-dto.hpp"
-#include "../soft-driver/rmd-encoder.hpp"
 
 namespace Drive {
 class TriWheelRouter
@@ -37,26 +36,33 @@ public:
   {
   }
 
-  tri_wheel_router_arguments SetLegArguments(
-    tri_wheel_router_arguments tri_wheel_arguments)
+  hal::result<tri_wheel_router_arguments> SetLegArguments(tri_wheel_router_arguments tri_wheel_arguments, hal::steady_clock& clock)
   {
+    using namespace std::chrono_literals;
+    using namespace hal::literals;
     left_.steer_motor_.position_control(
       hal::degrees(-tri_wheel_arguments.left.steer.angle + left_.wheel_offset_),
       hal::rpm(tri_wheel_arguments.left.steer.speed));
+    HAL_CHECK(hal::delay(clock, 10ms));
     left_.drive_motor_.velocity_control(
-      hal::rpm(tri_wheel_arguments.left.hub.speed));
+      -hal::rpm(tri_wheel_arguments.left.hub.speed));
+    HAL_CHECK(hal::delay(clock, 10ms));
 
     right_.steer_motor_.position_control(
       hal::degrees(-tri_wheel_arguments.right.steer.angle + right_.wheel_offset_),
       hal::rpm(tri_wheel_arguments.right.steer.speed));
+      HAL_CHECK(hal::delay(clock, 10ms));
     right_.drive_motor_.velocity_control(
-      hal::rpm(tri_wheel_arguments.right.hub.speed));
+      -hal::rpm(tri_wheel_arguments.right.hub.speed));
+      HAL_CHECK(hal::delay(clock, 10ms));
 
     back_.steer_motor_.position_control(
       hal::degrees(-tri_wheel_arguments.back.steer.angle + back_.wheel_offset_),
       hal::rpm(tri_wheel_arguments.back.steer.speed));
+      HAL_CHECK(hal::delay(clock, 10ms));
     back_.drive_motor_.velocity_control(
-      hal::rpm(tri_wheel_arguments.back.hub.speed));
+      -hal::rpm(tri_wheel_arguments.back.hub.speed));
+      HAL_CHECK(hal::delay(clock, 10ms));
 
     tri_wheel_arguments_ = tri_wheel_arguments;
     return tri_wheel_arguments_;
@@ -73,24 +79,48 @@ public:
   {
     using namespace std::chrono_literals;
     using namespace hal::literals;
+    bool going_to_60 = false;
 
-    while (WheelNotZeroDoThis(left_) | WheelNotZeroDoThis(right_) |
-           WheelNotZeroDoThis(back_)) {
-      // This loops until all of the wheels are zeroed and/or homed
-    }
+    left_.steer_motor_.position_control(0.0_deg, 2.0_rpm);
+    HAL_CHECK(hal::delay(counter, 10ms));
+    right_.steer_motor_.position_control(0.0_deg, 2.0_rpm);
+    HAL_CHECK(hal::delay(counter, 10ms));
+    back_.steer_motor_.position_control(0.0_deg, 2.0_rpm);
 
-    bool leftPinLow = !(HAL_CHECK(left_.magnet_.level())),
-         rightPinLow = !(HAL_CHECK(right_.magnet_.level())),
-         backPinLow = !(HAL_CHECK(back_.magnet_.level()));
+    // max angle that the wheels will have to turn is 60 degrees for this step, so 2rpm is 720deg/min
+    // which is 12 deg/sec which means we need to wait 5 seconds to move 60 degrees but wait 6 seconds to be safe
+    HAL_CHECK(hal::delay(counter, 6s));
+
+    // these are active high
+    bool leftPinLow = !(HAL_CHECK(left_.magnet_.level()).state),
+         rightPinLow = !(HAL_CHECK(right_.magnet_.level()).state),
+         backPinLow = !(HAL_CHECK(back_.magnet_.level()).state);
       
     HAL_CHECK(hal::delay(counter, 10ms));
 
     if(leftPinLow) 
-      WheelNotNeg60DoThis(left_, counter);
+    {
+      left_.wheel_offset_ = 60;
+      left_.steer_motor_.position_control(60.0_deg, 2.0_rpm);
+      going_to_60 = true;
+    }
     if(rightPinLow) 
-      WheelNotNeg60DoThis(right_, counter);
+    {
+      right_.wheel_offset_ = 60;
+      right_.steer_motor_.position_control(60.0_deg, 2.0_rpm);
+      going_to_60 = true;
+    }
     if(backPinLow) 
-      WheelNotNeg60DoThis(back_, counter);
+    {
+      back_.wheel_offset_ = 60;
+      back_.steer_motor_.position_control(60.0_deg, 2.0_rpm);
+      going_to_60 = true;
+    }
+    // move them if 0 was home position due to inacuracy
+    // then if it is going to 60 we need to delay the same amount as the math above
+    if(going_to_60) {
+      HAL_CHECK(hal::delay(counter, 6s));
+    }
 
     bool leftNotHome = true, rightNotHome = true, backNotHome = true;
 
@@ -117,51 +147,29 @@ public:
     return hal::success();
   }
 
-  hal::result<motor_feedback> GetMotorFeedback()
+  hal::result<motor_feedback> GetMotorFeedback(hal::steady_clock& clock)
   {
+    using namespace std::chrono_literals;
+    using namespace hal::literals;
     motor_feedback motor_speeds;
-    // Creating this enum from the drc class allows us to read all data from the
-    // rmd when it is passed into the feedback_request function
-    hal::rmd::drc::read read_commands;
-
-    HAL_CHECK(left_.steer_motor_.feedback_request(read_commands));
-    HAL_CHECK(right_.steer_motor_.feedback_request(read_commands));
-    HAL_CHECK(left_.steer_motor_.feedback_request(read_commands));
-
+    left_.steer_motor_.feedback_request(hal::rmd::drc::read::status_2);
+    HAL_CHECK(hal::delay(clock, 10ms));
+    right_.steer_motor_.feedback_request(hal::rmd::drc::read::status_2);
+     HAL_CHECK(hal::delay(clock, 10ms));
+    back_.steer_motor_.feedback_request(hal::rmd::drc::read::status_2);
+     HAL_CHECK(hal::delay(clock, 10ms));
+    // theory: I don't think rmds return speed through set position and only through set velocity, therefore 
+    // we always have to request for feedback from the steers
     motor_speeds.left_steer_speed = left_.steer_motor_.feedback().speed();
     motor_speeds.right_steer_speed = right_.steer_motor_.feedback().speed();
     motor_speeds.back_steer_speed = back_.steer_motor_.feedback().speed();
+    motor_speeds.left_drive_speed = left_.drive_motor_.feedback().speed();
+    motor_speeds.right_drive_speed = right_.drive_motor_.feedback().speed();
+    motor_speeds.back_drive_speed = back_.drive_motor_.feedback().speed();
     return motor_speeds;
   }
 
 private:
-  bool WheelNotZeroDoThis(leg& leg_)
-  {
-    using namespace std::chrono_literals;
-    using namespace hal::literals;
-    // This leg is NOT at zero
-    if ((Drive::RmdEncoder::CalcEncoderPositions(leg_.steer_motor_) >=
-         0.01f) ||
-        Drive::RmdEncoder::CalcEncoderPositions(leg_.steer_motor_) <=
-          -0.01f) {
-      leg_.steer_motor_.position_control(0.0_deg, 2.0_rpm);
-      // This wheel is NOT at zero
-      return true;
-    } else {
-      // This wheel is at zero
-      return false;
-    }
-  }
-
-  hal::status WheelNotNeg60DoThis(leg& leg_, hal::steady_clock& counter)
-  {
-    using namespace std::chrono_literals;
-    using namespace hal::literals;
-    
-    leg_.wheel_offset_ = -60;
-    leg_.steer_motor_.position_control(-60.0_deg, 2.0_rpm);
-    HAL_CHECK(hal::delay(counter, 6s));
-  }
 
   hal::result<bool> WheelNotHomeDoThis(leg& leg_, hal::steady_clock& counter)
   {
@@ -169,7 +177,7 @@ private:
     using namespace hal::literals;
 
     // level returns true if it is high, and the magnet is high when it is not
-    bool not_homed = HAL_CHECK(leg_.magnet_.level());
+    bool not_homed = HAL_CHECK(leg_.magnet_.level()).state;
     HAL_CHECK(hal::delay(counter, 10ms));
 
     if (not_homed) {
