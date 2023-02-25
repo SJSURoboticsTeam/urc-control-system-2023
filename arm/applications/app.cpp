@@ -26,8 +26,8 @@ hal::status application(arm::hardware_map& p_map)
   auto& terminal = *p_map.terminal;
   auto& counter = *p_map.steady_clock;
   auto& can = *p_map.can;
-  auto& i2c0 = *p_map.i2c0;
   auto& i2c1 = *p_map.i2c1;
+  auto& i2c2 = *p_map.i2c2;
 
   std::array<hal::byte, 8192> buffer{};
   static std::string_view get_request = "";
@@ -75,7 +75,7 @@ hal::status application(arm::hardware_map& p_map)
   auto right_wrist_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x145));
 
-  auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c0, 0b100'0000));
+  auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c1, 0b100'0000));
   auto pwm0 = pca9685.get_pwm_channel<0>();
   HAL_CHECK(pwm0.frequency(50.0_Hz));
 

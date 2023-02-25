@@ -14,8 +14,8 @@ struct hardware_map
   hal::serial* terminal;
   hal::can* can;
   hal::serial* esp;
-  hal::i2c* i2c0;
   hal::i2c* i2c1;
+  hal::i2c* i2c2;
   hal::steady_clock* steady_clock;
   hal::callback<void()> reset;
   // hal::pwm* pwm0;
