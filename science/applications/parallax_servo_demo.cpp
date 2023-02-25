@@ -18,7 +18,9 @@ hal::status application(science::hardware_map& p_map) {
     auto& seal_pwm = *p_map.seal;
     auto& clock = *p_map.clock;
     auto& i2c = *p_map.i2c;
+    (void)hal::write(*p_map.terminal, "moving in1");
     auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c, 0b100'0000));
+    (void)hal::write(*p_map.terminal, "moving in1");
     HAL_CHECK(hal::delay(clock, 10ms));
     auto pca_pwm_0 = pca9685.get_pwm_channel<0>();
 
