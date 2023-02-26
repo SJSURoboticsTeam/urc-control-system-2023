@@ -83,26 +83,37 @@ hal::status application(science::hardware_map &p_map) {
         }
         else if(mc_data.status.depressurize_status == science::Status::InProgress) {
             //start vacuum pump. Assume 40v input. Step down to 12v.
-            
+            //12/40 = 0.30
+            HAL_CHECK(pca_pwm_0.duty_cycle(0.30f));
             HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.depressurize_status == science::Status::Complete && mc_data.status.inject_status == science::Status::NotStarted) {
             //stop vacuum pump
+            HAL_CHECK(pca_pwm_0.duty_cycle(0.00f));
             HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.inject_status == science::Status::InProgress) {
             //start injecting dosing pumps. Assume 40v input. Step down to 6v.
+            //6/40 = 0.15
+            HAL_CHECK(pca_pwm_1.duty_cycle(0.15f));
+            HAL_CHECK(pca_pwm_2.duty_cycle(0.15f));
             HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.inject_status == science::Status::Complete){
             //stop injecting dosing pumps
+            HAL_CHECK(pca_pwm_1.duty_cycle(0.00f);
+            HAL_CHECK(pca_pwm_2.duty_cycle(0.00f));
+            HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.clear_status == science::Status::InProgress) {
             //start vacuum pump. Assume 40v input. Step down to 12v.
+            //12/40 = 0.30
+            HAL_CHECK(pca_pwm_0.duty_cycle(0.30f));
             HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.clear_status == science::Status::Complete && mc_data.status.unseal_status == science::Status::NotStarted) {
             //stop vacuum pump
+            HAL_CHECK(pca_pwm_0.duty_cycle(0.00f));
             HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.unseal_status == science::Status::InProgress) {
