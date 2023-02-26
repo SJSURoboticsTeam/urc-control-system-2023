@@ -82,23 +82,27 @@ hal::status application(science::hardware_map &p_map) {
             HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.depressurize_status == science::Status::InProgress) {
-            // Suck(air_pump);
+            //start vacuum pump. Assume 40v input. Step down to 12v.
+            
             HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.depressurize_status == science::Status::Complete && mc_data.status.inject_status == science::Status::NotStarted) {
-            // StopSucking(air_pump);
+            //stop vacuum pump
             HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.inject_status == science::Status::InProgress) {
-            // Inject(dosing_pump, 2);
+            //start injecting dosing pumps. Assume 40v input. Step down to 6v.
             HAL_CHECK(hal::delay(clock, 5ms));
         }
+        else if(mc_data.status.inject_status == science::Status::Complete){
+            //stop injecting dosing pumps
+        }
         else if(mc_data.status.clear_status == science::Status::InProgress) {
-            // Suck(air_pump);
+            //start vacuum pump. Assume 40v input. Step down to 12v.
             HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.clear_status == science::Status::Complete && mc_data.status.unseal_status == science::Status::NotStarted) {
-            // StopSucking(air_pump);
+            //stop vacuum pump
             HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.unseal_status == science::Status::InProgress) {
