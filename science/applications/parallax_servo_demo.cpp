@@ -28,28 +28,38 @@ hal::status application(science::hardware_map& p_map) {
     HAL_CHECK(pwm.frequency(50.0_Hz));
     HAL_CHECK(pca_pwm_0.frequency(1.50_kHz));
     HAL_CHECK(hal::delay(clock, 1000ms));
-            HAL_CHECK(pwm.duty_cycle(0.065f));
-        HAL_CHECK(hal::delay(clock, 1000ms));
+    HAL_CHECK(pwm.duty_cycle(0.065f));
+    HAL_CHECK(hal::delay(clock, 1000ms));
 
-        //HAL_CHECK(pwm.duty_cycle(0.035f));
-        //HAL_CHECK(hal::delay(clock, 2000ms));
+    /*
+    ================IMPORTANT===============
+    The duty cycles on the pca devices assumes a 12V input.
+    */
+
+    //vacuum pump
+    HAL_CHECK(hal::delay(clock, 1000ms));
+    HAL_CHECK(pca_pwm_0.duty_cycle(1.00f));
+
+    //dosing pump 1
+    HAL_CHECK(hal::delay(clock, 1000ms));
+    HAL_CHECK(pca_pwm_1.duty_cycle(0.50f));
 
 
-        //vacuum pump
-        HAL_CHECK(hal::delay(clock, 1000ms));
-        HAL_CHECK(pca_pwm_0.duty_cycle(1.00f));
+    //dosing pump 2
+    HAL_CHECK(hal::delay(clock, 1000ms));
+    HAL_CHECK(pca_pwm_2.duty_cycle(0.50f));
 
-        //dosing pump 1
-        HAL_CHECK(hal::delay(clock, 1000ms));
-        HAL_CHECK(pca_pwm_1.duty_cycle(0.50f));
-
-
-        //dosing pump 2
-        HAL_CHECK(hal::delay(clock, 1000ms));
-        HAL_CHECK(pca_pwm_2.duty_cycle(0.50f));
+    /*
+    =======END IMPORTANT NOTICE=========
+    */
     
     while (true) {
         hal::write(terminal, "we are inside of da loop\n");
+
+        /*
+        ================IMPORTANT===============
+        The duty cycles on the pca devices assumes a 12V input.
+        */
 
         //vacuum pump
         //HAL_CHECK(pca_pwm_0.duty_cycle(1.0f));
@@ -73,7 +83,9 @@ hal::status application(science::hardware_map& p_map) {
         // HAL_CHECK(pca_pwm_2.duty_cycle(0.50f));
 
 
-
+        /*
+        =======END IMPORTANT NOTICE=========
+        */
 
 
 
