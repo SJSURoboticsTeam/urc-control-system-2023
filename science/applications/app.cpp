@@ -54,6 +54,14 @@ hal::status application(science::hardware_map &p_map) {
     science::science_data mc_data;
 
     HAL_CHECK(revolver_spinner.frequency(50.0_Hz));
+    HAL_CHECK(hal::delay(clock, 10ms));
+    HAL_CHECK(pca_pwm_0.frequency(1.50_kHz));
+    HAL_CHECK(hal::delay(clock, 10ms));
+    HAL_CHECK(pca_pwm_1.frequency(1.50_kHz));
+    HAL_CHECK(hal::delay(clock, 10ms));
+    HAL_CHECK(pca_pwm_2.frequency(1.50_kHz));
+    HAL_CHECK(hal::delay(clock, 10ms));
+
     while(true) {
         mc_commands = HAL_CHECK(mc_handler.ParseMissionControlData(response, terminal));
         mc_data.pressure_level = HAL_CHECK(pressure.get_parsed_data());
@@ -101,7 +109,7 @@ hal::status application(science::hardware_map &p_map) {
         }
         else if(mc_data.status.inject_status == science::Status::Complete){
             //stop injecting dosing pumps
-            HAL_CHECK(pca_pwm_1.duty_cycle(0.00f);
+            HAL_CHECK(pca_pwm_1.duty_cycle(0.00f));
             HAL_CHECK(pca_pwm_2.duty_cycle(0.00f));
             HAL_CHECK(hal::delay(clock, 5ms));
         }
