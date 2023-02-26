@@ -22,16 +22,18 @@ hal::status application(drive::hardware_map& p_map)
   auto& can = *p_map.can;
   auto& terminal = *p_map.terminal;
   auto& clock = *p_map.steady_clock;
-  float encoderData;
+  float encoderData = 0.0f;
   // auto& esp = *p_map.esp;
 
   // HAL_CHECK(hal::write(terminal, "Starting RMD + WiFi Demo...\n"));
   HAL_CHECK(hal::delay(clock, 1s));
 
   auto router = HAL_CHECK(hal::can_router::create(can));
-  auto left_hub_motor = HAL_CHECK(hal::rmd::drc::create(router, clock, 15.0, 0x142));
-  // auto right_hub_motor = HAL_CHECK(hal::rmd::drc::create(router, 15.0, 0x144));
-  // auto back_hub_motor = HAL_CHECK(hal::rmd::drc::create(router, 15.0, 0x146));
+  auto left_hub_motor =
+    HAL_CHECK(hal::rmd::drc::create(router, clock, 15.0, 0x142));
+  // auto right_hub_motor = HAL_CHECK(hal::rmd::drc::create(router, 15.0,
+  // 0x144)); auto back_hub_motor =
+  // HAL_CHECK(hal::rmd::drc::create(router, 15.0, 0x146));
 
   // HAL_CHECK(hal::write(terminal, "Connecting to wifi...\n"));
   // std::array<hal::byte, 8192> buffer{};
@@ -69,18 +71,18 @@ hal::status application(drive::hardware_map& p_map)
   //   terminal,left_hub_motor
   //   "Connected to wifi! Starting main control loop in 1 second...\n"));
   HAL_CHECK(hal::delay(*p_map.steady_clock, 1s));
-  left_hub_motor.system_control(hal::rmd::drc::system::running);
+  HAL_CHECK(left_hub_motor.system_control(hal::rmd::drc::system::running));
   // right_hub_motor.system_control(hal::rmd::drc::system::running);
   // back_hub_motor.system_control(hal::rmd::drc::system::running);
-  
+
   HAL_CHECK(hal::delay(*p_map.steady_clock, 1s));
 
   HAL_CHECK(hal::write(terminal, "Starting!\n"));
 
-  left_hub_motor.position_control(30.0_deg, 5.0_rpm);
+  HAL_CHECK(left_hub_motor.position_control(30.0_deg, 5.0_rpm));
 
   while (true) {
-    HAL_CHECK(hal::delay(*p_map.steady_clock, 1s));
+    HAL_CHECK(hal::delay(*p_map.steady_clock, 1s))
 
     // HAL_CHECK(left_hub_motor.feedback_request(hal::rmd::drc::read::encoder_data));
     hal::print<20>(terminal, "%f\n", encoderData);
@@ -93,7 +95,8 @@ hal::status application(drive::hardware_map& p_map)
 
     // auto write_result =
     //   socket.write(hal::as_bytes(get_request),
-    //                HAL_CHECK(hal::create_timeout(*p_map.steady_clock, 500ms)));
+    //                HAL_CHECK(hal::create_timeout(*p_map.steady_clock,
+    //                500ms)));
     // if (!write_result) {
     //   continue;
     // }
@@ -110,7 +113,8 @@ hal::status application(drive::hardware_map& p_map)
 
     // std::string json_string(json);
     // commands =
-    // HAL_CHECK(mission_control.ParseMissionControlData(json_string, terminal));
+    // HAL_CHECK(mission_control.ParseMissionControlData(json_string,
+    // terminal));
 
     // auto rmd_speed = commands.speed;
     // HAL_CHECK(hal::delay(*p_map.steady_clock, 1s));
