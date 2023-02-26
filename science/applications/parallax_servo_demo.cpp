@@ -27,7 +27,9 @@ hal::status application(science::hardware_map& p_map) {
     (void)hal::write(*p_map.terminal, "moving in 5\n");
     HAL_CHECK(pwm.frequency(50.0_Hz));
     HAL_CHECK(pca_pwm_0.frequency(1.50_kHz));
+    HAL_CHECK(hal::delay(clock, 10ms));
     HAL_CHECK(pca_pwm_1.frequency(1.50_kHz));
+    HAL_CHECK(hal::delay(clock, 10ms));
     HAL_CHECK(pca_pwm_2.frequency(1.50_kHz));
     HAL_CHECK(hal::delay(clock, 1000ms));
     HAL_CHECK(pwm.duty_cycle(0.065f));
