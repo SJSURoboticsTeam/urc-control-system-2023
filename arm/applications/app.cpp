@@ -44,6 +44,8 @@ hal::status application(drive::hardware_map& p_map)
     return wifi_result.error();
   }
 
+  HAL_CHECK(hal::write(terminal, "Connected to wifi...\n"));
+
   auto wifi = wifi_result.value();
 
   auto socket_result = hal::esp8266::at::socket::create(
@@ -51,7 +53,7 @@ hal::status application(drive::hardware_map& p_map)
     HAL_CHECK(hal::create_timeout(counter, 1s)),
     {
       .type = hal::socket::type::tcp,
-      .domain = "192.168.1.183",
+      .domain = "192.168.1.132",
       .port = "5000",
     });
 
@@ -60,11 +62,14 @@ hal::status application(drive::hardware_map& p_map)
     return socket_result.error();
   }
 
+  HAL_CHECK(hal::write(terminal, "Connected to website...\n"));
+
   auto socket = std::move(socket_result.value());
 
   auto can_router = hal::can_router::create(can).value();
 
-  auto rotunda_motor = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x141));
+  auto rotunda_motor =
+    HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x141));
   auto shoulder_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8 * 65 / 16, 0x142));
   auto elbow_motor =
@@ -96,7 +101,7 @@ hal::status application(drive::hardware_map& p_map)
   while (true) {
     buffer.fill('.');
     get_request =
-      "GET /arm?HB=0&IO=1 HTTP/1.1\r\n Host: 192.168.1.183:5000/\r\n\r\n";
+      "GET /arm?HB=0&IO=1 HTTP/1.1\r\n Host: 192.168.1.132:5000/\r\n\r\n";
 
     auto write_result =
       socket.write(hal::as_bytes(get_request),
@@ -124,7 +129,7 @@ hal::status application(drive::hardware_map& p_map)
       HAL_CHECK(mission_control.ParseMissionControlData(json_string, terminal));
 
     commands = rules_engine.ValidateCommands(commands);
-    arm.SetJointArguments(commands);
+    HAL_CHECK(arm.SetJointArguments(commands));
   }
 
   return hal::success();

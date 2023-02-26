@@ -18,8 +18,8 @@ float convert_to_duty_cycle(int angle)
   std::pair<float, float> to;
   from.first = 0.0f;
   from.second = 180.0f;
-  to.first = 0.065f;
-  to.second = 0.085f;
+  to.first = 0.025f;
+  to.second = 0.125f;
   return hal::map(static_cast<float>(angle), from, to);
 }
 

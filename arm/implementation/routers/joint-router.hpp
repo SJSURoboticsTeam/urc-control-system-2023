@@ -25,26 +25,26 @@ public:
   {
   }
 
-  mc_commands SetJointArguments(mc_commands arguments)
+  hal::result<mc_commands> SetJointArguments(mc_commands arguments)
   {
-    rotunda_.position_control(
+    HAL_CHECK(rotunda_.position_control(
       hal::degrees(static_cast<float>(arguments.rotunda_angle)),
-      hal::rpm(static_cast<float>(arguments.speed)));
-    shoulder_.position_control(
+      hal::rpm(static_cast<float>(arguments.speed))));
+    HAL_CHECK(shoulder_.position_control(
       hal::degrees(static_cast<float>(arguments.shoulder_angle)),
-      hal::rpm(static_cast<float>(arguments.speed)));
-    elbow_.position_control(
+      hal::rpm(static_cast<float>(arguments.speed))));
+    HAL_CHECK(elbow_.position_control(
       hal::degrees(static_cast<float>(arguments.elbow_angle)),
-      hal::rpm(static_cast<float>(arguments.speed)));
-    left_wrist_.position_control(
+      hal::rpm(static_cast<float>(arguments.speed))));
+    HAL_CHECK(left_wrist_.position_control(
       hal::degrees(static_cast<float>(arguments.wrist_pitch_angle) +
                    static_cast<float>(arguments.wrist_roll_angle)),
-      hal::rpm(static_cast<float>(arguments.speed)));
-    right_wrist_.position_control(
+      hal::rpm(static_cast<float>(arguments.speed))));
+    HAL_CHECK(right_wrist_.position_control(
       hal::degrees(static_cast<float>(arguments.wrist_roll_angle) -
                    static_cast<float>(arguments.wrist_pitch_angle)),
-      hal::rpm(static_cast<float>(arguments.speed)));
-    pwm0_.duty_cycle(ConvertAngleToDutyCycle(arguments.rr9_angle));
+      hal::rpm(static_cast<float>(arguments.speed))));
+    HAL_CHECK(pwm0_.duty_cycle(ConvertAngleToDutyCycle(arguments.rr9_angle)));
     return arguments;
   }
 
