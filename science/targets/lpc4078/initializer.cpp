@@ -48,8 +48,8 @@ hal::result<science::hardware_map> initialize_target() {
 
     hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
     auto& can = HAL_CHECK((hal::lpc40xx::can::get<CAN_BUS>(can_settings)));
+    auto& revolver_pwm = HAL_CHECK((hal::lpc40xx::pwm::get<1,1>()));
     auto& seal_pwm = HAL_CHECK((hal::lpc40xx::pwm::get<1,5>()));
-    auto& pwm = HAL_CHECK((hal::lpc40xx::pwm::get<1,6>()));
     auto& i2c = HAL_CHECK((hal::lpc40xx::i2c::get<2>(hal::i2c::settings{
     .clock_rate = 100.0_kHz,})));
     // Get and initialize UART0 for UART based terminal logging
@@ -60,6 +60,10 @@ hal::result<science::hardware_map> initialize_target() {
     // Use i2c bus 2 for the dev 2 board while testing 
     // auto& i2c = HAL_CHECK((hal::lpc40xx::i2c::get<0>()));
 
+
+    // Set up seal servo
+    auto& seal_servo = HAL_CHECK((hal::lpc40xx::pwm::get<1, 2>()));
+
     return science::hardware_map {
         .methane_level = &methane_level,
         .revolver_hall_effect = &revolver_hall_effect,
@@ -67,11 +71,11 @@ hal::result<science::hardware_map> initialize_target() {
         .clock = &counter,
         .terminal = &uart0,
         .reset = []() { hal::cortex_m::system_control::reset(); },
-        .revolver_spinner = &pwm,
+        .revolver_spinner = &revolver_pwm,
         .seal = &seal_pwm,
         .pressure_sensor_pin = &pressure_sensor_pin,
         .i2c = &i2c,
         .can = &can,
-        
+        .seal_servo = &seal_servo,
     };
 }

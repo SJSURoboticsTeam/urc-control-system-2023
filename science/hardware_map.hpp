@@ -24,6 +24,7 @@ struct hardware_map {
     hal::adc* pressure_sensor_pin;
     hal::i2c* i2c;
     hal::can* can;
+    hal::pwm* seal_servo;
 };
 } // namespace science
 
