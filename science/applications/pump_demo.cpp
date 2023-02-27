@@ -22,12 +22,12 @@ hal::status application(science::hardware_map& p_map) {
         HAL_CHECK(hal::write(*p_map.terminal, "Demo cannot be ran as no pwm API exists for lpc40xx"));
         return hal::new_error("Demo cannot be ran as no pwm API exists for lpc40xx");
     }
-    auto& pressure_pin = *p_map.pressure_sensor_pin;
+    //auto& pressure_pin = *p_map.pressure_sensor_pin;
     auto& dosing_pin = *p_map.pressure_sensor_pin;
-    auto& pressure_pin = *p_map.pressure_sensor_pin;
+    //auto& pressure_pin = *p_map.pressure_sensor_pin;
     while (true)
     {
-        science::PressureSensor pressure_sensor(&*p_map.pressure_sensor_pin);
+        //science::PressureSensor pressure_sensor(&*p_map.pressure_sensor_pin);
 
         science::PumpPwmController dosing_pump(&*p_map.dosing_pump, DOSING_PUMP_PWM_FREQUENCY);
         science::PumpPwmController air_pump(&*p_map.air_pump, AIR_PUMP_PWM_FREQUENCY);
@@ -44,7 +44,7 @@ hal::status application(science::hardware_map& p_map) {
         
         HAL_CHECK(hal::delay(*p_map.clock, 500ms));
         dosing_pump.stop_flow();
-        air_pump.run_vacuum(pressure_sensor);
+        //air_pump.run_vacuum(pressure_sensor);
         HAL_CHECK(hal::delay(*p_map.clock, 500ms));
     }
 
