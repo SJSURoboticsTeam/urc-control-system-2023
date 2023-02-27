@@ -77,6 +77,7 @@ hal::status application(science::hardware_map &p_map) {
 
 
         state_machine.RunMachine(mc_data.status, mc_commands, mc_data.pressure_level, revolver_hall_value, seal_hall_value);
+        mc_commands.state_step = 1;
         if(mc_data.status.move_revolver_status == science::Status::InProgress) {
             HAL_CHECK(revolver_spinner.duty_cycle(0.085f));
             HAL_CHECK(hal::delay(clock, 5ms));
@@ -106,6 +107,8 @@ hal::status application(science::hardware_map &p_map) {
             HAL_CHECK(pca_pwm_1.duty_cycle(0.15f));
             HAL_CHECK(pca_pwm_2.duty_cycle(0.15f));
             HAL_CHECK(hal::delay(clock, 5ms));
+            HAL_CHECK(hal::delay(clock, 5s));
+            mc_commands.state_step = 2;
         }
         else if(mc_data.status.inject_status == science::Status::Complete){
             //stop injecting dosing pumps
@@ -127,8 +130,11 @@ hal::status application(science::hardware_map &p_map) {
         else if(mc_data.status.unseal_status == science::Status::InProgress) {
             science::Unseal();
             HAL_CHECK(hal::delay(clock, 5ms));
+            mc_commands.state_step = 0;
         }
         response = mc_handler.CreateGETRequestParameterWithRoverStatus(mc_data);
+        mc_commands.Print();
+        HAL_CHECK(hal::delay(clock, 1s));
     }
     return hal::success();
 }

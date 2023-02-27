@@ -22,6 +22,10 @@ namespace science{
         int inject_status = Status::NotStarted;
         int clear_status = Status::NotStarted;
         int unseal_status = Status::NotStarted;
+        void Print(hal::serial& terminal) {
+            hal::print<200>(terminal, "move_revolver_status: %d | seal_status: %d | 
+            depressurize_status: %d | inject_status: %d | clear_status: %d | unseal_status: %d \n", move_revolver_status, seal_status, depressurize_status, inject_status, clear_status, unseal_status);
+        }
     };
 
     // science data is what we send mission control
