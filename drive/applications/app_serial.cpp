@@ -35,17 +35,22 @@ hal::status application(drive::hardware_map& p_map)
   std::array<hal::byte, 8192> buffer{};
 
   auto can_router = hal::can_router::create(can).value();
-
+  HAL_CHECK(hal::write(terminal, "1\n"));
   auto left_steer_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, clock, 6.0, 0x141));
+    HAL_CHECK(hal::write(terminal, "2\n"));
   auto left_hub_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, clock, 15.0, 0x142));
+    HAL_CHECK(hal::write(terminal, "3\n"));
   auto back_steer_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, clock, 6.0, 0x145));
+    HAL_CHECK(hal::write(terminal, "4\n"));
   auto back_hub_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, clock, 15.0, 0x146));
+    HAL_CHECK(hal::write(terminal, "5\n"));
   auto right_steer_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, clock, 6.0, 0x143));
+    HAL_CHECK(hal::write(terminal, "6\n"));
   auto right_hub_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, clock, 15.0, 0x144));
 
