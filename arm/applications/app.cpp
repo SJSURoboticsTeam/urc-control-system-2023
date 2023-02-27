@@ -12,8 +12,8 @@
 #include "../implementation/rules-engine.hpp"
 
 #include "../hardware_map.hpp"
+#include "src/util.hpp"
 
-#include <string>
 #include <string_view>
 
 hal::status application(drive::hardware_map& p_map)
@@ -32,17 +32,27 @@ hal::status application(drive::hardware_map& p_map)
   static std::string_view get_request = "";
 
   HAL_CHECK(hal::write(terminal, "Starting program...\n"));
-
   auto wifi_result = hal::esp8266::at::wlan_client::create(
     esp,
     "SJSU Robotics 2.4GHz",
     "R0Bot1cs3250",
-    HAL_CHECK(hal::create_timeout(counter, 10s)));
+    hal::create_timeout(counter, 10s).value());
 
-  if (!wifi_result) {
-    HAL_CHECK(hal::write(terminal, "Failed to create wifi client!\n"));
-    return wifi_result.error();
+  while (true)
+  {
+    wifi_result = hal::esp8266::at::wlan_client::create(
+      esp,
+      "SJSU Robotics 2.4GHz",
+      "R0Bot1cs3250",
+      hal::create_timeout(counter, 10s).value());
+
+    if (wifi_result) {
+      break;
+    }
+    
   }
+  HAL_CHECK(hal::write(terminal, "ESP created!\n"));
+      
 
   auto wifi = wifi_result.value();
 
@@ -51,7 +61,7 @@ hal::status application(drive::hardware_map& p_map)
     HAL_CHECK(hal::create_timeout(counter, 1s)),
     {
       .type = hal::socket::type::tcp,
-      .domain = "192.168.1.183",
+      .domain = "192.168.1.197",
       .port = "5000",
     });
 
@@ -62,19 +72,28 @@ hal::status application(drive::hardware_map& p_map)
 
   auto socket = std::move(socket_result.value());
 
+  HAL_CHECK(hal::write(terminal, "Beginning Can \n"));
+
   auto can_router = hal::can_router::create(can).value();
+
+  HAL_CHECK(hal::write(terminal, "Can router created\n"));
 
   auto rotunda_motor = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x141));
   auto shoulder_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8 * 65 / 16, 0x142));
+    HAL_CHECK(hal::write(terminal, "Here 1 \n"));
   auto elbow_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8 * 5 / 2, 0x143));
+    HAL_CHECK(hal::write(terminal, "Here 2 \n"));
   auto left_wrist_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x144));
+    HAL_CHECK(hal::write(terminal, "Here 3 \n"));
   auto right_wrist_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x145));
+    HAL_CHECK(hal::write(terminal, "Here 4 \n"));
 
   auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c, 0b100'0000));
+  HAL_CHECK(hal::write(terminal, "Here 5 \n"));
   auto pwm0 = pca9685.get_pwm_channel<0>();
   HAL_CHECK(pwm0.frequency(50.0_Hz));
 
@@ -96,21 +115,20 @@ hal::status application(drive::hardware_map& p_map)
   while (true) {
     buffer.fill('.');
     get_request =
-      "GET /arm?HB=0&IO=1 HTTP/1.1\r\n Host: 192.168.1.183:5000/\r\n\r\n";
+      "GET /arm?HB=0&IO=1 HTTP/1.1\r\n Host: 192.168.1.197:5000/\r\n\r\n";
 
     auto write_result =
       socket.write(hal::as_bytes(get_request),
-                   HAL_CHECK(hal::create_timeout(counter, 500ms)));
+                   hal::create_timeout(counter, 500ms).value());
     if (!write_result) {
+      HAL_CHECK(hal::write(terminal, "Failed \n"));
       continue;
     }
-
     HAL_CHECK(hal::delay(counter, 100ms));
 
     auto received = HAL_CHECK(socket.read(buffer)).data;
 
-    auto result = std::string_view(
-      reinterpret_cast<const char*>(received.data()), received.size());
+    auto result = to_string_view(received);
 
     auto start = result.find('{');
     auto end = result.find('}');
@@ -119,11 +137,12 @@ hal::status application(drive::hardware_map& p_map)
     HAL_CHECK(hal::write(terminal, json));
     HAL_CHECK(hal::write(terminal, "\r\n\n"));
 
-    std::string json_string(json);
     commands =
-      HAL_CHECK(mission_control.ParseMissionControlData(json_string, terminal));
+      HAL_CHECK(mission_control.ParseMissionControlData(json, terminal));
+    
 
     commands = rules_engine.ValidateCommands(commands);
+    commands.Print(terminal);
     arm.SetJointArguments(commands);
   }
 

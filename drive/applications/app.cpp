@@ -61,7 +61,7 @@ hal::status application(drive::hardware_map& p_map)
     HAL_CHECK(hal::create_timeout(clock, 1s)),
     {
       .type = hal::socket::type::tcp,
-      .domain = "10.250.103.205",
+      .domain = "192.168.1.132",
       .port = "5000",
     });
 
@@ -110,7 +110,7 @@ hal::status application(drive::hardware_map& p_map)
     buffer.fill('.');
     get_request = "GET /drive" + get_rover_status() +
                   " HTTP/1.1\r\n"
-                  "Host: 10.250.103.205:5000/\r\n"
+                  "Host: 192.168.1.132:5000/\r\n"
                   "\r\n";
 
     auto write_result =
