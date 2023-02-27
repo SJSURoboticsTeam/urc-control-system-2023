@@ -3,30 +3,31 @@
 #include "../dto/drive-dto.hpp"
 #include "steer-modes.hpp"
 
-namespace Drive
+namespace Drive {
+class ModeSelect
 {
-    class ModeSelect
-    {
-    public:
-        static tri_wheel_router_arguments SelectMode(drive_commands commands)
-        {
-            switch (commands.mode)
-            {
-            case 'D':
-                return SteerModes::DriveSteering(commands);
-                break;
-            case 'S':
-                return SteerModes::SpinSteering(commands);
-                break;
-            case 'T':
-                return SteerModes::TranslateSteering(commands);
-                break;
-            default:
-                return tri_wheel_router_arguments{};
-                break;
-            }
-        }
+public:
+  static tri_wheel_router_arguments SelectMode(drive_commands commands)
+  {
+    switch (commands.mode) {
+      case 'D':
+        return SteerModes::DriveSteering(commands);
+        break;
+      case 'S':
+        return SteerModes::SpinSteering(commands);
+        break;
+      case 'T':
+        return SteerModes::TranslateSteering(commands);
+        break;
+      case 'H':
+        // do nothing to get it into drive mode
+        break;
+      default:
+        break;
+    }
+    return tri_wheel_router_arguments{};
+  }
 
-    private:
-    };
-}
+private:
+};
+}  // namespace Drive

@@ -19,6 +19,7 @@ struct hardware_map {
     hal::serial* terminal;
     hal::callback<void()> reset;
     hal::pwm* revolver_spinner;
+    hal::pwm* seal;
     
     hal::adc* pressure_sensor_pin;
     hal::i2c* i2c;

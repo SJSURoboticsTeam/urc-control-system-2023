@@ -58,6 +58,13 @@ hal::status application(science::hardware_map &p_map) {
 
     HAL_CHECK(revolver_spinner.frequency(50.0_Hz));
     HAL_CHECK(p_map.seal_servo->frequency(50._Hz));
+    HAL_CHECK(hal::delay(clock, 10ms));
+    HAL_CHECK(pca_pwm_0.frequency(1.50_kHz));
+    HAL_CHECK(hal::delay(clock, 10ms));
+    HAL_CHECK(pca_pwm_1.frequency(1.50_kHz));
+    HAL_CHECK(hal::delay(clock, 10ms));
+    HAL_CHECK(pca_pwm_2.frequency(1.50_kHz));
+    HAL_CHECK(hal::delay(clock, 10ms));
 
     while(true) {
         mc_commands = HAL_CHECK(mc_handler.ParseMissionControlData(response, terminal));
@@ -74,6 +81,7 @@ hal::status application(science::hardware_map &p_map) {
 
 
         state_machine.RunMachine(mc_data.status, mc_commands, mc_data.pressure_level, revolver_hall_value, seal_hall_value);
+        mc_commands.state_step = 1;
         if(mc_data.status.move_revolver_status == science::Status::InProgress) {
             HAL_CHECK(revolver_spinner.duty_cycle(0.085f));
             HAL_CHECK(hal::delay(clock, 5ms));
@@ -87,30 +95,50 @@ hal::status application(science::hardware_map &p_map) {
             HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.depressurize_status == science::Status::InProgress) {
-            // Suck(air_pump);
+            //start vacuum pump. Assume 40v input. Step down to 12v.
+            //12/40 = 0.30
+            HAL_CHECK(pca_pwm_0.duty_cycle(0.30f));
             HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.depressurize_status == science::Status::Complete && mc_data.status.inject_status == science::Status::NotStarted) {
-            // StopSucking(air_pump);
+            //stop vacuum pump
+            HAL_CHECK(pca_pwm_0.duty_cycle(0.00f));
             HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.inject_status == science::Status::InProgress) {
-            // Inject(dosing_pump, 2);
+            //start injecting dosing pumps. Assume 40v input. Step down to 6v.
+            //6/40 = 0.15
+            HAL_CHECK(pca_pwm_1.duty_cycle(0.15f));
+            HAL_CHECK(pca_pwm_2.duty_cycle(0.15f));
+            HAL_CHECK(hal::delay(clock, 5ms));
+            HAL_CHECK(hal::delay(clock, 5s));
+            mc_commands.state_step = 2;
+        }
+        else if(mc_data.status.inject_status == science::Status::Complete){
+            //stop injecting dosing pumps
+            HAL_CHECK(pca_pwm_1.duty_cycle(0.00f));
+            HAL_CHECK(pca_pwm_2.duty_cycle(0.00f));
             HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.clear_status == science::Status::InProgress) {
-            // Suck(air_pump);
+            //start vacuum pump. Assume 40v input. Step down to 12v.
+            //12/40 = 0.30
+            HAL_CHECK(pca_pwm_0.duty_cycle(0.30f));
             HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.clear_status == science::Status::Complete && mc_data.status.unseal_status == science::Status::NotStarted) {
-            // StopSucking(air_pump);
+            //stop vacuum pump
+            HAL_CHECK(pca_pwm_0.duty_cycle(0.00f));
             HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.unseal_status == science::Status::InProgress) {
             HAL_CHECK(p_map.seal_servo->duty_cycle(MIN_SEAL_DUTY_CYCLE));
             HAL_CHECK(hal::delay(clock, 5ms));
+            mc_commands.state_step = 0;
         }
         response = mc_handler.CreateGETRequestParameterWithRoverStatus(mc_data);
+        mc_commands.Print();
+        HAL_CHECK(hal::delay(clock, 1s));
     }
     return hal::success();
 }

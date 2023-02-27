@@ -33,13 +33,13 @@ hal::status application(drive::hardware_map& p_map)
     hal::print(terminal, "Starting Magnet Demo...");
     while (true)
     {
-        std::string_view mag0 = BoolToString(HAL_CHECK(magnet0.level()));
+        std::string_view mag0 = BoolToString(HAL_CHECK(magnet0.level()).state);
           hal::print<20>(terminal, "R: %.*s | ", mag0.size(), mag0.data());
           HAL_CHECK(hal::delay(counter, 500ms));
-        std::string_view mag1 = BoolToString(HAL_CHECK(magnet1.level()));
+        std::string_view mag1 = BoolToString(HAL_CHECK(magnet1.level()).state);
           hal::print<20>(terminal, "B: %.*s | ", mag1.size(), mag1.data());
           HAL_CHECK(hal::delay(counter, 500ms));
-        std::string_view mag2 = BoolToString(HAL_CHECK(magnet2.level()));
+        std::string_view mag2 = BoolToString(HAL_CHECK(magnet2.level()).state);
           hal::print<20>(terminal, "L: %.*s | ", mag2.size(), mag2.data());
         HAL_CHECK(hal::delay(counter, 500ms));
     }

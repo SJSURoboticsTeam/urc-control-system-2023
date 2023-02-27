@@ -15,16 +15,18 @@ using namespace std::chrono_literals;
 hal::status application(science::hardware_map& p_map) {
     // science robot entry point here. This function may yield an error.
     // configure drivers
-
+    hal::print<64>(*p_map.terminal,"Hello\n");
     while (true) {
 
         //read from the halleffect sensor
-        bool result = HAL_CHECK(p_map.halleffect->level());
-
+        auto revolver_result = HAL_CHECK(p_map.revolver_hall_effect->level());
+        auto seal_result = HAL_CHECK(p_map.seal_hall_effect->level());
         //display the results every second. 1 means sensor detects no magnet. 0 means sensor detects magnet.
-        hal::print<64>(*p_map.science_serial, "hall effect sensor: %d\n", result);
-        HAL_CHECK(hal::delay(*p_map.clock, 1s));
-        
+        hal::print<64>(*p_map.terminal, "revolver hall effect sensor: %d\n", revolver_result);
+        HAL_CHECK(hal::delay(*p_map.clock, 100ms));
+        hal::print<64>(*p_map.terminal, "seal hall effect sensor: %d\n", seal_result);
+        HAL_CHECK(hal::delay(*p_map.clock, 100ms));
+
     }
 
     return hal::success();
