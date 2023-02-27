@@ -65,7 +65,7 @@ public:
         
         // hal::write_then_read(m_i2c, Addresses::address, burrito, buffer, hal::never_timeout());
         HAL_CHECK(hal::write(m_i2c, Addresses::address, burrito));
-        hal::delay(clock,1ms);
+        HAL_CHECK(hal::delay(clock,1ms));
 
         HAL_CHECK(hal::read(m_i2c, Addresses::address, buffer, hal::never_timeout()));
         int16_t result = buffer[0] << 8 | buffer[1] << 0;

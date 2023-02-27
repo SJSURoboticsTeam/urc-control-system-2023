@@ -18,7 +18,7 @@ namespace science
                 request_parameter, 200, kGETRequestFormat,
                 data.status.move_revolver_status, data.status.seal_status, data.status.depressurize_status,
                 data.status.inject_status, data.status.clear_status, data.status.unseal_status, 
-                data.methane_level, data.co2_level, data.pressure_level
+                static_cast<int>(data.methane_level), static_cast<int>(data.co2_level), static_cast<int>(data.pressure_level)
                 );
             return request_parameter;
         }

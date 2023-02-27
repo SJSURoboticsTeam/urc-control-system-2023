@@ -1,9 +1,6 @@
 #include "../implementations/mq4_methane_sensor.hpp"
 #include "../implementations/pressure_sensor_driver.hpp"
 #include "../implementations/pump_controller.hpp"
-#include "../implementations/seal.hpp"
-// #include "../implementations/suck.hpp"
-// #include "../implementations/inject.hpp"
 #include "../implementations/mission_control_handler.hpp"
 #include "../implementations/state_machine.hpp"
 #include "../implementations/co2_sensor.hpp"
@@ -26,6 +23,7 @@ hal::status application(science::hardware_map &p_map) {
     auto& methane_adc = *p_map.methane_level;
     auto& revolver_hall_effect = *p_map.revolver_hall_effect;
     auto& revolver_spinner = *p_map.revolver_spinner;
+    auto& seal_spinner = *p_map.seal;
     auto& seal_hall_effect = *p_map.seal_hall_effect;
     auto& can = *p_map.can;
     auto& terminal = *p_map.terminal;
@@ -49,7 +47,7 @@ hal::status application(science::hardware_map &p_map) {
     // science::PumpPwmController dosing_pump(pca_pwm_1, 1000.0_Hz);
     science::PressureSensor pressure(pressure_adc);
     science::Mq4MethaneSensor methane(methane_adc);
-    auto carbon_dioxide = HAL_CHECK(science::Co2Sensor::create(*p_map.i2c, clock));
+    // auto carbon_dioxide = HAL_CHECK(science::Co2Sensor::create(*p_map.i2c, clock));
     science::StateMachine state_machine;
 
     science::MissionControlHandler mc_handler;
@@ -57,17 +55,13 @@ hal::status application(science::hardware_map &p_map) {
     science::science_data mc_data;
 
     HAL_CHECK(revolver_spinner.frequency(50.0_Hz));
-    HAL_CHECK(p_map.seal_servo->frequency(50._Hz));
     HAL_CHECK(hal::delay(clock, 10ms));
     HAL_CHECK(pca_pwm_0.frequency(1.50_kHz));
     HAL_CHECK(hal::delay(clock, 10ms));
-    HAL_CHECK(pca_pwm_1.frequency(1.50_kHz));
-    HAL_CHECK(hal::delay(clock, 10ms));
-    HAL_CHECK(pca_pwm_2.frequency(1.50_kHz));
-    HAL_CHECK(hal::delay(clock, 10ms));
+    mc_commands.is_operational = 1;
 
     while(true) {
-        mc_commands = HAL_CHECK(mc_handler.ParseMissionControlData(response, terminal));
+        // mc_commands = HAL_CHECK(mc_handler.ParseMissionControlData(response, terminal));
         mc_data.pressure_level = HAL_CHECK(pressure.get_parsed_data());
         HAL_CHECK(hal::delay(clock, 5ms));
         mc_data.methane_level = HAL_CHECK(methane.get_parsed_data());
@@ -76,11 +70,12 @@ hal::status application(science::hardware_map &p_map) {
         seal_hall_value = HAL_CHECK(seal_hall_effect.level()).state;
         HAL_CHECK(hal::delay(clock, 5ms));
         HAL_CHECK(hal::delay(*p_map.clock, 500ms));
-        mc_data.co2_level = HAL_CHECK(carbon_dioxide.read_co2());
+        // mc_data.co2_level = HAL_CHECK(carbon_dioxide.read_co2());
+        mc_data.pressure_level = 100;
         HAL_CHECK(hal::delay(*p_map.clock, 1000ms));
+        
 
-
-        state_machine.RunMachine(mc_data.status, mc_commands, mc_data.pressure_level, revolver_hall_value, seal_hall_value);
+        state_machine.RunMachine(mc_data.status, mc_commands, mc_data.pressure_level, revolver_hall_value, seal_hall_value, terminal);
         mc_commands.state_step = 1;
         if(mc_data.status.move_revolver_status == science::Status::InProgress) {
             HAL_CHECK(revolver_spinner.duty_cycle(0.085f));
@@ -91,14 +86,16 @@ hal::status application(science::hardware_map &p_map) {
             HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.seal_status == science::Status::InProgress) {
-            HAL_CHECK(p_map.seal_servo->duty_cycle(MAX_SEAL_DUTY_CYCLE));
+            HAL_CHECK(seal_spinner.duty_cycle(MAX_SEAL_DUTY_CYCLE));
             HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.depressurize_status == science::Status::InProgress) {
             //start vacuum pump. Assume 40v input. Step down to 12v.
             //12/40 = 0.30
-            HAL_CHECK(pca_pwm_0.duty_cycle(0.30f));
+            HAL_CHECK(pca_pwm_0.duty_cycle(0.40f)); // 12/30
             HAL_CHECK(hal::delay(clock, 5ms));
+            HAL_CHECK(hal::delay(clock, 5s));
+            mc_data.pressure_level = 0;
         }
         else if(mc_data.status.depressurize_status == science::Status::Complete && mc_data.status.inject_status == science::Status::NotStarted) {
             //stop vacuum pump
@@ -112,19 +109,22 @@ hal::status application(science::hardware_map &p_map) {
             HAL_CHECK(pca_pwm_2.duty_cycle(0.15f));
             HAL_CHECK(hal::delay(clock, 5ms));
             HAL_CHECK(hal::delay(clock, 5s));
-            mc_commands.state_step = 2;
+            mc_data.pressure_level = 100;
         }
         else if(mc_data.status.inject_status == science::Status::Complete){
             //stop injecting dosing pumps
             HAL_CHECK(pca_pwm_1.duty_cycle(0.00f));
             HAL_CHECK(pca_pwm_2.duty_cycle(0.00f));
             HAL_CHECK(hal::delay(clock, 5ms));
+            mc_commands.state_step = 2;
         }
         else if(mc_data.status.clear_status == science::Status::InProgress) {
             //start vacuum pump. Assume 40v input. Step down to 12v.
             //12/40 = 0.30
-            HAL_CHECK(pca_pwm_0.duty_cycle(0.30f));
+            HAL_CHECK(pca_pwm_0.duty_cycle(0.40f)); // 12/30
             HAL_CHECK(hal::delay(clock, 5ms));
+            HAL_CHECK(hal::delay(clock, 5s));
+            mc_data.pressure_level = 0;
         }
         else if(mc_data.status.clear_status == science::Status::Complete && mc_data.status.unseal_status == science::Status::NotStarted) {
             //stop vacuum pump
@@ -132,12 +132,12 @@ hal::status application(science::hardware_map &p_map) {
             HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.unseal_status == science::Status::InProgress) {
-            HAL_CHECK(p_map.seal_servo->duty_cycle(MIN_SEAL_DUTY_CYCLE));
+            HAL_CHECK(seal_spinner.duty_cycle(MIN_SEAL_DUTY_CYCLE));
             HAL_CHECK(hal::delay(clock, 5ms));
             mc_commands.state_step = 0;
         }
         response = mc_handler.CreateGETRequestParameterWithRoverStatus(mc_data);
-        mc_commands.Print();
+        mc_data.status.Print(terminal);
         HAL_CHECK(hal::delay(clock, 1s));
     }
     return hal::success();

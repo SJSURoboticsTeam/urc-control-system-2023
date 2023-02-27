@@ -26,7 +26,7 @@ namespace science {
             Wait = 11
             };
 
-        void RunMachine(science_status& status, science_commands commands, float pressure, int revolver_hall, int seal_hall) {
+        void RunMachine(science_status& status, science_commands commands, float pressure, int revolver_hall, int seal_hall, hal::serial& terminal) {
             if(commands.is_operational == 0) {
                 previous_state_ = States::Start;
                 current_state_ = States::Start;
@@ -36,6 +36,7 @@ namespace science {
             switch(current_state_) {
                 case States::Start:
                     status = science_status{}; // reset the status if it goes back to the first state
+                    hal::print<200>(terminal, "In state 1 and the desired button value is: %d", desired_button_value);
                     if(commands.state_step == desired_button_value-1) {
                         current_state_ = States::Start;
                     }
@@ -46,11 +47,11 @@ namespace science {
                 // revolver_hall will come back as low when we start, this will need to be fixed with some weird logic
                 
                 case States::MoveRevolver:
-                    if(revolver_hall == 0) {
+                    if(revolver_hall == 1) {
                         current_state_ = current_state_;
                         status.move_revolver_status = Status::InProgress;
                     }
-                    else if(revolver_hall == 1) {
+                    else if(revolver_hall == 0) {
                         current_state_ = States::StopRevolver;
                     }
                 break;
@@ -149,6 +150,7 @@ namespace science {
                 break;
 
                 case States::Wait: 
+                hal::print<200>(terminal, "In state 1 and the desired button value is: %d and the state_step is: %d", desired_button_value, commands.state_step);
                     if(commands.state_step == desired_button_value-1) {
                         current_state_ = current_state_;
                     }
