@@ -131,8 +131,7 @@ hal::status application(science::hardware_map &p_map) {
         }
         else if(mc_data.status.unseal_status == science::Status::InProgress) {
             HAL_CHECK(seal_spinner.duty_cycle(MIN_SEAL_DUTY_CYCLE));
-            HAL_CHECK(hal::delay(clock, 5ms));
-            mc_commands.state_step = 0;
+            HAL_CHECK(hal::delay(clock, 2s));
         }
         response = mc_handler.CreateGETRequestParameterWithRoverStatus(mc_data);
         mc_data.status.Print(terminal);

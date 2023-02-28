@@ -23,7 +23,8 @@ namespace science {
             ClearingChamber = 8,
             StopClearingChamber = 9,
             Unseal = 10,
-            Wait = 11
+            Finish = 11,
+            Wait = 12
             };
 
         void RunMachine(science_status& status, science_commands commands, float pressure, int revolver_hall, int seal_hall, hal::serial& terminal) {
@@ -72,22 +73,19 @@ namespace science {
                 break;
 
                 case States::Seal:
-                    if(seal_hall == 1) {
-                        current_state_ = current_state_;
-                        status.seal_status = Status::InProgress;
-                    }
-                    else if(seal_hall == 0 && commands.mode == 'A') {
+                    status.seal_status = Status::InProgress;
+                    if(commands.mode == 'A') {
                         current_state_ = States::Depressurizing;
                     }
-                    else if(seal_hall == 0 && commands.mode == 'M') {
+                    else if(commands.mode == 'M') {
                         previous_state_ = current_state_;
                         current_state_ = States::Wait;
                         desired_button_value++;
                     }
-                    if(seal_hall == 0) status.seal_status = Status::Complete;
                 break;
 
                 case States::Depressurizing: 
+                status.seal_status = Status::Complete;
                     if(pressure > kpressure_requirement) { // 90.0 is a place holder as of rn
                         current_state_ = current_state_;
                         status.depressurize_status = Status::InProgress;
@@ -138,15 +136,13 @@ namespace science {
                 break;
 
                 case States::Unseal:
-                    if(seal_hall == 0) {
-                        current_state_ = current_state_;
-                        status.unseal_status = Status::InProgress;
-                    }
-                    else if(seal_hall == 1) {
-                        current_state_ = States::Start;
-                        status.unseal_status = Status::Complete;
-                        desired_button_value = 1;
-                    }
+                    status.unseal_status = Status::InProgress;
+                break;
+
+                case States::Finish:
+                    current_state_ = States::Start;
+                    status.unseal_status = Status::Complete;
+                    desired_button_value = 1;
                 break;
 
                 case States::Wait: 
