@@ -27,7 +27,7 @@ namespace science {
             Wait = 12
             };
 
-        void RunMachine(science_status& status, science_commands commands, float pressure, int revolver_hall, int seal_hall, hal::serial& terminal) {
+        void RunMachine(science_status& status, science_commands commands, float pressure, int revolver_hall, hal::serial& terminal) {
             if(commands.is_operational == 0) {
                 previous_state_ = States::Start;
                 current_state_ = States::Start;

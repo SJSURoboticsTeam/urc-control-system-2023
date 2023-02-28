@@ -24,7 +24,6 @@ hal::status application(science::hardware_map &p_map) {
     auto& revolver_hall_effect = *p_map.revolver_hall_effect;
     auto& revolver_spinner = *p_map.revolver_spinner;
     auto& seal_spinner = *p_map.seal;
-    auto& seal_hall_effect = *p_map.seal_hall_effect;
     auto& can = *p_map.can;
     auto& terminal = *p_map.terminal;
     auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(*p_map.i2c, 0b100'0000));
@@ -35,7 +34,6 @@ hal::status application(science::hardware_map &p_map) {
 
     std::string response;
     int revolver_hall_value = 1;
-    int seal_hall_value = 1;
 
     // Constants
     static constexpr float MIN_SEAL_DUTY_CYCLE = 0.065f;
@@ -67,13 +65,12 @@ hal::status application(science::hardware_map &p_map) {
         mc_data.methane_level = HAL_CHECK(methane.get_parsed_data());
         HAL_CHECK(hal::delay(clock, 5ms));
         revolver_hall_value = HAL_CHECK(revolver_hall_effect.level()).state;
-        seal_hall_value = HAL_CHECK(seal_hall_effect.level()).state;
         HAL_CHECK(hal::delay(clock, 5ms));
         // mc_data.co2_level = HAL_CHECK(carbon_dioxide.read_co2());
         mc_data.pressure_level = 100;
         
 
-        state_machine.RunMachine(mc_data.status, mc_commands, mc_data.pressure_level, revolver_hall_value, seal_hall_value, terminal);
+        state_machine.RunMachine(mc_data.status, mc_commands, mc_data.pressure_level, revolver_hall_value, terminal);
         mc_commands.state_step = 1;
         if(mc_data.status.move_revolver_status == science::Status::InProgress) {
             HAL_CHECK(revolver_spinner.duty_cycle(0.085f));
