@@ -61,10 +61,10 @@ hal::status application(drive::hardware_map& p_map)
     HAL_CHECK(hal::create_timeout(clock, 1s)),
     {
       .type = hal::socket::type::tcp,
-      .domain = "10.250.103.205",
+      .domain = "13.56.207.97",
       .port = "5000",
     });
-
+    // this is for the web server hosted by nate: http://13.56.207.97:5000/drive
   if (!socket_result) {
     HAL_CHECK(hal::write(terminal, "TCP Socket couldn't be established\n"));
     return socket_result.error();
@@ -110,7 +110,7 @@ hal::status application(drive::hardware_map& p_map)
     buffer.fill('.');
     get_request = "GET /drive" + get_rover_status() +
                   " HTTP/1.1\r\n"
-                  "Host: 10.250.103.205:5000/\r\n"
+                  "Host: 13.56.207.97:5000/\r\n"
                   "\r\n";
 
     auto write_result =

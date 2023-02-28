@@ -22,7 +22,7 @@ hal::status application(drive::hardware_map& p_map)
   auto& can = *p_map.can;
   auto& terminal = *p_map.terminal;
   auto& clock = *p_map.steady_clock;
-  float encoderData = 0.0f;
+  // float encoderData = 0.0f;
   // auto& esp = *p_map.esp;
 
   // HAL_CHECK(hal::write(terminal, "Starting RMD + WiFi Demo...\n"));
@@ -82,10 +82,10 @@ hal::status application(drive::hardware_map& p_map)
   HAL_CHECK(left_hub_motor.position_control(30.0_deg, 5.0_rpm));
 
   while (true) {
-    HAL_CHECK(hal::delay(*p_map.steady_clock, 1s))
+    HAL_CHECK(hal::delay(*p_map.steady_clock, 1s));
 
     // HAL_CHECK(left_hub_motor.feedback_request(hal::rmd::drc::read::encoder_data));
-    hal::print<20>(terminal, "%f\n", encoderData);
+    // hal::print<20>(terminal, "%f\n", encoderData);
     // HAL_CHECK(hal::write(terminal, encoder));
     // buffer.fill('.');
     // get_request = "GET /drive" + get_rover_status() +

@@ -84,9 +84,9 @@ namespace Drive
             temp.back.steer.angle = kBackLegSpinOffset;
             temp.left.steer.angle = kLeftLegSpinOffset;
             temp.right.steer.angle = kRightLegSpinOffset;
-            temp.back.hub.speed = static_cast<float>(commands.speed);
-            temp.left.hub.speed = static_cast<float>(-commands.speed);
-            temp.right.hub.speed = static_cast<float>(commands.speed);
+            temp.back.hub.speed = static_cast<float>(-commands.speed);
+            temp.left.hub.speed = static_cast<float>(commands.speed);
+            temp.right.hub.speed = static_cast<float>(-commands.speed);
 
             return temp;
         }
@@ -95,9 +95,9 @@ namespace Drive
         {
             tri_wheel_router_arguments steer_arguments;
 
-            steer_arguments.left.steer.angle = static_cast<float>(commands.angle) + kLeftLegDriveOffset;
-            steer_arguments.right.steer.angle = static_cast<float>(commands.angle) + kRightLegDriveOffset;
-            steer_arguments.back.steer.angle = static_cast<float>(commands.angle) + kBackLegDriveOffset;
+            steer_arguments.left.steer.angle = (static_cast<float>(-commands.angle) + kLeftLegDriveOffset);
+            steer_arguments.right.steer.angle = (static_cast<float>(-commands.angle) + kRightLegDriveOffset);
+            steer_arguments.back.steer.angle = (static_cast<float>(-commands.angle) + kBackLegDriveOffset);
 
             steer_arguments.left.hub.speed = static_cast<float>(-commands.speed);
             steer_arguments.right.hub.speed = static_cast<float>(-commands.speed);
