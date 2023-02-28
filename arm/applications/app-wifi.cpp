@@ -70,8 +70,9 @@ hal::status application(arm::hardware_map& p_map)
 
   while (true) {
     buffer.fill('.');
-    get_request =
-      "GET /drive?HB=0&IO=1 HTTP/1.1\r\n Host: 192.168.1.197:5000/\r\n\r\n";
+    get_request = "GET /arm?hello=gene HTTP/1.1\r\n"
+                  "Host: 192.168.1.197:5000\r\n"
+                  "\r\n";
 
     auto write_result =
       socket.write(hal::as_bytes(get_request),
