@@ -69,10 +69,8 @@ hal::status application(science::hardware_map &p_map) {
         revolver_hall_value = HAL_CHECK(revolver_hall_effect.level()).state;
         seal_hall_value = HAL_CHECK(seal_hall_effect.level()).state;
         HAL_CHECK(hal::delay(clock, 5ms));
-        HAL_CHECK(hal::delay(*p_map.clock, 500ms));
         // mc_data.co2_level = HAL_CHECK(carbon_dioxide.read_co2());
         mc_data.pressure_level = 100;
-        HAL_CHECK(hal::delay(*p_map.clock, 1000ms));
         
 
         state_machine.RunMachine(mc_data.status, mc_commands, mc_data.pressure_level, revolver_hall_value, seal_hall_value, terminal);
@@ -94,7 +92,7 @@ hal::status application(science::hardware_map &p_map) {
             //12/40 = 0.30
             HAL_CHECK(pca_pwm_0.duty_cycle(0.40f)); // 12/30
             HAL_CHECK(hal::delay(clock, 5ms));
-            HAL_CHECK(hal::delay(clock, 5s));
+            HAL_CHECK(hal::delay(clock, 5ms));
             mc_data.pressure_level = 0;
         }
         else if(mc_data.status.depressurize_status == science::Status::Complete && mc_data.status.inject_status == science::Status::NotStarted) {

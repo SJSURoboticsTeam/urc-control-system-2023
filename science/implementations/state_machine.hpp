@@ -94,11 +94,11 @@ namespace science {
                     }
                     else if(pressure < kpressure_requirement) {
                         current_state_ = States::StopDepressurizing;
+                        status.depressurize_status = Status::Complete;
                     }
                 break;
 
                 case States::StopDepressurizing:
-                    status.depressurize_status = Status::Complete;
                     if(commands.mode == 'M') {
                         previous_state_ = current_state_;
                         current_state_ = States::Wait;
