@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string_view>
 
-namespace Arm {
+namespace arm {
 // joint_angles order [rotunda, shoulder, elbow, wrist_pitch, wrist_yaw]
 // hand_angles order [pinky, ring, middle, index, thumb]
 const char kResponseBodyFormat[] =
@@ -30,7 +30,7 @@ struct mc_commands
   int rr9_angle = 0;
   hal::status Print(hal::serial &terminal)
   {
-    hal::print<128>(terminal, "%d, %d, %d, %d, %d, %d, %d, %d, %d", 
+    hal::print<128>(terminal, kResponseBodyFormat, 
            heartbeat_count,
            is_operational,
            speed,

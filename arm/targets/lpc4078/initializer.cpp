@@ -14,7 +14,7 @@
 
 #include "../../hardware_map.hpp"
 
-hal::result<drive::hardware_map> initialize_target()
+hal::result<arm::hardware_map> initialize_target()
 {
   using namespace hal::literals;
 
@@ -48,7 +48,7 @@ hal::result<drive::hardware_map> initialize_target()
 
   // auto& pwm0 = HAL_CHECK((hal::lpc40xx::pwm::get<2, 0>()));
 
-  return drive::hardware_map{ .terminal = &uart0,
+  return arm::hardware_map{ .terminal = &uart0,
                               .can = &can,
                               .esp = &uart3,
                               // .pwm0 = &pwm0,

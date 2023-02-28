@@ -4,7 +4,7 @@
 #include "../dto/arm-dto.hpp"
 #include "../dto/feedback-dto.hpp"
 
-namespace Arm {
+namespace arm {
 class MissionControlHandler
 {
 public:

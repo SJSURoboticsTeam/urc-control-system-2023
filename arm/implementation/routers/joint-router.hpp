@@ -6,7 +6,7 @@
 #include "../../dto/arm-dto.hpp"
 // #include "../soft-drivers/rmd-encoder.hpp"
 
-namespace Arm {
+namespace arm {
 class JointRouter
 {
 public:

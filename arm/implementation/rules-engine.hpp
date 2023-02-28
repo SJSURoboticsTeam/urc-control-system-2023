@@ -3,7 +3,7 @@
 #include "../dto/arm-dto.hpp"
 // #include "../../common/heartbeat.hpp"
 
-namespace Arm {
+namespace arm {
 class RulesEngine
 {
 public:

@@ -61,7 +61,7 @@ hal::status application(drive::hardware_map& p_map)
     HAL_CHECK(hal::create_timeout(clock, 1s)),
     {
       .type = hal::socket::type::tcp,
-      .domain = "192.168.1.132",
+      .domain = "192.168.1.197",
       .port = "5000",
     });
 
@@ -71,7 +71,7 @@ hal::status application(drive::hardware_map& p_map)
   }
 
   auto socket = std::move(socket_result.value());
-
+  HAL_CHECK(hal::write(terminal, "Server found"));
   auto can_router = hal::can_router::create(can).value();
 
   auto left_steer_motor =
@@ -110,7 +110,7 @@ hal::status application(drive::hardware_map& p_map)
     buffer.fill('.');
     get_request = "GET /drive" + get_rover_status() +
                   " HTTP/1.1\r\n"
-                  "Host: 192.168.1.132:5000/\r\n"
+                  "Host: 192.168.1.197:5000/\r\n"
                   "\r\n";
 
     auto write_result =
