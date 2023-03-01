@@ -61,7 +61,7 @@ hal::status application(arm::hardware_map& p_map)
     HAL_CHECK(hal::create_timeout(counter, 1s)),
     {
       .type = hal::socket::type::tcp,
-      .domain = "192.168.1.197",
+      .domain = "13.56.207.97",
       .port = "5000",
     });
 
@@ -118,7 +118,7 @@ hal::status application(arm::hardware_map& p_map)
 
 
     get_request = "GET /arm?hello=gene HTTP/1.1\r\n"
-                  "Host: 192.168.1.197:5000\r\n"
+                  "Host: 13.56.207.97:5000\r\n"
                   "\r\n";
 
 
@@ -131,7 +131,7 @@ hal::status application(arm::hardware_map& p_map)
       HAL_CHECK(hal::write(terminal, "Failed \n"));
       continue;
     }
-    HAL_CHECK(hal::delay(counter, 100ms));
+    HAL_CHECK(hal::delay(counter, 10ms));
 
 
     auto received = HAL_CHECK(socket.read(buffer)).data;
