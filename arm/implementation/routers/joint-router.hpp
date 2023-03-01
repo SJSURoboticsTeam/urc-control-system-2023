@@ -31,7 +31,7 @@ public:
       hal::degrees(static_cast<float>(arguments.rotunda_angle)),
       hal::rpm(static_cast<float>(arguments.speed)));
     shoulder_.position_control(
-      hal::degrees(static_cast<float>(arguments.shoulder_angle)),
+      -hal::degrees(static_cast<float>(arguments.shoulder_angle)),
       hal::rpm(static_cast<float>(arguments.speed)));
     elbow_.position_control(
       hal::degrees(static_cast<float>(arguments.elbow_angle)),

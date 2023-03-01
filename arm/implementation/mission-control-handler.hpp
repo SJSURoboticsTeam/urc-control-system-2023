@@ -26,11 +26,11 @@ public:
     return request_parameter;
   }
 
-  hal::result<mc_commands> ParseMissionControlData(std::string_view response,
+  hal::result<mc_commands> ParseMissionControlData(std::string response,
                                                    hal::serial& terminal)
   {
     response = response.substr(response.find('{'));
-    int actual_arguments = sscanf(response.data(),
+    int actual_arguments = sscanf(response.c_str(),
                                   kResponseBodyFormat,
                                   &commands_.heartbeat_count,
                                   &commands_.is_operational,

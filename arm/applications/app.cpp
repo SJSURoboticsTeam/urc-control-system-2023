@@ -61,7 +61,7 @@ hal::status application(arm::hardware_map& p_map)
     HAL_CHECK(hal::create_timeout(counter, 1s)),
     {
       .type = hal::socket::type::tcp,
-      .domain = "13.56.207.97",
+      .domain = "192.168.56.1",
       .port = "5000",
     });
 
@@ -96,6 +96,7 @@ hal::status application(arm::hardware_map& p_map)
   HAL_CHECK(hal::write(terminal, "Here 5 \n"));
   auto pwm0 = pca9685.get_pwm_channel<0>();
   HAL_CHECK(pwm0.frequency(50.0_Hz));
+  std::string_view json;
 
   arm::JointRouter arm(rotunda_motor,
                        shoulder_motor,
@@ -118,7 +119,7 @@ hal::status application(arm::hardware_map& p_map)
 
 
     get_request = "GET /arm?hello=gene HTTP/1.1\r\n"
-                  "Host: 13.56.207.97:5000\r\n"
+                  "Host: 192.168.56.1:5000\r\n"
                   "\r\n";
 
 
@@ -140,21 +141,21 @@ hal::status application(arm::hardware_map& p_map)
     auto result = to_string_view(received);
 
 
-    HAL_CHECK(hal::write(terminal,result));
+    // HAL_CHECK(hal::write(terminal,result));
     auto start = result.find('{');
 
-    hal::print<128>(terminal, "Found on %d \n", start );
+    // hal::print<128>(terminal, "Found on %d \n", start );
     auto end = result.find('}');
 
+     json = result.substr(start, end - start + 1); 
+    //  HAL_CHECK(hal::write(terminal, "SUCCESS \n"));  
+    std::string json_string(json);
 
-    auto json = result.substr(start, end - start + 1);
-
-
-    HAL_CHECK(hal::write(terminal, json));
+    HAL_CHECK(hal::write(terminal, json_string));
     HAL_CHECK(hal::write(terminal, "\r\n\n"));
 
     commands =
-      HAL_CHECK(mission_control.ParseMissionControlData(json, terminal));
+      HAL_CHECK(mission_control.ParseMissionControlData(json_string, terminal));
     
 
     commands = rules_engine.ValidateCommands(commands);
