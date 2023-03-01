@@ -73,7 +73,7 @@ hal::status application(science::hardware_map &p_map) {
         state_machine.RunMachine(mc_data.status, mc_commands, mc_data.pressure_level, revolver_hall_value, terminal);
         mc_commands.state_step = 1;
         if(mc_data.status.move_revolver_status == science::Status::InProgress) {
-            HAL_CHECK(revolver_spinner.duty_cycle(0.085f));
+            HAL_CHECK(revolver_spinner.duty_cycle(0.076f));
             HAL_CHECK(hal::delay(clock, 5ms));
         }
         else if(mc_data.status.move_revolver_status == science::Status::Complete && mc_data.status.seal_status == science::Status::NotStarted) {
@@ -132,7 +132,7 @@ hal::status application(science::hardware_map &p_map) {
         }
         response = mc_handler.CreateGETRequestParameterWithRoverStatus(mc_data);
         mc_data.status.Print(terminal);
-        HAL_CHECK(hal::delay(clock, 1s));
+        HAL_CHECK(hal::delay(clock, 10ms));
     }
     return hal::success();
 }
