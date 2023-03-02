@@ -44,7 +44,7 @@ public:
       hal::degrees(static_cast<float>(arguments.wrist_roll_angle) -
                    static_cast<float>(arguments.wrist_pitch_angle)),
       hal::rpm(static_cast<float>(arguments.speed)));
-    pwm0_.duty_cycle(ConvertAngleToDutyCycle(arguments.rr9_angle));
+    pwm0_.duty_cycle(ConvertAngleToDutyCycle(180-arguments.rr9_angle));
     return arguments;
   }
 
