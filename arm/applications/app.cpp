@@ -61,7 +61,7 @@ hal::status application(arm::hardware_map& p_map)
     HAL_CHECK(hal::create_timeout(counter, 1s)),
     {
       .type = hal::socket::type::tcp,
-      .domain = "192.168.56.1",
+      .domain = "192.168.1.110",
       .port = "5000",
     });
 
@@ -119,43 +119,41 @@ hal::status application(arm::hardware_map& p_map)
 
 
     get_request = "GET /arm?hello=gene HTTP/1.1\r\n"
-                  "Host: 192.168.56.1:5000\r\n"
+                  "Host: 192.168.1.110:5000/\r\n"
                   "\r\n";
 
-
+    hal::print(terminal, "here");
     auto write_result =
       socket.write(hal::as_bytes(get_request),
-                   hal::create_timeout(counter, 500ms).value());
+                   hal::create_timeout(counter, 1000ms).value());
 
-
+    hal::print(terminal, "here1");
     if (!write_result) {
-      HAL_CHECK(hal::write(terminal, "Failed \n"));
+      HAL_CHECK(hal::write(terminal, "Failed:  \n"));
       continue;
     }
-    HAL_CHECK(hal::delay(counter, 10ms));
+    HAL_CHECK(hal::delay(counter, 100ms));
 
+    hal::print(terminal, "here2");
 
     auto received = HAL_CHECK(socket.read(buffer)).data;
-
-
     auto result = to_string_view(received);
-
-
-    // HAL_CHECK(hal::write(terminal,result));
     auto start = result.find('{');
 
-    // hal::print<128>(terminal, "Found on %d \n", start );
+    hal::print<128>(terminal, "%d", start);
     auto end = result.find('}');
+    hal::print<128>(terminal, "%d", end);
+    if(start != -1 && end != -1) {
+      json = result.substr(start, end - start + 1); 
+      std::string json_string(json);
+      HAL_CHECK(hal::write(terminal, json)); 
 
-     json = result.substr(start, end - start + 1); 
-    //  HAL_CHECK(hal::write(terminal, "SUCCESS \n"));  
-    std::string json_string(json);
+      HAL_CHECK(hal::write(terminal, json_string));
+      HAL_CHECK(hal::write(terminal, "\r\n\n"));
 
-    HAL_CHECK(hal::write(terminal, json_string));
-    HAL_CHECK(hal::write(terminal, "\r\n\n"));
-
-    commands =
-      HAL_CHECK(mission_control.ParseMissionControlData(json_string, terminal));
+      commands =
+        HAL_CHECK(mission_control.ParseMissionControlData(json_string, terminal));
+    }
     
 
     commands = rules_engine.ValidateCommands(commands);
