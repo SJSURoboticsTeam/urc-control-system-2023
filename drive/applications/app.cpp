@@ -45,8 +45,8 @@ hal::status application(drive::hardware_map& p_map)
 
   auto wifi_result = hal::esp8266::at::wlan_client::create(
     esp,
-    "SJSU Robotics 2.4GHz",
-    "R0Bot1cs3250",
+    "Corey",
+    "0123456789",
     HAL_CHECK(hal::create_timeout(clock, 10s)));
 
   if (!wifi_result) {
@@ -61,7 +61,7 @@ hal::status application(drive::hardware_map& p_map)
     HAL_CHECK(hal::create_timeout(clock, 1s)),
     {
       .type = hal::socket::type::tcp,
-      .domain = "192.168.1.197",
+      .domain = "192.168.137.104",
       .port = "5000",
     });
 
@@ -110,7 +110,7 @@ hal::status application(drive::hardware_map& p_map)
     buffer.fill('.');
     get_request = "GET /drive" + get_rover_status() +
                   " HTTP/1.1\r\n"
-                  "Host: 192.168.1.197:5000/\r\n"
+                  "Host: 192.168.137.104:5000/\r\n"
                   "\r\n";
 
     auto write_result =
