@@ -37,7 +37,7 @@ namespace science {
             switch(current_state_) {
                 case States::Start:
                     status = science_status{}; // reset the status if it goes back to the first state
-                    hal::print<200>(terminal, "In state 1 and the desired button value is: %d", desired_button_value);
+                    hal::print<200>(terminal, "\nStart: In state 1 and the desired button value is: %d\n\n ", desired_button_value);
                     if(commands.state_step == desired_button_value-1) {
                         current_state_ = States::Start;
                     }
@@ -85,12 +85,14 @@ namespace science {
                 break;
 
                 case States::Depressurizing: 
-                status.seal_status = Status::Complete;
+                    status.seal_status = Status::Complete;
+                    (void)hal::print<200>(terminal, "\nPressure: %d\n", static_cast<int>(pressure));
                     if(pressure > kpressure_requirement) { // 90.0 is a place holder as of rn
                         current_state_ = current_state_;
                         status.depressurize_status = Status::InProgress;
                     }
                     else if(pressure < kpressure_requirement) {
+                        (void)hal::write(terminal, "Pressure < konstant");
                         current_state_ = States::StopDepressurizing;
                         status.depressurize_status = Status::Complete;
                     }
@@ -136,7 +138,12 @@ namespace science {
                 break;
 
                 case States::Unseal:
-                    status.unseal_status = Status::InProgress;
+                    if (status.unseal_status == Status::NotStarted) {
+                        status.unseal_status = Status::InProgress;
+                    }
+                    else if (status.unseal_status == Status::InProgress) {
+                        status.unseal_status = Status::Complete;
+                    }
                 break;
 
                 case States::Finish:
@@ -146,7 +153,7 @@ namespace science {
                 break;
 
                 case States::Wait: 
-                hal::print<200>(terminal, "In state 1 and the desired button value is: %d and the state_step is: %d", desired_button_value, commands.state_step);
+                hal::print<200>(terminal, "\n\nWait: In state 1 and the desired button value is: %d and the state_step is: %d\n\n", desired_button_value, commands.state_step);
                     if(commands.state_step == desired_button_value-1) {
                         current_state_ = current_state_;
                     }

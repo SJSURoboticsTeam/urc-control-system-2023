@@ -5,7 +5,7 @@ namespace science{
     // commands are parsed from mission control
     struct science_commands{
         int state_step = 0;
-        char mode = 'A';
+        const char mode = 'A';
         int is_operational = 0;
     };
     
