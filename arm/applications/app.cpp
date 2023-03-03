@@ -34,22 +34,22 @@ hal::status application(arm::hardware_map& p_map)
   HAL_CHECK(hal::write(terminal, "Starting program...\n"));
   auto wifi_result = hal::esp8266::at::wlan_client::create(
     esp,
-    "Corey",
-    "0123456789",
+    "MMT",
+    "raspberry",
     hal::create_timeout(counter, 10s).value());
 
   while (true)
   {
     wifi_result = hal::esp8266::at::wlan_client::create(
       esp,
-      "Corey",
-      "0123456789",
+      "MMT",
+      "raspberry",
       hal::create_timeout(counter, 10s).value());
 
     if (wifi_result) {
       break;
     }
-    
+    HAL_CHECK(hal::write(terminal, "failed to connect to wifi"));
   }
   HAL_CHECK(hal::write(terminal, "ESP created!\n"));
       
@@ -61,8 +61,8 @@ hal::status application(arm::hardware_map& p_map)
     HAL_CHECK(hal::create_timeout(counter, 1s)),
     {
       .type = hal::socket::type::tcp,
-      .domain = "192.168.137.1",
-      .port = "5000",
+      .domain = "192.168.137.123",
+      .port = "4000",
     });
 
   if (!socket_result) {
@@ -120,7 +120,7 @@ hal::status application(arm::hardware_map& p_map)
 
     get_request = "GET /arm?HB=0&IO=1" 
                   " HTTP/1.1\r\n"
-                  "Host: 192.168.137.1:5000/\r\n"
+                  "Host: 192.168.137.123:4000/\r\n"
                   "\r\n";
 
     hal::print(terminal, "here");
@@ -170,3 +170,4 @@ hal::status application(arm::hardware_map& p_map)
 
   return hal::success();
 }
+//http://192.168.137.123:5000/arm
