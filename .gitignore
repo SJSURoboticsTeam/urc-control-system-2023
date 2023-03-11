@@ -41,3 +41,5 @@ archives/
 # Artifacts
 build/
 .DS_Store
+
+*.json
