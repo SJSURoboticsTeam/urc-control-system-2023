@@ -1,5 +1,3 @@
-#pragma once
-
 #include <libhal-lpc40xx/pwm.hpp>
 #include <libhal-util/steady_clock.hpp>
 #include <libhal-util/serial.hpp>

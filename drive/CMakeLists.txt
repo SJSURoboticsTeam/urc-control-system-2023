@@ -4,8 +4,6 @@ if(NOT DEFINED CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug" CACHE INTERNAL "Default to Debug Build")
 endif(NOT DEFINED CMAKE_BUILD_TYPE)
 
-set(CMAKE_TOOLCHAIN_FILE conan_toolchain.cmake)
-
 project(demos VERSION 0.0.1 LANGUAGES CXX)
 
 find_package(libhal-lpc40xx REQUIRED CONFIG)
@@ -13,7 +11,7 @@ find_package(libhal-rmd REQUIRED CONFIG)
 find_package(libhal-esp8266 REQUIRED CONFIG)
 find_package(libhal-util REQUIRED CONFIG)
 
-set(DEMOS app magnet-demo serial-demo app_serial)
+set(DEMOS app app_serial)
 set(TARGETS lpc4078_10mhz lpc4078_12mhz)
 
 foreach(target IN LISTS TARGETS)

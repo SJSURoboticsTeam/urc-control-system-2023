@@ -5,8 +5,6 @@ if(NOT DEFINED CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug" CACHE INTERNAL "Default to Debug Build")
 endif(NOT DEFINED CMAKE_BUILD_TYPE)
 
-set(CMAKE_TOOLCHAIN_FILE conan_toolchain.cmake)
-
 # Set project name to demos
 project(demos VERSION 0.0.1 LANGUAGES CXX)
 
@@ -16,15 +14,11 @@ find_package(libhal-rmd REQUIRED CONFIG)
 find_package(libhal-esp8266 REQUIRED CONFIG)
 find_package(libhal-util REQUIRED CONFIG)
 find_package(libhal-pca REQUIRED CONFIG)
-# find_package(libhal-armcortex REQUIRED CONFIG)
-
-# Set the path to the linekr scripts to the source directory or (..)
-set(LINKER_SCRIPT_PATHS ${CMAKE_SOURCE_DIR}/)
 
 # List of demo applications
 # To add a new demo to the list, simply add its filename without the .cpp
 # extension to this list.
-set(DEMOS pca-demo app app_serial app-wifi)
+set(DEMOS app app_serial)
 
 # List of targets in the LPC40 series MCU
 set(TARGETS lpc4078)
