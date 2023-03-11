@@ -22,8 +22,8 @@
 //   auto& can = *p_map.can;
 //   auto& terminal = *p_map.terminal;
 //   auto& clock = *p_map.steady_clock;
-//   float encoderData = 0.0f;
-//   // auto& esp = *p_map.esp;
+  // float encoderData = 0.0f;
+  // auto& esp = *p_map.esp;
 
 //   // HAL_CHECK(hal::write(terminal, "Starting RMD + WiFi Demo...\n"));
 //   HAL_CHECK(hal::delay(clock, 1s));

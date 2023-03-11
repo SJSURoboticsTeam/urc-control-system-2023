@@ -61,8 +61,8 @@ hal::status application(arm::hardware_map& p_map)
     HAL_CHECK(hal::create_timeout(counter, 1s)),
     {
       .type = hal::socket::type::tcp,
-      .domain = "192.168.1.149",
-      .port = "4000",
+      .domain = "192.168.1.110",
+      .port = "5000",
     });
 
   if (!socket_result) {
@@ -75,8 +75,6 @@ hal::status application(arm::hardware_map& p_map)
   HAL_CHECK(hal::write(terminal, "Beginning Can \n"));
 
   auto can_router = hal::can_router::create(can).value();
-
-  HAL_CHECK(hal::write(terminal, "Can router created\n"));
 
   auto rotunda_motor = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x141));
   auto shoulder_motor =
@@ -113,15 +111,9 @@ hal::status application(arm::hardware_map& p_map)
   HAL_CHECK(hal::delay(counter, 1000ms));
 
   while (true) {
-
     buffer.fill('.');
-
-
-
-    get_request = "GET /arm?HB=0&IO=1" 
-                  " HTTP/1.1\r\n"
-                  "Host: 192.168.1.149:4000/\r\n"
-                  "\r\n";
+    get_request =
+      "GET /arm?HB=0&IO=1 HTTP/1.1\r\n Host: 192.168.1.110:5000/\r\n\r\n";
 
     hal::print(terminal, "here");
     auto write_result =
