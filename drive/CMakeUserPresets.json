@@ -1,0 +1,10 @@
+{
+    "version": 4,
+    "vendor": {
+        "conan": {}
+    },
+    "include": [
+        "C:\\Users\\corey\\Coding\\Robotics\\urc-control-system-2023\\drive\\build\\Debug\\generators\\CMakePresets.json",
+        "C:\\Users\\corey\\Coding\\Robotics\\urc-control-system-2023\\drive\\build\\Release\\generators\\CMakePresets.json"
+    ]
+}

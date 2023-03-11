@@ -1,7 +1,6 @@
 #include "../implementations/mq4_methane_sensor.hpp"
 #include "../implementations/pressure_sensor_driver.hpp"
 #include "../implementations/pump_controller.hpp"
-#include "../implementations/seal.hpp"
 // #include "../implementations/suck.hpp"
 // #include "../implementations/inject.hpp"
 #include "../implementations/mission_control_handler.hpp"
