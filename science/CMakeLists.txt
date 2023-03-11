@@ -6,7 +6,7 @@ endif(NOT DEFINED CMAKE_BUILD_TYPE)
 
 project(demos VERSION 0.0.1 LANGUAGES CXX)
 
-find_package(libhal-lpc40xx REQUIRED CONFIG)
+find_package(libhal-lpc REQUIRED CONFIG)
 find_package(libhal-esp8266 REQUIRED CONFIG)
 find_package(libhal-util REQUIRED CONFIG)
 find_package(libhal-pca REQUIRED CONFIG)
