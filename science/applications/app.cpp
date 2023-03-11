@@ -7,7 +7,6 @@
 
 #include <libhal/input_pin.hpp>
 #include <libhal/adc.hpp>
-#include <libhal-rmd/drc.hpp>
 #include <libhal-pca/pca9685.hpp>
 
 #include "../hardware_map.hpp"
@@ -24,7 +23,6 @@ hal::status application(science::hardware_map &p_map) {
     auto& revolver_hall_effect = *p_map.revolver_hall_effect;
     auto& revolver_spinner = *p_map.revolver_spinner;
     auto& seal_spinner = *p_map.seal;
-    auto& can = *p_map.can;
     auto& terminal = *p_map.terminal;
     auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(*p_map.i2c, 0b100'0000));
     auto pca_pwm_0 = pca9685.get_pwm_channel<0>();
@@ -38,8 +36,6 @@ hal::status application(science::hardware_map &p_map) {
     // Constants
     static constexpr float MIN_SEAL_DUTY_CYCLE = 0.065f;
     static constexpr float MAX_SEAL_DUTY_CYCLE = 0.085f;
-
-    auto can_router = HAL_CHECK(hal::can_router::create(can));
 
     // science::PumpPwmController air_pump(pca_pwm_0, 1000.0_Hz);                               // unknown freqeuncy atm change when this is figured out
     // science::PumpPwmController dosing_pump(pca_pwm_1, 1000.0_Hz);

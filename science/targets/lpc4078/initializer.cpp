@@ -57,13 +57,6 @@ hal::result<science::hardware_map> initialize_target() {
         .baud_rate = 38400,
     })));
 
-    // Use i2c bus 2 for the dev 2 board while testing 
-    // auto& i2c = HAL_CHECK((hal::lpc40xx::i2c::get<0>()));
-
-
-    // Set up seal servo
-    auto& seal_servo = HAL_CHECK((hal::lpc40xx::pwm::get<1, 2>()));
-
     return science::hardware_map {
         .methane_level = &methane_level,
         .revolver_hall_effect = &revolver_hall_effect,
