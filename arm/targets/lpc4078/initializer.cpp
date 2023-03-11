@@ -14,14 +14,14 @@
 
 #include "../../hardware_map.hpp"
 
-hal::result<drive::hardware_map> initialize_target()
+hal::result<arm::hardware_map> initialize_target()
 {
   using namespace hal::literals;
 
   hal::cortex_m::initialize_data_section();
   hal::cortex_m::system_control::initialize_floating_point_unit();
 
-  HAL_CHECK(hal::lpc40xx::clock::maximum(10.0_MHz));
+  HAL_CHECK(hal::lpc40xx::clock::maximum(12.0_MHz));
 
   // Clock declaration
   auto& clock = hal::lpc40xx::clock::get();
@@ -33,12 +33,12 @@ hal::result<drive::hardware_map> initialize_target()
   })));
 
   hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
-  auto& can = HAL_CHECK((hal::lpc40xx::can::get<1>(
+  auto& can = HAL_CHECK((hal::lpc40xx::can::get<2>(
     can_settings)));  // use 2 when using pins 2.7 and 2.8, use 1 when on Dorito
 
   // Get and initialize UART3 with a 8kB receive buffer
   auto& uart3 =
-    HAL_CHECK((hal::lpc40xx::uart::get<3, 8192>(hal::serial::settings{
+    HAL_CHECK((hal::lpc40xx::uart::get<1, 8192>(hal::serial::settings{
       .baud_rate = 115200,
     })));
 
@@ -48,7 +48,7 @@ hal::result<drive::hardware_map> initialize_target()
 
   // auto& pwm0 = HAL_CHECK((hal::lpc40xx::pwm::get<2, 0>()));
 
-  return drive::hardware_map{ .terminal = &uart0,
+  return arm::hardware_map{ .terminal = &uart0,
                               .can = &can,
                               .esp = &uart3,
                               // .pwm0 = &pwm0,

@@ -1,7 +1,7 @@
 #pragma once
 #include <libhal-util/units.hpp>
 
-namespace Arm {
+namespace arm {
 struct accelerometer_feedback
 {
   int x = 0;

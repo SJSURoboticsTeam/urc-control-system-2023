@@ -4,7 +4,7 @@
 #include "../dto/arm-dto.hpp"
 #include "../dto/feedback-dto.hpp"
 
-namespace Arm {
+namespace arm {
 class MissionControlHandler
 {
 public:
@@ -26,7 +26,7 @@ public:
     return request_parameter;
   }
 
-  hal::result<mc_commands> ParseMissionControlData(std::string& response,
+  hal::result<mc_commands> ParseMissionControlData(std::string response,
                                                    hal::serial& terminal)
   {
     response = response.substr(response.find('{'));

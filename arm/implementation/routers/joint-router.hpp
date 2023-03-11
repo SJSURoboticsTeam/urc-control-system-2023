@@ -6,7 +6,7 @@
 #include "../../dto/arm-dto.hpp"
 // #include "../soft-drivers/rmd-encoder.hpp"
 
-namespace Arm {
+namespace arm {
 class JointRouter
 {
 public:
@@ -31,7 +31,7 @@ public:
       hal::degrees(static_cast<float>(arguments.rotunda_angle)),
       hal::rpm(static_cast<float>(arguments.speed)));
     shoulder_.position_control(
-      hal::degrees(static_cast<float>(arguments.shoulder_angle)),
+      -hal::degrees(static_cast<float>(arguments.shoulder_angle)),
       hal::rpm(static_cast<float>(arguments.speed)));
     elbow_.position_control(
       hal::degrees(static_cast<float>(arguments.elbow_angle)),
@@ -44,7 +44,7 @@ public:
       hal::degrees(static_cast<float>(arguments.wrist_roll_angle) -
                    static_cast<float>(arguments.wrist_pitch_angle)),
       hal::rpm(static_cast<float>(arguments.speed)));
-    pwm0_.duty_cycle(ConvertAngleToDutyCycle(arguments.rr9_angle));
+    pwm0_.duty_cycle(ConvertAngleToDutyCycle(180-arguments.rr9_angle));
     return arguments;
   }
 

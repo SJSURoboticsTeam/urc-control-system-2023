@@ -45,8 +45,8 @@ hal::status application(drive::hardware_map& p_map)
 
   auto wifi_result = hal::esp8266::at::wlan_client::create(
     esp,
-    "SJSU Robotics 2.4GHz",
-    "R0Bot1cs3250",
+    "Corey",
+    "0123456789",
     HAL_CHECK(hal::create_timeout(clock, 10s)));
 
   if (!wifi_result) {
@@ -71,7 +71,7 @@ hal::status application(drive::hardware_map& p_map)
   }
 
   auto socket = std::move(socket_result.value());
-
+  HAL_CHECK(hal::write(terminal, "Server found"));
   auto can_router = hal::can_router::create(can).value();
 
   auto left_steer_motor =
