@@ -7,7 +7,7 @@ class ArmApplication(ConanFile):
     generators = "CMakeToolchain", "CMakeDeps", "VirtualBuildEnv"
 
     def requirements(self):
-        self.requires("libhal-lpc/[^1.1.1]")
+        self.requires("libhal-lpc/[^1.1.2]")
         self.requires("libhal-rmd/[^1.0.0]")
         self.requires("libhal-esp8266/[^1.0.0]")
         self.requires("libhal-util/[^1.0.0]")
