@@ -31,14 +31,14 @@ jobs:
         run: conan remote add libhal-trunk https://libhal.jfrog.io/artifactory/api/conan/trunk-conan
 
       - name: Build Arm
-        working_directory: arm
+        working-directory: arm
         run: conan build . -b missing
 
       - name: Build Drive
-        working_directory: drive
+        working-directory: drive
         run: conan build . -b missing
 
       - name: Build Science
-        working_directory: science
+        working-directory: science
         run: conan build . -b missing
       
