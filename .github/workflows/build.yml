@@ -1,0 +1,44 @@
+name: 🚀 deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  deploy:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-22.04]
+        # os: [ ubuntu-20.04, ubuntu-22.04, macos-12, windows-2022 ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: 📥 Install CMake & Conan
+        run: pip3 install cmake conan
+
+      - name: Setting up conan profile
+        run: conan config install -sf profiles/x86_64/linux/ -tf profiles https://github.com/libhal/conan-config.git
+
+      - name: 📡 Add `libhal-trunk` conan remote
+        run: conan remote add libhal-trunk https://libhal.jfrog.io/artifactory/api/conan/trunk-conan
+
+      - name: Build Arm
+        working_directory: arm
+        run: conan build . -b missing
+
+      - name: Build Drive
+        working_directory: drive
+        run: conan build . -b missing
+
+      - name: Build Science
+        working_directory: science
+        run: conan build . -b missing
+      
