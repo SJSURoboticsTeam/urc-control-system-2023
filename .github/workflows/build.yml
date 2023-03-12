@@ -2,18 +2,28 @@ name: 🚀 deploy
 
 on:
   workflow_dispatch:
+
   push:
     branches:
       - main
+
   pull_request:
+
+  schedule:
+    - cron: '0 12 * * 0'
 
 jobs:
   deploy:
     strategy:
       fail-fast: false
       matrix:
-        os: [ ubuntu-22.04]
-        # os: [ ubuntu-20.04, ubuntu-22.04, macos-12, windows-2022 ]
+        include: 
+          - os: ubuntu-22.04
+            profile_name: x86_64/linux
+          - os: macos-12
+            profile_name: x86_64/mac
+          - os: windows-2022
+            profile_name: x86_64/windows
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
@@ -25,7 +35,7 @@ jobs:
         run: pip3 install cmake conan
 
       - name: Setting up conan profile
-        run: conan config install -sf profiles/x86_64/linux/ -tf profiles https://github.com/libhal/conan-config.git
+        run: conan config install -sf profiles/${{matrix.profile_name}}/ -tf profiles https://github.com/libhal/conan-config.git
 
       - name: 📡 Add `libhal-trunk` conan remote
         run: conan remote add libhal-trunk https://libhal.jfrog.io/artifactory/api/conan/trunk-conan
