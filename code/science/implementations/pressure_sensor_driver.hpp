@@ -5,11 +5,11 @@
 namespace science{
 
 /// @brief Implementation for <SENSOR> ADC pressure sensor.
-class PressureSensor : GenericAdcSensor {
+class pressure_sensor : generic_adc_sensor {
 public:
     /// @brief Builds pressure sensor driver
     /// @param adc The libhal ADC pin that has been initialized 
-    PressureSensor(hal::adc& adc) : GenericAdcSensor(adc) {};
+    pressure_sensor(hal::adc& adc) : generic_adc_sensor(adc) {};
 
     /// @brief Reads pressure as detected by sensor NOTE: this function is a placeholder right now
     /// currently only returns raw voltage.

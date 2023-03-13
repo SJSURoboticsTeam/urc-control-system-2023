@@ -12,8 +12,33 @@ find_package(libhal-esp8266 REQUIRED CONFIG)
 find_package(libhal-util REQUIRED CONFIG)
 find_package(libhal-pca REQUIRED CONFIG)
 
-set(DEMOS drive drive_serial arm arm_serial science)
+set(SUBSYSTEMS drive drive_serial arm arm_serial science)
+set(DEMOS co2_sensor_demo)
 set(TARGETS lpc4078_10mhz lpc4078_12mhz)
+
+foreach(target IN LISTS TARGETS)
+    foreach(subsystem IN LISTS SUBSYSTEMS)
+        set(current_project ${target}_${subsystem})
+        message(STATUS "Generating Demo for \"${current_project}\"")
+        add_executable(${current_project}
+            main.cpp
+            third_party/newlib.cpp
+            targets/${target}/initializer.cpp
+            applications/control_loops/${subsystem}.cpp)
+        target_include_directories(${current_project} PUBLIC
+            ./
+            targets/${target})
+        target_compile_features(${current_project} PRIVATE cxx_std_20)
+        target_link_options(${current_project} PRIVATE -u _printf_float)
+        target_link_libraries(${current_project} PRIVATE
+            libhal::lpc4078
+            libhal::rmd
+            libhal::esp8266
+            libhal::util
+            libhal::pca)
+        arm_post_build(${current_project})
+    endforeach()
+endforeach()
 
 foreach(target IN LISTS TARGETS)
     foreach(demo IN LISTS DEMOS)
@@ -23,7 +48,7 @@ foreach(target IN LISTS TARGETS)
             main.cpp
             third_party/newlib.cpp
             targets/${target}/initializer.cpp
-            applications/${demo}.cpp)
+            applications/demos/${demo}.cpp)
         target_include_directories(${current_project} PUBLIC
             ./
             targets/${target})

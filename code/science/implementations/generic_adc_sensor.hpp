@@ -7,12 +7,12 @@
 namespace science{
 
 /// @brief A Generic ADC Driver. This is designed to be a higher level interface for analog devices.
-class GenericAdcSensor {
+class generic_adc_sensor {
 public:
     /// @brief Builds driver object
     /// @param adc_data libhal adc pin that has been initialized 
     /// @param digital_detector Optional digital pin for device that is to goes high when a signal is detected
-    GenericAdcSensor(hal::adc& adc_data) : adc_data_(adc_data) {}
+    generic_adc_sensor(hal::adc& adc_data) : adc_data_(adc_data) {}
 
 
     /// @brief Reads the raw voltage value from the ADC pin. 

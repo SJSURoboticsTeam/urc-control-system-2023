@@ -7,11 +7,11 @@
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
 
-#include "../arm/implementation/joint_router.hpp"
-#include "../arm/implementation/mission_control_handler.hpp"
-#include "../arm/implementation/rules_engine.hpp"
+#include "../../arm/implementation/joint_router.hpp"
+#include "../../arm/implementation/mission_control_handler.hpp"
+#include "../../arm/implementation/rules_engine.hpp"
 
-#include "../hardware_map.hpp"
+#include "../../hardware_map.hpp"
 #include "common/util.hpp"
 
 #include <string_view>

@@ -9,13 +9,13 @@
 namespace science{
 
 /// @brief Implementation driver for MQ4 methane sensor
-class Mq4MethaneSensor : GenericAdcSensor{
+class mq4_methane_sensor : generic_adc_sensor{
 public:
 
     /// @brief Builds MQ4 sensor driver object.
     /// @param adc_data libhal adc pin that has been initialized 
     /// @param digital_detector Digital pin that goes HIGH when methane is detected. 
-    Mq4MethaneSensor(hal::adc& adc_data) : GenericAdcSensor(adc_data) {};
+    mq4_methane_sensor(hal::adc& adc_data) : generic_adc_sensor(adc_data) {};
 
     /// @brief Returns read value from sensor in parts per million (PPM).
     /// @return The amount of methane near the sensor in PPM.

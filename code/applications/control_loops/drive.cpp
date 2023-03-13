@@ -7,14 +7,14 @@
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
 
-#include "../drive/implementation/command_lerper.hpp"
-#include "../drive/implementation/mission_control_handler.hpp"
-#include "../drive/implementation/mode_select.hpp"
-#include "../drive/implementation/mode_switcher.hpp"
-#include "../drive/implementation/rules_engine.hpp"
-#include "../drive/implementation/tri_wheel_router.hpp"
+#include "../../drive/implementation/command_lerper.hpp"
+#include "../../drive/implementation/mission_control_handler.hpp"
+#include "../../drive/implementation/mode_select.hpp"
+#include "../../drive/implementation/mode_switcher.hpp"
+#include "../../drive/implementation/rules_engine.hpp"
+#include "../../drive/implementation/tri_wheel_router.hpp"
 
-#include "../hardware_map.hpp"
+#include "../../hardware_map.hpp"
 
 #include <libhal-esp8266/at/socket.hpp>
 #include <libhal-esp8266/at/wlan_client.hpp>

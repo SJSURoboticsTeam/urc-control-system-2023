@@ -7,162 +7,162 @@
 
 namespace science {
 
-class StateMachine
+class state_machine
 {
 public:
-  static constexpr float kpressure_requirement = 90.0;
+  static constexpr float pressure_requirement = 90.0;
 
-  enum States
+  enum states
   {
-    Start = 0,
-    MoveRevolver = 1,
-    StopRevolver = 2,
-    Seal = 3,
-    Depressurizing = 4,
-    StopDepressurizing = 5,
-    Inject = 6,
-    StopInjection = 7,
-    ClearingChamber = 8,
-    StopClearingChamber = 9,
-    Unseal = 10,
-    Finish = 11,
-    Wait = 12
+    start = 0,
+    move_revolver = 1,
+    stop_revolver = 2,
+    seal = 3,
+    depressurizing = 4,
+    stopdepressurizing = 5,
+    inject = 6,
+    stop_injection = 7,
+    clearing_chamber = 8,
+    stop_clearing_chamber = 9,
+    unseal = 10,
+    finish = 11,
+    wait = 12
   };
 
-  void RunMachine(science_status& status,
-                  science_commands commands,
-                  float pressure,
-                  int revolver_hall,
-                  hal::serial& terminal)
+  void run_machine(science_status& status,
+                   science_commands commands,
+                   float pressure,
+                   int revolver_hall,
+                   hal::serial& terminal)
   {
     if (commands.is_operational == 0) {
-      previous_state_ = States::Start;
-      current_state_ = States::Start;
+      previous_state = states::start;
+      current_state = states::start;
       // reset the status durring e_stop
       status = science_status{};
       return;
     }
-    switch (current_state_) {
-      case States::Start:
+    switch (current_state) {
+      case states::start:
         // reset the status if it goes back to the
         status = science_status{};
         if (commands.state_step == desired_button_value - 1) {
-          current_state_ = States::Start;
+          current_state = states::start;
         } else if (commands.state_step == desired_button_value) {
-          current_state_ = States::MoveRevolver;
+          current_state = states::move_revolver;
         }
         break;
         // revolver_hall will come back as low when we start, this will need to
         // be fixed with some weird logic
 
-      case States::MoveRevolver:
+      case states::move_revolver:
         if (revolver_hall == 1) {
-          current_state_ = current_state_;
-          status.move_revolver_status = Status::InProgress;
+          current_state = current_state;
+          status.move_revolver_status = status::in_progress;
         } else if (revolver_hall == 0) {
-          current_state_ = States::StopRevolver;
+          current_state = states::stop_revolver;
         }
         break;
 
-      case States::StopRevolver:
+      case states::stop_revolver:
         if (revolver_hall == 1) {
-          current_state_ = current_state_;
+          current_state = current_state;
         } else if (revolver_hall == 0 && commands.mode == 'M') {
-          previous_state_ = current_state_;
-          current_state_ = States::Wait;
+          previous_state = current_state;
+          current_state = states::wait;
           desired_button_value++;
         } else if (revolver_hall == 0 && commands.mode == 'A') {
-          current_state_ = States::Seal;
+          current_state = states::seal;
         }
         if (revolver_hall == 0)
-          status.move_revolver_status = Status::Complete;
+          status.move_revolver_status = status::complete;
         break;
 
-      case States::Seal:
-        status.seal_status = Status::InProgress;
+      case states::seal:
+        status.seal_status = status::in_progress;
         if (commands.mode == 'A') {
-          current_state_ = States::Depressurizing;
+          current_state = states::depressurizing;
         } else if (commands.mode == 'M') {
-          previous_state_ = current_state_;
-          current_state_ = States::Wait;
+          previous_state = current_state;
+          current_state = states::wait;
           desired_button_value++;
         }
         break;
 
-      case States::Depressurizing:
-        status.seal_status = Status::Complete;
+      case states::depressurizing:
+        status.seal_status = status::complete;
         // 90.0 is a place holder as of rn
-        if (pressure > kpressure_requirement) {
-          current_state_ = current_state_;
-          status.depressurize_status = Status::InProgress;
-        } else if (pressure < kpressure_requirement) {
-          current_state_ = States::StopDepressurizing;
-          status.depressurize_status = Status::Complete;
+        if (pressure > pressure_requirement) {
+          current_state = current_state;
+          status.depressurize_status = status::in_progress;
+        } else if (pressure < pressure_requirement) {
+          current_state = states::stopdepressurizing;
+          status.depressurize_status = status::complete;
         }
         break;
 
-      case States::StopDepressurizing:
+      case states::stopdepressurizing:
         if (commands.mode == 'M') {
-          previous_state_ = current_state_;
-          current_state_ = States::Wait;
+          previous_state = current_state;
+          current_state = states::wait;
           desired_button_value++;
         } else {
-          current_state_ = States::Inject;
+          current_state = states::inject;
         }
         break;
 
-      case States::Inject:
+      case states::inject:
         // status will have to be updated outside of
-        status.inject_status = Status::InProgress;
-        current_state_ = States::StopInjection;
+        status.inject_status = status::in_progress;
+        current_state = states::stop_injection;
         // goto the wait state to choose when to stop the experiment
         break;
 
-      case States::StopInjection:
-        status.inject_status = Status::Complete;
-        previous_state_ = current_state_;
-        current_state_ = States::Wait;
+      case states::stop_injection:
+        status.inject_status = status::complete;
+        previous_state = current_state;
+        current_state = states::wait;
         desired_button_value++;
         break;
 
-      case States::ClearingChamber:
+      case states::clearing_chamber:
         // 90.0 is a place holder as of rn
-        if (pressure > kpressure_requirement) {
-          status.clear_status = Status::InProgress;
-          current_state_ = current_state_;
-        } else if (pressure < kpressure_requirement) {
-          current_state_ = States::StopClearingChamber;
+        if (pressure > pressure_requirement) {
+          status.clear_status = status::in_progress;
+          current_state = current_state;
+        } else if (pressure < pressure_requirement) {
+          current_state = states::stop_clearing_chamber;
         }
         break;
 
-      case States::StopClearingChamber:
-        status.clear_status = Status::Complete;
-        current_state_ = States::Unseal;
+      case states::stop_clearing_chamber:
+        status.clear_status = status::complete;
+        current_state = states::unseal;
         break;
 
-      case States::Unseal:
-        status.unseal_status = Status::InProgress;
+      case states::unseal:
+        status.unseal_status = status::in_progress;
         break;
 
-      case States::Finish:
-        current_state_ = States::Start;
-        status.unseal_status = Status::Complete;
+      case states::finish:
+        current_state = states::start;
+        status.unseal_status = status::complete;
         desired_button_value = 1;
         break;
 
-      case States::Wait:
+      case states::wait:
         if (commands.state_step == desired_button_value - 1) {
-          current_state_ = current_state_;
+          current_state = current_state;
         } else if (commands.state_step == desired_button_value) {
-          current_state_ = previous_state_ + 1;
+          current_state = previous_state + 1;
         }
         break;
     }
   }
 
 private:
-  int previous_state_ = 0;
-  int current_state_ = 0;
+  int previous_state = 0;
+  int current_state = 0;
   // any time the button is clicked, increment this
   int desired_button_value = 1;
 };
