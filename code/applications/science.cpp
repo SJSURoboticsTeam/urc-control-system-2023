@@ -1,26 +1,26 @@
-#include "../implementations/co2_sensor.hpp"
-#include "../implementations/mission_control_handler.hpp"
-#include "../implementations/mq4_methane_sensor.hpp"
-#include "../implementations/pressure_sensor_driver.hpp"
-#include "../implementations/pump_controller.hpp"
-#include "../implementations/state_machine.hpp"
+#include "../science/implementations/co2_sensor.hpp"
+#include "../science/implementations/mission_control_handler.hpp"
+#include "../science/implementations/mq4_methane_sensor.hpp"
+#include "../science/implementations/pressure_sensor_driver.hpp"
+#include "../science/implementations/pump_controller.hpp"
+#include "../science/implementations/state_machine.hpp"
 
 #include <libhal-pca/pca9685.hpp>
 #include <libhal/adc.hpp>
 #include <libhal/input_pin.hpp>
 
-#include "../dto/science_dto.hpp"
 #include "../hardware_map.hpp"
+#include "../science/dto/science_dto.hpp"
 
 #include <string_view>
 
-hal::status application(science::hardware_map& p_map)
+hal::status application(sjsu::hardware_map& p_map)
 {
   using namespace std::chrono_literals;
   using namespace hal::literals;
 
   auto& pressure_adc = *p_map.adc_5;
-  auto& methane_adc = *p_map.pwm_4;
+  auto& methane_adc = *p_map.adc_4;
   auto& in_pin0 = *p_map.in_pin0;
   auto& revolver_spinner = *p_map.pwm_1_6;
   auto& seal_spinner = *p_map.pwm_1_5;

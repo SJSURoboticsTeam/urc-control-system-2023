@@ -11,7 +11,7 @@ find_package(libhal-esp8266 REQUIRED CONFIG)
 find_package(libhal-util REQUIRED CONFIG)
 find_package(libhal-pca REQUIRED CONFIG)
 
-set(DEMOS app)
+set(DEMOS science)
 set(TARGETS lpc4078)
 
 add_link_options(-lc -lrdimon -u _printf_float)

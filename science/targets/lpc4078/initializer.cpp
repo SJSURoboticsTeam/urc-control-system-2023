@@ -32,7 +32,7 @@ hal::result<science::hardware_map> initialize_target()
   hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
   auto& can = HAL_CHECK((hal::lpc40xx::can::get<2>(can_settings)));
 
-  auto& pwm_4 = HAL_CHECK(hal::lpc40xx::adc::get<4>());
+  auto& adc_4 = HAL_CHECK(hal::lpc40xx::adc::get<4>());
   auto& adc_5 = HAL_CHECK(hal::lpc40xx::adc::get<5>());
 
   auto& in_pin0 = HAL_CHECK((hal::lpc40xx::input_pin::get<1, 15>()));
@@ -54,8 +54,8 @@ hal::result<science::hardware_map> initialize_target()
     .in_pin2 = &in_pin2,
     .pwm_1_6 = &pwm_1_6,
     .pwm_1_5 = &pwm_1_5,
+    .adc_4 = &adc_4,
     .adc_5 = &adc_5,
-    .pwm_4 = &pwm_4,
     .i2c = &i2c,
     .steady_clock = &counter,
     .reset = []() { hal::cortex_m::system_control::reset(); },

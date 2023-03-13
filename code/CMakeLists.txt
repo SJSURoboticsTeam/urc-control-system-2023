@@ -12,7 +12,7 @@ find_package(libhal-esp8266 REQUIRED CONFIG)
 find_package(libhal-util REQUIRED CONFIG)
 find_package(libhal-pca REQUIRED CONFIG)
 
-set(DEMOS drive drive_serial arm arm_serial)
+set(DEMOS drive drive_serial arm arm_serial science)
 set(TARGETS lpc4078_10mhz lpc4078_12mhz)
 
 foreach(target IN LISTS TARGETS)

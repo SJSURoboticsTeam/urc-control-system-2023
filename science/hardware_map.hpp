@@ -19,8 +19,8 @@ struct hardware_map
   hal::input_pin* in_pin2;
   hal::pwm* pwm_1_6;
   hal::pwm* pwm_1_5;
+  hal::adc* adc_4;
   hal::adc* adc_5;
-  hal::adc* pwm_4;
   hal::i2c* i2c;
   hal::steady_clock* steady_clock;
   hal::callback<void()> reset;
