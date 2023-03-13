@@ -22,7 +22,6 @@ hal::result<arm::hardware_map> initialize_target()
 
   HAL_CHECK(hal::lpc40xx::clock::maximum(12.0_MHz));
 
-  // Clock declaration
   auto& clock = hal::lpc40xx::clock::get();
   auto cpu_frequency = clock.get_frequency(hal::lpc40xx::peripheral::cpu);
   static hal::cortex_m::dwt_counter counter(cpu_frequency);
@@ -31,11 +30,10 @@ hal::result<arm::hardware_map> initialize_target()
     .baud_rate = 38400,
   })));
 
+  // use 2 when using pins 2.7 and 2.8, use 1 when on Dorito
   hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
-  auto& can = HAL_CHECK((hal::lpc40xx::can::get<2>(
-    can_settings)));  // use 2 when using pins 2.7 and 2.8, use 1 when on Dorito
+  auto& can = HAL_CHECK((hal::lpc40xx::can::get<2>(can_settings)));
 
-  // Get and initialize UART3 with a 8kB receive buffer
   auto& uart3 =
     HAL_CHECK((hal::lpc40xx::uart::get<1, 8192>(hal::serial::settings{
       .baud_rate = 115200,
@@ -44,8 +42,6 @@ hal::result<arm::hardware_map> initialize_target()
   auto& i2c = HAL_CHECK((hal::lpc40xx::i2c::get<2>(hal::i2c::settings{
     .clock_rate = 100.0_kHz,
   })));
-
-  // auto& pwm0 = HAL_CHECK((hal::lpc40xx::pwm::get<2, 0>()));
 
   return arm::hardware_map{ .terminal = &uart0,
                             .can = &can,

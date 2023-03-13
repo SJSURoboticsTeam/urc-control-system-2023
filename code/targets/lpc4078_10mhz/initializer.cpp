@@ -22,7 +22,6 @@ hal::result<sjsu::hardware_map> initialize_target()
 
   HAL_CHECK(hal::lpc40xx::clock::maximum(10.0_MHz));
 
-  // Clock declaration
   auto& clock = hal::lpc40xx::clock::get();
   auto cpu_frequency = clock.get_frequency(hal::lpc40xx::peripheral::cpu);
   static hal::cortex_m::dwt_counter counter(cpu_frequency);
@@ -38,7 +37,6 @@ hal::result<sjsu::hardware_map> initialize_target()
   auto& in1 = HAL_CHECK((hal::lpc40xx::input_pin::get<2, 2>()));
   auto& in2 = HAL_CHECK((hal::lpc40xx::input_pin::get<2, 0>()));
 
-  // Get and initialize UART3 with a 8kB receive buffer
   auto& uart3 =
     HAL_CHECK((hal::lpc40xx::uart::get<3, 8192>(hal::serial::settings{
       .baud_rate = 115200,
