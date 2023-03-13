@@ -51,4 +51,8 @@ jobs:
       - name: Build Science
         working-directory: science
         run: conan build . -b missing
+
+      - name: Build Code
+        working-directory: code
+        run: conan build . -b missing
       
