@@ -14,9 +14,9 @@
 
 #include "../hardware_map.hpp"
 
+#include <cmath>
 #include <string>
 #include <string_view>
-#include <cmath>
 
 #include "src/util.hpp"
 
@@ -26,11 +26,11 @@ hal::status application(drive::hardware_map& p_map)
   using namespace hal::literals;
 
   auto& terminal = *p_map.terminal;
-  auto& clock = *p_map.steady_clock; 
+  auto& clock = *p_map.steady_clock;
   auto& magnet0 = *p_map.in_pin0;
   auto& magnet1 = *p_map.in_pin1;
-  auto& magnet2 = *p_map.in_pin2;       
-  auto& can = *p_map.can;        
+  auto& magnet2 = *p_map.in_pin2;
+  auto& can = *p_map.can;
 
   std::array<hal::byte, 8192> buffer{};
 
@@ -54,46 +54,48 @@ hal::status application(drive::hardware_map& p_map)
   Drive::TriWheelRouter::leg back(back_steer_motor, back_hub_motor, magnet1);
 
   Drive::TriWheelRouter tri_wheel{ right, left, back };
-  Drive::MissionControlHandler mission_control;
   Drive::drive_commands commands;
   Drive::motor_feedback motor_speeds;
   Drive::tri_wheel_router_arguments arguments;
 
-  Drive::RulesEngine rules_engine;
-  Drive::ModeSwitch mode_switch;
-  Drive::CommandLerper lerp;
-  std::string_view json{"{\"HB\":0,\"IO\":0,\"WO\":0,\"DM\":\"D\",\"CMD\":[0,0]}"};
+  Drive::mode_switch mode_switcher;
+  Drive::command_lerper lerp;
+  std::string_view json{
+    "{\"HB\":0,\"IO\":0,\"WO\":0,\"DM\":\"D\",\"CMD\":[0,0]}"
+  };
 
   HAL_CHECK(hal::delay(clock, 1000ms));
-  tri_wheel.HomeLegs(terminal, clock);
+  tri_wheel.home(terminal, clock);
   HAL_CHECK(hal::delay(clock, 1000ms));
   HAL_CHECK(hal::write(terminal, "Starting control loop..."));
 
   while (true) {
     // serial
     auto received = HAL_CHECK(terminal.read(buffer)).data;
-    auto result = std::string(reinterpret_cast<const char*>(received.data()),
-                              received.size());
+    auto result = to_string_view(received);
     auto start = result.find('{');
     auto end = result.find('}');
 
     if (start != std::string::npos && end != std::string::npos) {
       result = result.substr(start, end - start + 1);
-      commands =
-        HAL_CHECK(mission_control.ParseMissionControlData(result, terminal));
-      commands.Print(terminal);
+      auto new_commands = parse_mission_control_data(json, terminal);
+      if (new_commands) {
+        commands = new_commands.value();
+      }
+      commands.print(terminal);
     }
     // end of serial
-    commands = rules_engine.ValidateCommands(commands);
-    commands = mode_switch.SwitchSteerMode(commands, arguments, motor_speeds, terminal);
-    commands = lerp.Lerp(commands);
+    commands = validate_commands(commands);
+    commands = mode_switcher.switch_steer_mode(
+      commands, arguments, motor_speeds, terminal);
+    commands.speed = lerp.lerp(commands.speed);
 
-    commands.Print(terminal);
-    arguments = Drive::ModeSelect::SelectMode(commands);
-    arguments = HAL_CHECK(tri_wheel.SetLegArguments(arguments, clock));
+    commands.print(terminal);
+    arguments = select_mode(commands);
+    arguments = HAL_CHECK(tri_wheel.move(arguments, clock));
 
-    motor_speeds = HAL_CHECK(tri_wheel.GetMotorFeedback(clock));
-    // motor_speeds.Print(terminal);
+    motor_speeds = HAL_CHECK(tri_wheel.get_motor_feedback(clock));
+    // motor_speeds.print(terminal);
     HAL_CHECK(hal::delay(clock, 30ms));
   }
 

@@ -3,9 +3,12 @@
 #include <libhal-util/serial.hpp>
 
 namespace Drive {
-const char kResponseBodyFormat[] =
+  using namespace std::chrono_literals;
+  using namespace hal::literals;
+static constexpr char kResponseBodyFormat[] =
   "{\"HB\":%d,\"IO\":%d,\"WO\":%d,\"DM\":\"%c\",\"CMD\":[%d,%d]}\n";
-const char kGETRequestFormat[] =
+
+static constexpr char kGETRequestFormat[] =
   "drive?heartbeat_count=%d&is_operational=%d&wheel_orientation=%d&drive_mode=%"
   "c&speed=%d&angle=%d";
 
@@ -18,7 +21,7 @@ struct drive_commands
   int is_operational = 0;
   int heartbeat_count = 0;
 
-  void Print(hal::serial& terminal)
+  void print(hal::serial& terminal)
   {
     hal::print<100>(terminal,
                     kResponseBodyFormat,
@@ -31,16 +34,10 @@ struct drive_commands
   }
 };
 
-struct motor_arguments
+struct leg_arguments
 {
   float speed = 0;
   float angle = 0;
-};
-
-struct leg_arguments
-{
-  motor_arguments steer{ motor_arguments{ 5, 0 } };
-  motor_arguments hub;
 };
 
 struct tri_wheel_router_arguments
@@ -49,7 +46,7 @@ struct tri_wheel_router_arguments
   leg_arguments right{};
   leg_arguments back{};
 
-  void Print()
+  void print()
   {
     // printf("Args\tLeg\tSpeed\tAngle\n");
     // printf("\tLeft\t%.1f\t%.1f\n", static_cast<double>(left.hub.speed),
