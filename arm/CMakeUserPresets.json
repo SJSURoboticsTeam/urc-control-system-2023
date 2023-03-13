@@ -1,9 +1,0 @@
-{
-    "version": 4,
-    "vendor": {
-        "conan": {}
-    },
-    "include": [
-        "C:\\Users\\Corey\\OneDrive\\Desktop\\code\\urc-control-system-2023\\arm\\build\\Debug\\generators\\CMakePresets.json"
-    ]
-}
