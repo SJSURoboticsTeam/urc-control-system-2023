@@ -1,73 +1,63 @@
 #include <libhal-armcortex/dwt_counter.hpp>
 #include <libhal-armcortex/startup.hpp>
 #include <libhal-armcortex/system_control.hpp>
-#include <libhal-lpc40xx/input_pin.hpp>
-#include <libhal-lpc40xx/uart.hpp>
 #include <libhal-lpc40xx/adc.hpp>
 #include <libhal-lpc40xx/can.hpp>
-#include <libhal-lpc40xx/pwm.hpp>
 #include <libhal-lpc40xx/i2c.hpp>
+#include <libhal-lpc40xx/input_pin.hpp>
+#include <libhal-lpc40xx/pwm.hpp>
+#include <libhal-lpc40xx/uart.hpp>
 #include <libhal-pca/pca9685.hpp>
 
 #include "../../hardware_map.hpp"
 
-// TODO: update with proper hardware data
-constexpr int METHANE_DIGITAL_PORT = 0;
-constexpr int METHANE_DIGITAL_PIN = 0;
-constexpr int METHANE_ANALOG_CHANNEL = 4;
+hal::result<science::hardware_map> initialize_target()
+{
+  using namespace std::chrono_literals;
+  using namespace hal::literals;
+  hal::cortex_m::initialize_data_section();
+  hal::cortex_m::system_control::initialize_floating_point_unit();
+  HAL_CHECK(hal::lpc40xx::clock::maximum(12.0_MHz));
+  // Create a hardware counter
+  auto& steady_clock = hal::lpc40xx::clock::get();
+  auto cpu_frequency =
+    steady_clock.get_frequency(hal::lpc40xx::peripheral::cpu);
+  static hal::cortex_m::dwt_counter counter(cpu_frequency);
 
-constexpr int PRESSURE_SENSOR_ANALOG = 5;
+  // Get and initialize UART0 for UART based terminal logging
+  auto& uart0 = HAL_CHECK((hal::lpc40xx::uart::get<0, 64>(hal::serial::settings{
+    .baud_rate = 38400,
+  })));
 
-constexpr int CAN_BUS = 2;
+  hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
+  auto& can = HAL_CHECK((hal::lpc40xx::can::get<2>(can_settings)));
 
-constexpr int I2C_CHANNEL = 2;
+  auto& pwm_4 = HAL_CHECK(hal::lpc40xx::adc::get<4>());
+  auto& adc_5 = HAL_CHECK(hal::lpc40xx::adc::get<5>());
 
-//halleffect sensor port and pin
-constexpr int REVOLVER_HALL_EFFECT_DIGITAL_PORT = 1;
-constexpr int REVOLVER_HALL_EFFECT_DIGITAL_PIN = 15; 
-constexpr int SEAL_HALL_EFFECT_DIGITAL_PORT = 1;
-constexpr int SEAL_HALL_EFFECT_DIGITAL_PIN = 23;
+  auto& in_pin0 = HAL_CHECK((hal::lpc40xx::input_pin::get<1, 15>()));
+  auto& in_pin1 = HAL_CHECK((hal::lpc40xx::input_pin::get<1, 23>()));
+  auto& in_pin2 = HAL_CHECK((hal::lpc40xx::input_pin::get<1, 22>()));
 
-hal::result<science::hardware_map> initialize_target() {
-    using namespace std::chrono_literals;
-    using namespace hal::literals;
-    hal::cortex_m::initialize_data_section();
-    hal::cortex_m::system_control::initialize_floating_point_unit();
-    HAL_CHECK(hal::lpc40xx::clock::maximum(12.0_MHz));
-    // Create a hardware counter
-    auto& clock = hal::lpc40xx::clock::get();
-    auto cpu_frequency = clock.get_frequency(hal::lpc40xx::peripheral::cpu);
-    static hal::cortex_m::dwt_counter counter(cpu_frequency);
-    
-    // create output data pins
-    auto& methane_level = HAL_CHECK(hal::lpc40xx::adc::get<METHANE_ANALOG_CHANNEL>());
-    auto& pressure_sensor_pin = HAL_CHECK(hal::lpc40xx::adc::get<PRESSURE_SENSOR_ANALOG>());
+  auto& pwm_1_6 = HAL_CHECK((hal::lpc40xx::pwm::get<1, 6>()));
+  auto& pwm_1_5 = HAL_CHECK((hal::lpc40xx::pwm::get<1, 5>()));
 
-    auto& revolver_hall_effect = HAL_CHECK((hal::lpc40xx::input_pin::get<REVOLVER_HALL_EFFECT_DIGITAL_PORT, REVOLVER_HALL_EFFECT_DIGITAL_PIN>()));
-    auto& seal_hall_effect = HAL_CHECK((hal::lpc40xx::input_pin::get<SEAL_HALL_EFFECT_DIGITAL_PORT, SEAL_HALL_EFFECT_DIGITAL_PIN>()));
+  auto& i2c = HAL_CHECK((hal::lpc40xx::i2c::get<2>(hal::i2c::settings{
+    .clock_rate = 100.0_kHz,
+  })));
 
-    hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
-    auto& can = HAL_CHECK((hal::lpc40xx::can::get<CAN_BUS>(can_settings)));
-    auto& revolver_pwm = HAL_CHECK((hal::lpc40xx::pwm::get<1,6>()));
-    auto& seal_pwm = HAL_CHECK((hal::lpc40xx::pwm::get<1,5>()));
-    auto& i2c = HAL_CHECK((hal::lpc40xx::i2c::get<2>(hal::i2c::settings{
-    .clock_rate = 100.0_kHz,})));
-    // Get and initialize UART0 for UART based terminal logging
-    auto& uart0 = HAL_CHECK((hal::lpc40xx::uart::get<0, 64>(hal::serial::settings{
-        .baud_rate = 38400,
-    })));
-
-    return science::hardware_map {
-        .methane_level = &methane_level,
-        .revolver_hall_effect = &revolver_hall_effect,
-        .seal_hall_effect = &seal_hall_effect,
-        .clock = &counter,
-        .terminal = &uart0,
-        .reset = []() { hal::cortex_m::system_control::reset(); },
-        .revolver_spinner = &revolver_pwm,
-        .seal = &seal_pwm,
-        .pressure_sensor_pin = &pressure_sensor_pin,
-        .i2c = &i2c,
-        .can = &can
-    };
+  return science::hardware_map{
+    .terminal = &uart0,
+    .can = &can,
+    .in_pin0 = &in_pin0,
+    .in_pin1 = &in_pin1,
+    .in_pin2 = &in_pin2,
+    .pwm_1_6 = &pwm_1_6,
+    .pwm_1_5 = &pwm_1_5,
+    .adc_5 = &adc_5,
+    .pwm_4 = &pwm_4,
+    .i2c = &i2c,
+    .steady_clock = &counter,
+    .reset = []() { hal::cortex_m::system_control::reset(); },
+  };
 }
