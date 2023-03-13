@@ -2,9 +2,13 @@
 
 Important Commands
 
-1. make build folder inside of arm or drive folder
-2. change into build folder directory
-3. run `conan install .. -s build_type=Debug  --build=missing`
-4. run `cmake .. -DCMAKE_BUILD_TYPE=Debug`
-5. run `make -j`
-6. run `nxpprog --control --binary="lpc4078_app.bin" --device="/dev/ttyUSB0"` - will probably need to change out device or binary for your correct info
+1. Change into `code` directory
+2. Run
+   ```bash
+   conan build . -b missing
+   ```
+3. Change into `build/debug` directory
+4. Change **FILE** and **SERIALPORT** with correct values then run
+   ```bash
+   nxpprog --control --binary="lpc4078_FILE.bin" --device="/dev/ttySERIALPORT"
+   ```
