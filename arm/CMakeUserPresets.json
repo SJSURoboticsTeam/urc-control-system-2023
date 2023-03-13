@@ -4,7 +4,6 @@
         "conan": {}
     },
     "include": [
-        "C:\\Users\\corey\\Coding\\Robotics\\urc-control-system-2023\\arm\\build\\Debug\\generators\\CMakePresets.json",
-        "C:\\Users\\corey\\Coding\\Robotics\\urc-control-system-2023\\arm\\build\\Release\\generators\\CMakePresets.json"
+        "C:\\Users\\Corey\\OneDrive\\Desktop\\code\\urc-control-system-2023\\arm\\build\\Debug\\generators\\CMakePresets.json"
     ]
 }

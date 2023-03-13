@@ -36,4 +36,4 @@ struct motors_feedback
   {
   }
 };
-}  // namespace Arm
+}  // namespace arm

@@ -4,12 +4,12 @@
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
 
-#include "../implementation/command-lerper.hpp"
-#include "../implementation/mission-control-handler.hpp"
-#include "../implementation/mode-select.hpp"
-#include "../implementation/mode-switcher.hpp"
-#include "../implementation/rules-engine.hpp"
-#include "../implementation/tri-wheel-router.hpp"
+#include "../implementation/command_lerper.hpp"
+#include "../implementation/mission_control_handler.hpp"
+#include "../implementation/mode_select.hpp"
+#include "../implementation/mode_switcher.hpp"
+#include "../implementation/rules_engine.hpp"
+#include "../implementation/tri_wheel_router.hpp"
 
 #include "../hardware_map.hpp"
 

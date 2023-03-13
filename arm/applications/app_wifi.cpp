@@ -7,9 +7,9 @@
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
 
-#include "../implementation/mission-control-handler.hpp"
-#include "../implementation/routers/joint-router.hpp"
-#include "../implementation/rules-engine.hpp"
+#include "../implementation/mission_control_handler.hpp"
+#include "../implementation/routers/joint_router.hpp"
+#include "../implementation/rules_engine.hpp"
 
 #include "../hardware_map.hpp"
 

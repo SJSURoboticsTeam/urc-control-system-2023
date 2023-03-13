@@ -7,9 +7,9 @@
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
 
-#include "../implementation/mission-control-handler.hpp"
-#include "../implementation/routers/joint-router.hpp"
-#include "../implementation/rules-engine.hpp"
+#include "../implementation/mission_control_handler.hpp"
+#include "../implementation/routers/joint_router.hpp"
+#include "../implementation/rules_engine.hpp"
 
 #include "../hardware_map.hpp"
 #include "src/util.hpp"
@@ -38,7 +38,8 @@ hal::status application(arm::hardware_map& p_map)
 
   HAL_CHECK(hal::write(terminal, "Can router created\n"));
 
-  auto rotunda_motor = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x141));
+  auto rotunda_motor =
+    HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x141));
   auto shoulder_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8 * 65 / 16, 0x142));
   auto elbow_motor =
@@ -69,24 +70,25 @@ hal::status application(arm::hardware_map& p_map)
 
   commands.Print(terminal);
   while (true) {
-      // serial
+    // serial
     auto received = HAL_CHECK(terminal.read(buffer)).data;
-    auto result = std::string_view(reinterpret_cast<const char*>(received.data()),
-                              received.size());
-  //   auto start = result.find('{');
-  //   auto end = result.find('}');
+    auto result = std::string_view(
+      reinterpret_cast<const char*>(received.data()), received.size());
+    //   auto start = result.find('{');
+    //   auto end = result.find('}');
 
-  //   if (start != std::string::npos && end != std::string::npos) {
-  //     result = result.substr(start, end - start + 1);
-  //     commands =
-  //       HAL_CHECK(mission_control.ParseMissionControlData(result, terminal));
-  //   }
+    //   if (start != std::string::npos && end != std::string::npos) {
+    //     result = result.substr(start, end - start + 1);
+    //     commands =
+    //       HAL_CHECK(mission_control.ParseMissionControlData(result,
+    //       terminal));
+    //   }
 
-  //   commands = rules_engine.ValidateCommands(commands);
-  //   arm.SetJointArguments(commands);
-    HAL_CHECK(hal::write(terminal,result));
-    HAL_CHECK(hal::delay(counter,1000ms));
-  //   commands.Print(terminal);
+    //   commands = rules_engine.ValidateCommands(commands);
+    //   arm.set_joint_arguments(commands);
+    HAL_CHECK(hal::write(terminal, result));
+    HAL_CHECK(hal::delay(counter, 1000ms));
+    //   commands.Print(terminal);
   }
 
   return hal::success();

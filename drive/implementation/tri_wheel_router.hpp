@@ -6,8 +6,8 @@
 #include <libhal-util/steady_clock.hpp>
 #include <libhal-util/units.hpp>
 
-#include "../dto/drive-dto.hpp"
-#include "../dto/motor-feedback-dto.hpp"
+#include "../dto/drive_dto.hpp"
+#include "../dto/motor_feedback_dto.hpp"
 
 namespace Drive {
 class tri_wheel_router
@@ -38,7 +38,7 @@ public:
     int16_t wheel_offset_ = 0;
   };
 
-  TriWheelRouter(leg right, leg left, leg back)
+  tri_wheel_router(leg right, leg left, leg back)
     : left_(left)
     , back_(back)
     , right_(right)

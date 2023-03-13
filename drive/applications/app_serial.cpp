@@ -5,12 +5,12 @@
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
 
-#include "../implementation/command-lerper.hpp"
-#include "../implementation/mission-control-handler.hpp"
-#include "../implementation/mode-select.hpp"
-#include "../implementation/mode-switcher.hpp"
-#include "../implementation/rules-engine.hpp"
-#include "../implementation/tri-wheel-router.hpp"
+#include "../implementation/command_lerper.hpp"
+#include "../implementation/mission_control_handler.hpp"
+#include "../implementation/mode_switcher.hpp"
+#include "../implementation/mode_select.hpp"
+#include "../implementation/rules_engine.hpp"
+#include "../implementation/tri_wheel_router.hpp"
 
 #include "../hardware_map.hpp"
 
@@ -49,11 +49,11 @@ hal::status application(drive::hardware_map& p_map)
   auto right_hub_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, clock, 15.0, 0x144));
 
-  Drive::TriWheelRouter::leg right(right_steer_motor, right_hub_motor, magnet0);
-  Drive::TriWheelRouter::leg left(left_steer_motor, left_hub_motor, magnet2);
-  Drive::TriWheelRouter::leg back(back_steer_motor, back_hub_motor, magnet1);
+  Drive::tri_wheel_router::leg right(right_steer_motor, right_hub_motor, magnet0);
+  Drive::tri_wheel_router::leg left(left_steer_motor, left_hub_motor, magnet2);
+  Drive::tri_wheel_router::leg back(back_steer_motor, back_hub_motor, magnet1);
 
-  Drive::TriWheelRouter tri_wheel{ right, left, back };
+  Drive::tri_wheel_router tri_wheel{ right, left, back };
   Drive::drive_commands commands;
   Drive::motor_feedback motor_speeds;
   Drive::tri_wheel_router_arguments arguments;
@@ -65,7 +65,7 @@ hal::status application(drive::hardware_map& p_map)
   };
 
   HAL_CHECK(hal::delay(clock, 1000ms));
-  tri_wheel.home(terminal, clock);
+  tri_wheel.home(clock);
   HAL_CHECK(hal::delay(clock, 1000ms));
   HAL_CHECK(hal::write(terminal, "Starting control loop..."));
 
@@ -78,7 +78,7 @@ hal::status application(drive::hardware_map& p_map)
 
     if (start != std::string::npos && end != std::string::npos) {
       result = result.substr(start, end - start + 1);
-      auto new_commands = parse_mission_control_data(json, terminal);
+      auto new_commands = Drive::parse_mission_control_data(json, terminal);
       if (new_commands) {
         commands = new_commands.value();
       }
@@ -92,10 +92,9 @@ hal::status application(drive::hardware_map& p_map)
 
     commands.print(terminal);
     arguments = select_mode(commands);
-    arguments = HAL_CHECK(tri_wheel.move(arguments, clock));
+    HAL_CHECK(tri_wheel.move(arguments, clock));
 
     motor_speeds = HAL_CHECK(tri_wheel.get_motor_feedback(clock));
-    // motor_speeds.print(terminal);
     HAL_CHECK(hal::delay(clock, 30ms));
   }
 

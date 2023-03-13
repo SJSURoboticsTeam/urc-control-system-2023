@@ -1,20 +1,21 @@
 #pragma once
 
-#include "../dto/drive-dto.hpp"
-#include "steer-modes.hpp"
+#include "../dto/drive_dto.hpp"
+#include "mode_switcher.hpp"
+#include "steer_modes.hpp"
 
 namespace Drive {
 inline tri_wheel_router_arguments select_mode(drive_commands commands)
 {
   switch (commands.mode) {
     case 'D':
-      return SteerModes::drive_steering(commands);
+      return drive_steering(commands);
       break;
     case 'S':
-      return SteerModes::spin_steering(commands);
+      return spin_steering(commands);
       break;
     case 'T':
-      return SteerModes::translate_steering(commands);
+      return translate_steering(commands);
       break;
     case 'H':
       // do nothing to get it into drive mode

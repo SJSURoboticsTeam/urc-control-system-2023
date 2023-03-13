@@ -1,9 +1,9 @@
-#include <libhal-util/serial.hpp>
-#include <libhal-util/steady_clock.hpp>
+#include <libhal-lpc40xx/can.hpp>
 #include <libhal-mpu/mpu6050.hpp>
 #include <libhal-pca/pca9685.hpp>
-#include <libhal-lpc40xx/can.hpp>
 #include <libhal-rmd/drc.hpp>
+#include <libhal-util/serial.hpp>
+#include <libhal-util/steady_clock.hpp>
 
 #include "../hardware_map.hpp"
 
@@ -49,9 +49,10 @@ hal::status application(arm::hardware_map& p_map)
   // HAL_CHECK(mpu3.configure_full_scale(hal::mpu::mpu6050::max_acceleration::g2));
   HAL_CHECK(hal::delay(clock, 500ms));
   // auto can_router = hal::can_router::create(can).value();
-  // auto motor = HAL_CHECK(hal::rmd::drc::create(can_router, clock, 8.0, 0x141));
+  // auto motor = HAL_CHECK(hal::rmd::drc::create(can_router, clock, 8.0,
+  // 0x141));
   HAL_CHECK(hal::delay(clock, 500ms));
-  while (true){
+  while (true) {
     HAL_CHECK(hal::delay(clock, 50ms));
     // setting rmd speed
     // motor.velocity_control(10.0_rpm);
@@ -61,7 +62,7 @@ hal::status application(arm::hardware_map& p_map)
     HAL_CHECK(hal::delay(clock, 500ms));
     // HAL_CHECK(pwm0.duty_cycle(convert_to_duty_cycle(180)));
     HAL_CHECK(hal::delay(clock, 10ms));
-    
+
     // reading data from mpus
     hal::print(console, "Reading acceleration... \n");
     acceleration = HAL_CHECK(mpu1.read());
@@ -89,8 +90,7 @@ hal::status application(arm::hardware_map& p_map)
                     acceleration.x,
                     acceleration.y,
                     acceleration.z);
-}
-  
+  }
 
   return hal::success();
 }
