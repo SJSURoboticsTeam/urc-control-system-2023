@@ -4,6 +4,7 @@
 
 #include <libhal-lpc40xx/can.hpp>
 #include <libhal-lpc40xx/constants.hpp>
+#include <libhal-lpc40xx/i2c.hpp>
 #include <libhal-lpc40xx/input_pin.hpp>
 #include <libhal-lpc40xx/output_pin.hpp>
 #include <libhal-lpc40xx/system_controller.hpp>
@@ -12,7 +13,7 @@
 
 #include "../../hardware_map.hpp"
 
-hal::result<drive::hardware_map> initialize_target()
+hal::result<sjsu::hardware_map> initialize_target()
 {
   using namespace hal::literals;
 
@@ -43,14 +44,19 @@ hal::result<drive::hardware_map> initialize_target()
       .baud_rate = 115200,
     })));
 
-  return drive::hardware_map{ .terminal = &uart0,
-                              .can = &can,
-                              .in_pin0 = &in0,
-                              .in_pin1 = &in1,
-                              .in_pin2 = &in2,
-                              .esp = &uart3,
-                              .steady_clock = &counter,
-                              .reset = []() {
-                                hal::cortex_m::system_control::reset();
-                              } };
+  auto& i2c = HAL_CHECK((hal::lpc40xx::i2c::get<2>(hal::i2c::settings{
+    .clock_rate = 100.0_kHz,
+  })));
+
+  return sjsu::hardware_map{ .terminal = &uart0,
+                             .can = &can,
+                             .in_pin0 = &in0,
+                             .in_pin1 = &in1,
+                             .in_pin2 = &in2,
+                             .esp = &uart3,
+                             .i2c = &i2c,
+                             .steady_clock = &counter,
+                             .reset = []() {
+                               hal::cortex_m::system_control::reset();
+                             } };
 }

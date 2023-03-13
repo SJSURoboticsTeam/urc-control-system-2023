@@ -22,7 +22,7 @@
 
 #include <string_view>
 
-#include "src/util.hpp"
+#include "common/util.hpp"
 
 hal::status application(drive::hardware_map& p_map)
 {
@@ -83,7 +83,8 @@ hal::status application(drive::hardware_map& p_map)
   auto right_hub_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, clock, 15.0, 0x144));
 
-  Drive::tri_wheel_router::leg right(right_steer_motor, right_hub_motor, magnet0);
+  Drive::tri_wheel_router::leg right(
+    right_steer_motor, right_hub_motor, magnet0);
   Drive::tri_wheel_router::leg left(left_steer_motor, left_hub_motor, magnet2);
   Drive::tri_wheel_router::leg back(back_steer_motor, back_hub_motor, magnet1);
 

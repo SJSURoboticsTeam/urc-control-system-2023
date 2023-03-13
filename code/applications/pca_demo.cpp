@@ -23,7 +23,7 @@ float convert_to_duty_cycle(int angle)
   return hal::map(static_cast<float>(angle), from, to);
 }
 
-hal::status application(arm::hardware_map& p_map)
+hal::status application(sjsu::hardware_map& p_map)
 {
   using namespace std::chrono_literals;
   using namespace hal::literals;

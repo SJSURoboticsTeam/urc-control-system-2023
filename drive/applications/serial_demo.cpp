@@ -17,7 +17,7 @@
 #include <string>
 #include <string_view>
 
-#include "src/util.hpp"
+#include "common/util.hpp"
 
 hal::status application(drive::hardware_map& p_map)
 {

@@ -10,8 +10,9 @@ find_package(libhal-lpc REQUIRED CONFIG)
 find_package(libhal-rmd REQUIRED CONFIG)
 find_package(libhal-esp8266 REQUIRED CONFIG)
 find_package(libhal-util REQUIRED CONFIG)
+find_package(libhal-pca REQUIRED CONFIG)
 
-set(DEMOS app app_serial)
+set(DEMOS drive drive_serial arm arm_serial)
 set(TARGETS lpc4078_10mhz lpc4078_12mhz)
 
 foreach(target IN LISTS TARGETS)
@@ -32,7 +33,8 @@ foreach(target IN LISTS TARGETS)
             libhal::lpc4078
             libhal::rmd
             libhal::esp8266
-            libhal::util)
+            libhal::util
+            libhal::pca)
         arm_post_build(${current_project})
     endforeach()
 endforeach()

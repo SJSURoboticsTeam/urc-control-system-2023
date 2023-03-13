@@ -13,7 +13,7 @@
 // #include "../drive/implementation/mission_control_handler.hpp"
 // #include "common/util.hpp"
 
-// hal::status application(drive::hardware_map& p_map)
+// hal::status application(sjsu::hardware_map& p_map)
 // {
 //   using namespace std::chrono_literals;
 //   using namespace hal::literals;

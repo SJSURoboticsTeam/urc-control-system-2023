@@ -17,9 +17,8 @@ struct hardware_map
   hal::i2c* i2c;
   hal::steady_clock* steady_clock;
   hal::callback<void()> reset;
-  // hal::pwm* pwm0;
 };
-}  // namespace drive
+}  // namespace arm
 
 // Application function must be implemented by one of the compilation units
 // (.cpp) files.

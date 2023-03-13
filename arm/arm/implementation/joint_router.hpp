@@ -3,7 +3,7 @@
 #include <libhal-util/map.hpp>
 #include <libhal-util/units.hpp>
 
-#include "../../dto/arm_dto.hpp"
+#include "../../arm/dto/arm_dto.hpp"
 // #include "../soft-drivers/rmd-encoder.hpp"
 
 namespace arm {

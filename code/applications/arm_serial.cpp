@@ -7,16 +7,16 @@
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
 
-#include "../implementation/mission_control_handler.hpp"
-#include "../implementation/routers/joint_router.hpp"
-#include "../implementation/rules_engine.hpp"
+#include "../arm/implementation/joint_router.hpp"
+#include "../arm/implementation/mission_control_handler.hpp"
+#include "../arm/implementation/rules_engine.hpp"
 
 #include "../hardware_map.hpp"
-#include "src/util.hpp"
+#include "common/util.hpp"
 
 #include <string_view>
 
-hal::status application(arm::hardware_map& p_map)
+hal::status application(sjsu::hardware_map& p_map)
 {
 
   using namespace std::chrono_literals;
@@ -32,8 +32,6 @@ hal::status application(arm::hardware_map& p_map)
   static std::string_view get_request = "";
 
   HAL_CHECK(hal::write(terminal, "Starting program...\n"));
-  HAL_CHECK(hal::write(terminal, "Beginning Can \n"));
-
   auto can_router = hal::can_router::create(can).value();
 
   HAL_CHECK(hal::write(terminal, "Can router created\n"));
@@ -52,43 +50,45 @@ hal::status application(arm::hardware_map& p_map)
   auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c, 0b100'0000));
   auto pwm0 = pca9685.get_pwm_channel<0>();
   HAL_CHECK(pwm0.frequency(50.0_Hz));
+  std::string_view json;
 
-  arm::JointRouter arm(rotunda_motor,
-                       shoulder_motor,
-                       elbow_motor,
-                       left_wrist_motor,
-                       right_wrist_motor,
-                       pwm0);
+  arm::joint_router arm(rotunda_motor,
+                        shoulder_motor,
+                        elbow_motor,
+                        left_wrist_motor,
+                        right_wrist_motor,
+                        pwm0);
 
   arm::mc_commands commands;
   arm::motors_feedback feedback;
-  arm::RulesEngine rules_engine;
-  arm::MissionControlHandler mission_control;
 
   HAL_CHECK(hal::write(terminal, "Starting control loop..."));
   HAL_CHECK(hal::delay(counter, 1000ms));
 
-  commands.Print(terminal);
   while (true) {
-    // serial
     auto received = HAL_CHECK(terminal.read(buffer)).data;
     auto result = std::string_view(
       reinterpret_cast<const char*>(received.data()), received.size());
-    //   auto start = result.find('{');
-    //   auto end = result.find('}');
 
-    //   if (start != std::string::npos && end != std::string::npos) {
-    //     result = result.substr(start, end - start + 1);
-    //     commands =
-    //       HAL_CHECK(mission_control.ParseMissionControlData(result,
-    //       terminal));
-    //   }
+    auto start = result.find('{');
+    auto end = result.find('}');
 
-    //   commands = rules_engine.ValidateCommands(commands);
-    //   arm.set_joint_arguments(commands);
-    HAL_CHECK(hal::write(terminal, result));
-    HAL_CHECK(hal::delay(counter, 1000ms));
-    //   commands.Print(terminal);
+    if (start != -1 && end != -1) {
+      json = result.substr(start, end - start + 1);
+      std::string json_string(json);
+
+      auto new_commands =
+        arm::parse_mission_control_data(json_string, terminal);
+      if (new_commands) {
+        commands = new_commands.value();
+      }
+    }
+
+    commands = arm::validate_commands(commands);
+
+    commands.print(terminal);
+
+    arm.move(commands);
   }
 
   return hal::success();
