@@ -13,9 +13,9 @@ float ConvertAngleToDutyCycle(int angle)
   std::pair<float, float> from;
   std::pair<float, float> to;
   from.first = 0.0f;
-  from.second = 270.0f;
-  to.first = 0.075f;
-  to.second = 0.375f;
+  from.second = 180.0f;
+  to.first = 0.6f;
+  to.second = 0.9f;
   return hal::map(static_cast<float>(angle), from, to);
 }
 hal::status application(sjsu::hardware_map& p_map)
@@ -34,7 +34,7 @@ hal::status application(sjsu::hardware_map& p_map)
   auto pca_pwm_2 = pca9685.get_pwm_channel<2>();
   (void)hal::write(*p_map.terminal, "moving in 5\n");
   HAL_CHECK(pwm.frequency(50.0_Hz));
-  HAL_CHECK(seal_pwm.frequency(150.0_Hz));
+  HAL_CHECK(seal_pwm.frequency(666.0_Hz));
   HAL_CHECK(pca_pwm_0.frequency(1.50_kHz));
   HAL_CHECK(hal::delay(steady_clock, 10ms));
   HAL_CHECK(pca_pwm_1.frequency(1.50_kHz));
@@ -77,10 +77,17 @@ hal::status application(sjsu::hardware_map& p_map)
 
     // HAL_CHECK(hal::delay(steady_clock, 1000ms));
 
-    HAL_CHECK(seal_pwm.duty_cycle(ConvertAngleToDutyCycle(270)));
+    HAL_CHECK(seal_pwm.duty_cycle(ConvertAngleToDutyCycle(180))); //changing to another servo test
     // hal::write(terminal, "min sealing (presumably going left)\n");
 
     HAL_CHECK(hal::delay(steady_clock, 1000ms));
+     hal::write(terminal, "turn the other side angle\n");
+
+    HAL_CHECK(seal_pwm.duty_cycle(ConvertAngleToDutyCycle(0))); //changing to another servo test
+
+    HAL_CHECK(hal::delay(steady_clock, 1000ms));
+
+
 
     /*
     ================IMPORTANT===============
