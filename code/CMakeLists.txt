@@ -13,7 +13,7 @@ find_package(libhal-util REQUIRED CONFIG)
 find_package(libhal-pca REQUIRED CONFIG)
 
 set(SUBSYSTEMS drive drive_serial arm arm_serial science)
-set(DEMOS co2_sensor_demo)
+set(DEMOS co2_sensor_demo mc_demo)
 set(TARGETS lpc4078_10mhz lpc4078_12mhz)
 
 foreach(target IN LISTS TARGETS)

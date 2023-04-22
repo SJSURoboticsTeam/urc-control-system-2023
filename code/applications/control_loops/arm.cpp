@@ -3,7 +3,7 @@
 #include <libhal-esp8266/util.hpp>
 #include <libhal-lpc40xx/can.hpp>
 #include <libhal-pca/pca9685.hpp>
-#include <libhal-rmd/drc.hpp>
+#include <libhal-rmd/mc_x.hpp>
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
 
@@ -59,7 +59,7 @@ hal::status application(sjsu::hardware_map& p_map)
     HAL_CHECK(hal::create_timeout(counter, 1s)),
     {
       .type = hal::socket::type::tcp,
-      .domain = "192.168.1.110",
+      .domain = "13.56.207.97",
       .port = "5000",
     });
 
@@ -67,25 +67,30 @@ hal::status application(sjsu::hardware_map& p_map)
     HAL_CHECK(hal::write(terminal, "TCP Socket couldn't be established\n"));
     return socket_result.error();
   }
-
+  
   auto socket = std::move(socket_result.value());
-
+  HAL_CHECK(hal::write(terminal, "Backend has been connected\n"));
   auto can_router = hal::can_router::create(can).value();
 
-  auto rotunda_motor =
-    HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x141));
+    auto rotunda_motor =
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x141));
   auto shoulder_motor =
-    HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8 * 65 / 16, 0x142));
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0 * 65/30, 0x142));
   auto elbow_motor =
-    HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8 * 5 / 2, 0x143));
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0 * 40/30, 0x143));
   auto left_wrist_motor =
-    HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x144));
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x144));
   auto right_wrist_motor =
-    HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x145));
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x145));
+  HAL_CHECK(hal::write(terminal, "motor init\n"));
 
   auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c, 0b100'0000));
   auto pwm0 = pca9685.get_pwm_channel<0>();
+  HAL_CHECK(hal::write(terminal, "PCA found\n"));
+
   HAL_CHECK(pwm0.frequency(50.0_Hz));
+  HAL_CHECK(hal::write(terminal, "PCA initialized\n"));
+//
   std::string_view json;
 
   arm::joint_router arm(rotunda_motor,
@@ -104,7 +109,7 @@ hal::status application(sjsu::hardware_map& p_map)
   while (true) {
     buffer.fill('.');
     get_request =
-      "GET /arm?HB=0&IO=1 HTTP/1.1\r\n Host: 192.168.1.110:5000/\r\n\r\n";
+      "GET /arm?HB=0&IO=1 HTTP/1.1\r\n Host: 13.56.207.97:5000/\r\n\r\n";
 
     auto write_result = socket.write(
       hal::as_bytes(get_request), hal::create_timeout(counter, 1000ms).value());

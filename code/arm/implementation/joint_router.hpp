@@ -1,5 +1,5 @@
 #pragma once
-#include <libhal-rmd/drc.hpp>
+#include <libhal-rmd/mc_x.hpp>
 #include <libhal-util/map.hpp>
 #include <libhal-util/units.hpp>
 
@@ -10,11 +10,11 @@ namespace arm {
 class joint_router
 {
 public:
-  joint_router(hal::rmd::drc& rotunda,
-               hal::rmd::drc& shoulder,
-               hal::rmd::drc& elbow,
-               hal::rmd::drc& left_wrist,
-               hal::rmd::drc& right_wrist,
+  joint_router(hal::rmd::mc_x& rotunda,
+               hal::rmd::mc_x& shoulder,
+               hal::rmd::mc_x& elbow,
+               hal::rmd::mc_x& left_wrist,
+               hal::rmd::mc_x& right_wrist,
                hal::pwm& pwm0)
     : rotunda(rotunda)
     , shoulder(shoulder)
@@ -70,11 +70,11 @@ private:
   float initial_left_wrist_position = 0;
   float initial_right_wrist_position = 0;
 
-  hal::rmd::drc& rotunda;
-  hal::rmd::drc& shoulder;
-  hal::rmd::drc& elbow;
-  hal::rmd::drc& left_wrist;
-  hal::rmd::drc& right_wrist;
+  hal::rmd::mc_x& rotunda;
+  hal::rmd::mc_x& shoulder;
+  hal::rmd::mc_x& elbow;
+  hal::rmd::mc_x& left_wrist;
+  hal::rmd::mc_x& right_wrist;
   hal::pwm& pwm0;
 };
 }  // namespace arm
