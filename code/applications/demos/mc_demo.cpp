@@ -22,8 +22,10 @@ hal::status application(sjsu::hardware_map& p_map)
   using namespace std::chrono_literals;
   using namespace hal::literals;
 
+  auto& terminal = *p_map.terminal;
   auto& counter = *p_map.steady_clock;
   auto& can = *p_map.can;
+  auto& i2c = *p_map.i2c;
   auto can_router = hal::can_router::create(can).value();
   float deg = 10;
     auto rotunda_motor =
