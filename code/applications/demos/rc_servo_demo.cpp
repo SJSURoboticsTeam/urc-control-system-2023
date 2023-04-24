@@ -21,20 +21,21 @@ float ConvertAngleToDutyCycle(int angle)
 hal::status application(sjsu::hardware_map& p_map)
 {
   //frequency is 500Hz
+  //FT5325M servo: 0-180 degree pwm range is: 500 - 2500
+
   auto& seal_pwm = *p_map.pwm_1_5;
   auto& steady_clock = *p_map.steady_clock;
 
-  HAL_CHECK(seal_pwm.frequency(50.0_Hz)); //setting pwm frequency
-  HAL_CHECK(seal_pwm.duty_cycle(0.5f)); //setting pwm duty cycle not sure if this part is right
-
-  auto servo = hal::rc_servo::create<50,900,2100,0,180>(seal_pwm).value(); //template parameters
+  auto servo = hal::rc_servo::create<50,500,2500,0,180>(seal_pwm).value(); //template parameters
   //servo.create(seal_pwm);
   // hal::write(terminal, "Inside RC_SERVO\n");
 
   while (true) {
-    HAL_CHECK(servo.position(90.0_deg));
-    HAL_CHECK(hal::delay(steady_clock, 1000ms));  
+    
     HAL_CHECK(servo.position(0.0_deg));
+    HAL_CHECK(hal::delay(steady_clock, 1000ms));  
+
+    HAL_CHECK(servo.position(180.0_deg));
     HAL_CHECK(hal::delay(steady_clock, 1000ms));  
 
 
