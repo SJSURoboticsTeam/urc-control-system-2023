@@ -24,8 +24,7 @@ hal::status application(sjsu::hardware_map& p_map)
   // configure drivers
   auto& pwm = *p_map.pwm_1_6;
   auto& seal_pwm = *p_map.pwm_1_5;
-  auto& steady_clock = *p_map.steady_clock;
-  auto& i2c = *p_map.i2c;
+c  auto& i2c = *p_map.i2c;
   auto& terminal = *p_map.terminal;
   auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c, 0b100'0000));
   HAL_CHECK(hal::delay(steady_clock, 10ms));

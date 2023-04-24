@@ -11,9 +11,10 @@ find_package(libhal-rmd REQUIRED CONFIG)
 find_package(libhal-esp8266 REQUIRED CONFIG)
 find_package(libhal-util REQUIRED CONFIG)
 find_package(libhal-pca REQUIRED CONFIG)
+find_package(libhal-soft REQUIRED CONFIG)
 
 set(SUBSYSTEMS drive drive_serial arm arm_serial science)
-set(DEMOS co2_sensor_demo parallax_servo_demo)
+set(DEMOS rc_servo_demo)
 set(TARGETS lpc4078_10mhz lpc4078_12mhz)
 
 foreach(target IN LISTS TARGETS)
@@ -35,7 +36,8 @@ foreach(target IN LISTS TARGETS)
             libhal::rmd
             libhal::esp8266
             libhal::util
-            libhal::pca)
+            libhal::pca
+            libhal::soft)
         arm_post_build(${current_project})
     endforeach()
 endforeach()
@@ -59,7 +61,8 @@ foreach(target IN LISTS TARGETS)
             libhal::rmd
             libhal::esp8266
             libhal::util
-            libhal::pca)
+            libhal::pca
+            libhal::soft)
         arm_post_build(${current_project})
     endforeach()
 endforeach()
