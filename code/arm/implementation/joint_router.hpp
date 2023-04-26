@@ -25,27 +25,27 @@ public:
   {
   }
 
-  mc_commands move(mc_commands arguments)
+  hal::status move(mc_commands arguments)
   {
-    rotunda.position_control(
+    HAL_CHECK(rotunda.position_control(
       hal::degrees(static_cast<float>(arguments.rotunda_angle)),
-      hal::rpm(static_cast<float>(arguments.speed)));
-    shoulder.position_control(
+      hal::rpm(static_cast<float>(arguments.speed))));
+    HAL_CHECK(shoulder.position_control(
       -hal::degrees(static_cast<float>(arguments.shoulder_angle)),
-      hal::rpm(static_cast<float>(arguments.speed)));
-    elbow.position_control(
+      hal::rpm(static_cast<float>(arguments.speed))));
+    HAL_CHECK(elbow.position_control(
       hal::degrees(static_cast<float>(arguments.elbow_angle)),
-      hal::rpm(static_cast<float>(arguments.speed)));
-    left_wrist.position_control(
+      hal::rpm(static_cast<float>(arguments.speed))));
+    HAL_CHECK(left_wrist.position_control(
       hal::degrees(static_cast<float>(arguments.wrist_pitch_angle) +
                    static_cast<float>(arguments.wrist_roll_angle)),
-      hal::rpm(static_cast<float>(arguments.speed)));
-    right_wrist.position_control(
+      hal::rpm(static_cast<float>(arguments.speed))));
+    HAL_CHECK(right_wrist.position_control(
       hal::degrees(static_cast<float>(arguments.wrist_roll_angle) -
                    static_cast<float>(arguments.wrist_pitch_angle)),
-      hal::rpm(static_cast<float>(arguments.speed)));
-    pwm0.duty_cycle(ConvertAngleToDutyCycle(180 - arguments.rr9_angle));
-    return arguments;
+      hal::rpm(static_cast<float>(arguments.speed))));
+    HAL_CHECK(pwm0.duty_cycle(ConvertAngleToDutyCycle(180 - arguments.rr9_angle)));
+    return hal::success();
   }
 
   void HomeArm()

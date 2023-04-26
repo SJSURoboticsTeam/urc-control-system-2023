@@ -22,10 +22,8 @@ hal::status application(sjsu::hardware_map& p_map)
   using namespace std::chrono_literals;
   using namespace hal::literals;
 
-  auto& terminal = *p_map.terminal;
   auto& counter = *p_map.steady_clock;
   auto& can = *p_map.can;
-  auto& i2c = *p_map.i2c;
   auto can_router = hal::can_router::create(can).value();
   float deg = 10;
     auto rotunda_motor =
@@ -42,10 +40,10 @@ hal::status application(sjsu::hardware_map& p_map)
   std::string_view json;
 
   while (true) {
-    elbow_motor.position_control(hal::degrees(deg),hal::rpm(5.0f));
-    hal::delay(counter, 5s);
-    elbow_motor.position_control(hal::degrees(-deg),hal::rpm(5.0f));
-    hal::delay(counter, 5s);
+    HAL_CHECK(elbow_motor.position_control(hal::degrees(deg),hal::rpm(5.0f)));
+    HAL_CHECK(hal::delay(counter, 5s));
+    HAL_CHECK(elbow_motor.position_control(hal::degrees(-deg),hal::rpm(5.0f)));
+    HAL_CHECK(hal::delay(counter, 5s));
   }
 
   return hal::success();

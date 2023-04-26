@@ -27,9 +27,9 @@ hal::status application(sjsu::hardware_map& p_map)
 
   auto& terminal = *p_map.terminal;
   auto& clock = *p_map.steady_clock;
-  auto& magnet0 = *p_map.in_pin0;
-  auto& magnet1 = *p_map.in_pin1;
-  auto& magnet2 = *p_map.in_pin2;
+  // auto& magnet0 = *p_map.in_pin0;
+  // auto& magnet1 = *p_map.in_pin1;
+  // auto& magnet2 = *p_map.in_pin2;
   auto& can = *p_map.can;
 
   std::array<hal::byte, 8192> buffer{};

@@ -22,14 +22,12 @@ hal::status application(sjsu::hardware_map& p_map)
   using namespace std::chrono_literals;
   using namespace hal::literals;
 
-  auto& esp = *p_map.esp;
   auto& terminal = *p_map.terminal;
   auto& counter = *p_map.steady_clock;
   auto& can = *p_map.can;
   auto& i2c = *p_map.i2c;
 
   std::array<hal::byte, 8192> buffer{};
-  static std::string_view get_request = "";
 
   HAL_CHECK(hal::write(terminal, "Starting program...\n"));
   auto can_router = hal::can_router::create(can).value();
@@ -37,15 +35,15 @@ hal::status application(sjsu::hardware_map& p_map)
   HAL_CHECK(hal::write(terminal, "Can router created\n"));
 
   auto rotunda_motor =
-    HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x141));
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x141));
   auto shoulder_motor =
-    HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8 * 65 / 16, 0x142));
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0 * 65/30, 0x142));
   auto elbow_motor =
-    HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8 * 5 / 2, 0x143));
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0 * 40/30, 0x143));
   auto left_wrist_motor =
-    HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x144));
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x144));
   auto right_wrist_motor =
-    HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x145));
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x145));
 
   auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c, 0b100'0000));
   auto pwm0 = pca9685.get_pwm_channel<0>();
@@ -73,7 +71,7 @@ hal::status application(sjsu::hardware_map& p_map)
     auto start = result.find('{');
     auto end = result.find('}');
 
-    if (start != -1 && end != -1) {
+    if (start >= 0 && end >= 0) {
       json = result.substr(start, end - start + 1);
       std::string json_string(json);
 

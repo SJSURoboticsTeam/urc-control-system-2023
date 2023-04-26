@@ -126,7 +126,7 @@ hal::status application(sjsu::hardware_map& p_map)
     auto start = result.find('{');
     auto end = result.find('}');
 
-    if (start != -1 && end != -1) {
+    if (start >= 0 && end >= 0) {
       json = result.substr(start, end - start + 1);
       std::string json_string(json);
 
