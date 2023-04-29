@@ -54,7 +54,7 @@ hal::status application(sjsu::hardware_map& p_map)
       "R0Bot1cs3250",
       hal::create_timeout(clock, 10s).value());
       if (!wifi_result) {
-        HAL_CHECK(hal::write(terminal, "Failed to connect to wifi"));
+        HAL_CHECK(hal::write(terminal, "Failed to connect to wifi\n"));
       }
   }
   HAL_CHECK(hal::write(terminal, "ESP created!\n"));
@@ -77,7 +77,7 @@ hal::status application(sjsu::hardware_map& p_map)
   }
 
   auto socket = std::move(socket_result.value());
-  HAL_CHECK(hal::write(terminal, "Server found"));
+  HAL_CHECK(hal::write(terminal, "Server found\n"));
 
   auto can_router = hal::can_router::create(can).value();
 
