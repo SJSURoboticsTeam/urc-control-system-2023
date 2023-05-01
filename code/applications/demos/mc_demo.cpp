@@ -23,29 +23,29 @@ hal::status application(sjsu::hardware_map& p_map)
   using namespace hal::literals;
 
   auto& terminal = *p_map.terminal;
-  auto& counter = *p_map.steady_clock;
+  auto& clock = *p_map.steady_clock;
   auto& can = *p_map.can;
   auto& i2c = *p_map.i2c;
   auto can_router = hal::can_router::create(can).value();
   float deg = 10;
     auto rotunda_motor =
-    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x141));
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, clock, 36.0, 0x141));
   auto shoulder_motor =
-    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0 * 65/30, 0x142));
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, clock, 36.0 * 65/30, 0x142));
   auto elbow_motor =
-    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0 * 40/30, 0x143));
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, clock, 36.0 * 40/30, 0x143));
   auto left_wrist_motor =
-    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x144));
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, clock, 36.0, 0x144));
   auto right_wrist_motor =
-    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x145));
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, clock, 36.0, 0x145));
 
   std::string_view json;
 
   while (true) {
     HAL_CHECK(elbow_motor.position_control(hal::degrees(deg),hal::rpm(5.0f)));
-    HAL_CHECK(hal::delay(counter, 5s));
+    HAL_CHECK(hal::delay(clock, 5s));
     HAL_CHECK(elbow_motor.position_control(hal::degrees(-deg),hal::rpm(5.0f)));
-    HAL_CHECK(hal::delay(counter, 5s));
+    HAL_CHECK(hal::delay(clock, 5s));
   }
 
   return hal::success();

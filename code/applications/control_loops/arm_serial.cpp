@@ -23,7 +23,7 @@ hal::status application(sjsu::hardware_map& p_map)
   using namespace hal::literals;
 
   auto& terminal = *p_map.terminal;
-  auto& counter = *p_map.steady_clock;
+  auto& clock = *p_map.steady_clock;
   auto& can = *p_map.can;
   auto& i2c = *p_map.i2c;
 
@@ -35,15 +35,15 @@ hal::status application(sjsu::hardware_map& p_map)
   HAL_CHECK(hal::write(terminal, "Can router created\n"));
 
   auto rotunda_motor =
-    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x141));
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, clock, 36.0, 0x141));
   auto shoulder_motor =
-    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0 * 65/30, 0x142));
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, clock, 36.0 * 65/30, 0x142));
   auto elbow_motor =
-    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0 * 40/30, 0x143));
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, clock, 36.0 * 40/30, 0x143));
   auto left_wrist_motor =
-    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x144));
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, clock, 36.0, 0x144));
   auto right_wrist_motor =
-    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x145));
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, clock, 36.0, 0x145));
 
   auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c, 0b100'0000));
   auto pwm0 = pca9685.get_pwm_channel<0>();
@@ -61,7 +61,7 @@ hal::status application(sjsu::hardware_map& p_map)
   arm::motors_feedback feedback;
 
   HAL_CHECK(hal::write(terminal, "Starting control loop..."));
-  HAL_CHECK(hal::delay(counter, 1000ms));
+  HAL_CHECK(hal::delay(clock, 1000ms));
 
   while (true) {
     auto received = HAL_CHECK(terminal.read(buffer)).data;

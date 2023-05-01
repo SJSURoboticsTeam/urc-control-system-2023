@@ -69,6 +69,7 @@ hal::status application(sjsu::hardware_map& p_map)
   
   auto socket = std::move(socket_result.value());
   HAL_CHECK(hal::write(terminal, "Backend has been connected\n"));
+  
   auto can_router = hal::can_router::create(can).value();
 
     auto rotunda_motor =
