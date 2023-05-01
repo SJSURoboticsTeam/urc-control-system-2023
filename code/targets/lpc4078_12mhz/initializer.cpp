@@ -50,7 +50,7 @@ hal::result<sjsu::hardware_map> initialize_target()
       .baud_rate = 115200,
     })));
 
-  auto& i2c = HAL_CHECK((hal::lpc40xx::i2c::get<1>(hal::i2c::settings{
+  auto& i2c = HAL_CHECK((hal::lpc40xx::i2c::get<2>(hal::i2c::settings{
     .clock_rate = 100.0_kHz,
   })));
 
