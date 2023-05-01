@@ -41,33 +41,44 @@ hal::status application(sjsu::hardware_map& p_map)
   static std::string_view get_request = "";
 
   HAL_CHECK(hal::write(terminal, "Starting program...\n"));
-
   auto wifi_result = hal::esp8266::at::wlan_client::create(
-    esp, "Corey", "0123456789", HAL_CHECK(hal::create_timeout(clock, 10s)));
+    esp,
+    "SJSU Robotics 2.4GHz",
+    "R0Bot1cs3250",
+    hal::create_timeout(clock, 10s).value()); 
 
-  if (!wifi_result) {
-    HAL_CHECK(hal::write(terminal, "Failed to create wifi client!\n"));
-    return wifi_result.error();
+  while (!wifi_result) {
+    wifi_result = hal::esp8266::at::wlan_client::create(
+      esp,
+      "SJSU Robotics 2.4GHz",
+      "R0Bot1cs3250",
+      hal::create_timeout(clock, 10s).value());
+      if (!wifi_result) {
+        HAL_CHECK(hal::write(terminal, "Failed to connect to wifi\n"));
+      }
   }
+  HAL_CHECK(hal::write(terminal, "ESP created!\n"));
 
   auto wifi = wifi_result.value();
 
-  auto socket_result =
-    hal::esp8266::at::socket::create(wifi,
-                                     HAL_CHECK(hal::create_timeout(clock, 1s)),
-                                     {
-                                       .type = hal::socket::type::tcp,
-                                       .domain = "13.56.207.97",
-                                       .port = "5000",
-                                     });
-  // this is for the web server hosted by nate: http://13.56.207.97:5000/drive
+  auto socket_result = hal::esp8266::at::socket::create(
+    wifi,
+    HAL_CHECK(hal::create_timeout(clock, 1s)), 
+    {
+      .type = hal::socket::type::tcp,
+      .domain = "13.56.207.97",
+      .port = "5000",
+    });
+    // this is for the web server hosted by nate: http://13.56.207.97:5000/drive
+
   if (!socket_result) {
     HAL_CHECK(hal::write(terminal, "TCP Socket couldn't be established\n"));
     return socket_result.error();
   }
 
   auto socket = std::move(socket_result.value());
-  HAL_CHECK(hal::write(terminal, "Server found"));
+  HAL_CHECK(hal::write(terminal, "Server found\n"));
+
   auto can_router = hal::can_router::create(can).value();
 
   auto left_steer_motor =
@@ -83,8 +94,7 @@ hal::status application(sjsu::hardware_map& p_map)
   auto right_hub_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, clock, 15.0, 0x144));
 
-  Drive::tri_wheel_router::leg right(
-    right_steer_motor, right_hub_motor, magnet0);
+  Drive::tri_wheel_router::leg right(right_steer_motor, right_hub_motor, magnet0);
   Drive::tri_wheel_router::leg left(left_steer_motor, left_hub_motor, magnet2);
   Drive::tri_wheel_router::leg back(back_steer_motor, back_hub_motor, magnet1);
 

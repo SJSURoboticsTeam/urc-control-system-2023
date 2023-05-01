@@ -24,7 +24,7 @@ hal::status application(sjsu::hardware_map& p_map)
 
   auto& esp = *p_map.esp;
   auto& terminal = *p_map.terminal;
-  auto& counter = *p_map.steady_clock;
+  auto& clock = *p_map.steady_clock;
   auto& can = *p_map.can;
   auto& i2c = *p_map.i2c;
 
@@ -36,19 +36,17 @@ hal::status application(sjsu::hardware_map& p_map)
     esp,
     "SJSU Robotics 2.4GHz",
     "R0Bot1cs3250",
-    hal::create_timeout(counter, 10s).value());
+    hal::create_timeout(clock, 10s).value()); 
 
-  while (true) {
+  while (!wifi_result) {
     wifi_result = hal::esp8266::at::wlan_client::create(
       esp,
       "SJSU Robotics 2.4GHz",
       "R0Bot1cs3250",
-      hal::create_timeout(counter, 10s).value());
-
-    if (wifi_result) {
-      break;
-    }
-    HAL_CHECK(hal::write(terminal, "failed to connect to wifi"));
+      hal::create_timeout(clock, 10s).value());
+      if (!wifi_result) {
+        HAL_CHECK(hal::write(terminal, "Failed to connect to wifi\n"));
+      }
   }
   HAL_CHECK(hal::write(terminal, "ESP created!\n"));
 
@@ -56,12 +54,13 @@ hal::status application(sjsu::hardware_map& p_map)
 
   auto socket_result = hal::esp8266::at::socket::create(
     wifi,
-    HAL_CHECK(hal::create_timeout(counter, 1s)),
+    HAL_CHECK(hal::create_timeout(clock, 1s)), 
     {
       .type = hal::socket::type::tcp,
       .domain = "13.56.207.97",
       .port = "5000",
     });
+    // this is for the web server hosted by nate: http://13.56.207.97:5000/arm
 
   if (!socket_result) {
     HAL_CHECK(hal::write(terminal, "TCP Socket couldn't be established\n"));
@@ -104,7 +103,7 @@ hal::status application(sjsu::hardware_map& p_map)
   arm::motors_feedback feedback;
 
   HAL_CHECK(hal::write(terminal, "Starting control loop..."));
-  HAL_CHECK(hal::delay(counter, 1000ms));
+  HAL_CHECK(hal::delay(clock, 1000ms));
 
   while (true) {
     buffer.fill('.');
@@ -112,13 +111,13 @@ hal::status application(sjsu::hardware_map& p_map)
       "GET /arm?HB=0&IO=1 HTTP/1.1\r\n Host: 13.56.207.97:5000/\r\n\r\n";
 
     auto write_result = socket.write(
-      hal::as_bytes(get_request), hal::create_timeout(counter, 1000ms).value());
+      hal::as_bytes(get_request), hal::create_timeout(clock, 1000ms).value());
 
     if (!write_result) {
       HAL_CHECK(hal::write(terminal, "Failed:  \n"));
       continue;
     }
-    HAL_CHECK(hal::delay(counter, 100ms));
+    HAL_CHECK(hal::delay(clock, 100ms));
 
     auto received = HAL_CHECK(socket.read(buffer)).data;
     auto result = to_string_view(received);
