@@ -27,34 +27,34 @@ hal::status application(sjsu::hardware_map& p_map)
 
   auto& terminal = *p_map.terminal;
   auto& clock = *p_map.steady_clock;
-  // auto& magnet0 = *p_map.in_pin0;
-  // auto& magnet1 = *p_map.in_pin1;
-  // auto& magnet2 = *p_map.in_pin2;
+  auto& magnet0 = *p_map.in_pin0;
+  auto& magnet1 = *p_map.in_pin1;
+  auto& magnet2 = *p_map.in_pin2;
   auto& can = *p_map.can;
 
   std::array<hal::byte, 8192> buffer{};
 
   auto can_router = hal::can_router::create(can).value();
 
-  // auto left_steer_motor =
-  //   HAL_CHECK(hal::rmd::drc::create(can_router, clock, 6.0, 0x141));
-  // auto left_hub_motor =
-  //   HAL_CHECK(hal::rmd::drc::create(can_router, clock, 15.0, 0x142));
-  // auto back_steer_motor =
-  //   HAL_CHECK(hal::rmd::drc::create(can_router, clock, 6.0, 0x145));
-  // auto back_hub_motor =
-  //   HAL_CHECK(hal::rmd::drc::create(can_router, clock, 15.0, 0x146));
-  // auto right_steer_motor =
-  //   HAL_CHECK(hal::rmd::drc::create(can_router, clock, 6.0, 0x143));
-  // auto right_hub_motor =
-  //   HAL_CHECK(hal::rmd::drc::create(can_router, clock, 15.0, 0x144));
+  auto left_steer_motor =
+    HAL_CHECK(hal::rmd::drc::create(can_router, clock, 6.0, 0x141));
+  auto left_hub_motor =
+    HAL_CHECK(hal::rmd::drc::create(can_router, clock, 15.0, 0x142));
+  auto back_steer_motor =
+    HAL_CHECK(hal::rmd::drc::create(can_router, clock, 6.0, 0x145));
+  auto back_hub_motor =
+    HAL_CHECK(hal::rmd::drc::create(can_router, clock, 15.0, 0x146));
+  auto right_steer_motor =
+    HAL_CHECK(hal::rmd::drc::create(can_router, clock, 6.0, 0x143));
+  auto right_hub_motor =
+    HAL_CHECK(hal::rmd::drc::create(can_router, clock, 15.0, 0x144));
 
-  // Drive::tri_wheel_router::leg right(
-  //   right_steer_motor, right_hub_motor, magnet0);
-  // Drive::tri_wheel_router::leg left(left_steer_motor, left_hub_motor, magnet2);
-  // Drive::tri_wheel_router::leg back(back_steer_motor, back_hub_motor, magnet1);
+  Drive::tri_wheel_router::leg right(
+    right_steer_motor, right_hub_motor, magnet0);
+  Drive::tri_wheel_router::leg left(left_steer_motor, left_hub_motor, magnet2);
+  Drive::tri_wheel_router::leg back(back_steer_motor, back_hub_motor, magnet1);
 
-  // Drive::tri_wheel_router tri_wheel{ right, left, back };
+  Drive::tri_wheel_router tri_wheel{ right, left, back };
   Drive::drive_commands commands;
   Drive::motor_feedback motor_speeds;
   Drive::tri_wheel_router_arguments arguments;

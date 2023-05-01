@@ -72,15 +72,15 @@ hal::status application(sjsu::hardware_map& p_map)
   auto can_router = hal::can_router::create(can).value();
 
     auto rotunda_motor =
-    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x141));
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, clock, 36.0, 0x141));
   auto shoulder_motor =
-    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0 * 65/30, 0x142));
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, clock, 36.0 * 65/30, 0x142));
   auto elbow_motor =
-    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0 * 40/30, 0x143));
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, clock, 36.0 * 40/30, 0x143));
   auto left_wrist_motor =
-    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x144));
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, clock, 36.0, 0x144));
   auto right_wrist_motor =
-    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x145));
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, clock, 36.0, 0x145));
   HAL_CHECK(hal::write(terminal, "motor init\n"));
 
   auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c, 0b100'0000));
