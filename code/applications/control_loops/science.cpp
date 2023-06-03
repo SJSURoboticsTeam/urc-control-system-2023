@@ -7,6 +7,8 @@
 #include <libhal-pca/pca9685.hpp>
 #include <libhal/adc.hpp>
 #include <libhal/input_pin.hpp>
+#include <libhal-soft/rc_servo.hpp>
+
 
 #include "../../hardware_map.hpp"
 #include "../../science/dto/science_dto.hpp"
@@ -29,13 +31,14 @@ hal::status application(sjsu::hardware_map& p_map)
   auto pca_pwm_1 = pca9685.get_pwm_channel<1>();
   auto pca_pwm_2 = pca9685.get_pwm_channel<2>();
   auto& steady_clock = *p_map.steady_clock;
+  hal::write(terminal, "Starting RNNNN\n");
 
   std::string response;
   int revolver_hall_value = 1;
 
   // Constants
-  static constexpr float MIN_SEAL_DUTY_CYCLE = 0.065f;
-  static constexpr float MAX_SEAL_DUTY_CYCLE = 0.085f;
+  // static constexpr float MIN_SEAL_DUTY_CYCLE = 0.065f;
+  // static constexpr float MAX_SEAL_DUTY_CYCLE = 0.085f;
 
   // science::PumpPwmController air_pump(pca_pwm_0, 1000.0_Hz); // unknown
   // freqeuncy atm change when this is figured out science::PumpPwmController
@@ -54,6 +57,9 @@ hal::status application(sjsu::hardware_map& p_map)
   HAL_CHECK(pca_pwm_0.frequency(1.50_kHz));
   HAL_CHECK(hal::delay(steady_clock, 10ms));
   mc_commands.is_operational = 1;
+
+  auto seal_servo = hal::rc_servo::create<50,500,2500,0,360>(seal_spinner).value(); //template parameters
+  HAL_CHECK(seal_servo.position(90.0_deg));
 
   while (true) {
     // mc_commands = HAL_CHECK(mc_handler.ParseMissionControlData(response,
@@ -82,7 +88,7 @@ hal::status application(sjsu::hardware_map& p_map)
       HAL_CHECK(revolver_spinner.duty_cycle(0.075f));
       HAL_CHECK(hal::delay(steady_clock, 5ms));
     } else if (mc_data.status.seal_status == science::status::in_progress) {
-      HAL_CHECK(seal_spinner.duty_cycle(MAX_SEAL_DUTY_CYCLE));
+      HAL_CHECK(seal_servo.position(0.0_deg));
       HAL_CHECK(hal::delay(steady_clock, 5ms));
     } else if (mc_data.status.depressurize_status ==
                science::status::in_progress) {
@@ -125,7 +131,7 @@ hal::status application(sjsu::hardware_map& p_map)
       HAL_CHECK(pca_pwm_0.duty_cycle(0.00f));
       HAL_CHECK(hal::delay(steady_clock, 5ms));
     } else if (mc_data.status.unseal_status == science::status::in_progress) {
-      HAL_CHECK(seal_spinner.duty_cycle(MIN_SEAL_DUTY_CYCLE));
+      HAL_CHECK(seal_servo.position(90.0_deg));
       HAL_CHECK(hal::delay(steady_clock, 2s));
     }
     response = science::create_GET_request_parameter_with_rover_status(mc_data);
