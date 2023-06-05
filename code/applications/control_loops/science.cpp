@@ -31,7 +31,7 @@ hal::status application(sjsu::hardware_map& p_map)
   auto pca_pwm_1 = pca9685.get_pwm_channel<1>();
   auto pca_pwm_2 = pca9685.get_pwm_channel<2>();
   auto& steady_clock = *p_map.steady_clock;
-  hal::write(terminal, "Starting RNNNN\n");
+  HAL_CHECK(hal::write(terminal, "Starting RNNNN\n"));
 
   std::string response;
   int revolver_hall_value = 1;
@@ -80,7 +80,7 @@ hal::status application(sjsu::hardware_map& p_map)
                               terminal);
     mc_commands.state_step = 1;
     if (mc_data.status.move_revolver_status == science::status::in_progress) {
-      HAL_CHECK(revolver_spinner.duty_cycle(0.076f));
+      HAL_CHECK(revolver_spinner.duty_cycle(0.075f));
       HAL_CHECK(hal::delay(steady_clock, 5ms));
     } else if (mc_data.status.move_revolver_status ==
                  science::status::complete &&

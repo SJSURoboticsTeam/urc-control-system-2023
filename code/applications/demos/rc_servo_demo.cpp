@@ -25,15 +25,16 @@ hal::status application(sjsu::hardware_map& p_map)
 
   auto& seal_pwm = *p_map.pwm_1_5;
   auto& steady_clock = *p_map.steady_clock;
+  auto& terminal = *p_map.terminal;
 
   auto servo = hal::rc_servo::create<50,500,2500,0,360>(seal_pwm).value(); //template parameters
   //servo.create(seal_pwm);
-  // hal::write(terminal, "Inside RC_SERVO\n");
+  hal::write(terminal, "Inside RC_SERVO\n");
 
   while (true) {
     
-    // HAL_CHECK(servo.position(0.0_deg)); //zero is sealing
-    // HAL_CHECK(hal::delay(steady_clock, 1000ms));  
+    HAL_CHECK(servo.position(0.0_deg)); //zero is sealing
+    HAL_CHECK(hal::delay(steady_clock, 1000ms));  
 
     HAL_CHECK(servo.position(90.0_deg)); //unsealing
     HAL_CHECK(hal::delay(steady_clock, 1000ms));  

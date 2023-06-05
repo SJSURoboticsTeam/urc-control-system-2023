@@ -14,7 +14,7 @@ find_package(libhal-pca REQUIRED CONFIG)
 find_package(libhal-soft REQUIRED CONFIG)
 
 set(SUBSYSTEMS drive drive_serial arm arm_serial science)
-set(DEMOS rc_servo_demo)
+set(DEMOS rc_servo_demo pca_demo)
 set(TARGETS lpc4078_10mhz lpc4078_12mhz)
 
 foreach(target IN LISTS TARGETS)

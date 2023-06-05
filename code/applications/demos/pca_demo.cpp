@@ -4,9 +4,9 @@
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
 
-#include "../arm/implementation/mission_control_handler.hpp"
+#include "../../arm/implementation/mission_control_handler.hpp"
 
-#include "../hardware_map.hpp"
+#include "../../hardware_map.hpp"
 // #include "../arm/implementation/routers/rr9-router.hpp"
 
 #include <string>
