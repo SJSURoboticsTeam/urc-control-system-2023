@@ -80,7 +80,7 @@ hal::status application(sjsu::hardware_map& p_map)
                               terminal);
     mc_commands.state_step = 1;
     if (mc_data.status.move_revolver_status == science::status::in_progress) {
-      HAL_CHECK(revolver_spinner.duty_cycle(0.075f));
+      HAL_CHECK(revolver_spinner.duty_cycle(0.085f));
       HAL_CHECK(hal::delay(steady_clock, 5ms));
     } else if (mc_data.status.move_revolver_status ==
                  science::status::complete &&
