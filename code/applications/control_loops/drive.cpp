@@ -36,6 +36,7 @@ hal::status application(sjsu::hardware_map& p_map)
   auto& magnet1 = *p_map.in_pin1;
   auto& magnet2 = *p_map.in_pin2;
   auto& can = *p_map.can;
+  auto& can_pin = *p_map.can_pin;
 
   std::array<hal::byte, 8192> buffer{};
   static std::string_view get_request = "";
@@ -80,6 +81,17 @@ hal::status application(sjsu::hardware_map& p_map)
   HAL_CHECK(hal::write(terminal, "Server found\n"));
 
   auto can_router = hal::can_router::create(can).value();
+  
+  while (!can_router) {
+    if (!can_router) {
+        HAL_CHECK(hal::write(terminal, "Failed to establish CAN router\n"));
+      }
+    HAL_CHECK(can_pin.level(true));
+    HAL_CHECK(hal::delay(counter, 10ms));
+    HAL_CHECK(can_pin.level(false));
+    can_router = hal::can_router::create(can).value();
+  }
+
 
   auto left_steer_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, clock, 6.0, 0x141));
