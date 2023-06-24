@@ -5,6 +5,7 @@
 #include <libhal/functional.hpp>
 #include <libhal/i2c.hpp>
 #include <libhal/input_pin.hpp>
+#include <libhal/output_pin.hpp>
 #include <libhal/pwm.hpp>
 #include <libhal/serial.hpp>
 #include <libhal/steady_clock.hpp>
@@ -17,6 +18,8 @@ struct hardware_map
   hal::input_pin* in_pin0;
   hal::input_pin* in_pin1;
   hal::input_pin* in_pin2;
+  hal::output_pin* can_en;
+  hal::output_pin* motor_en;
   hal::pwm* pwm_1_6;
   hal::pwm* pwm_1_5;
   hal::adc* adc_4;

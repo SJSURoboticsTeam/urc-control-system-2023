@@ -39,7 +39,8 @@ hal::result<sjsu::hardware_map> initialize_target()
   auto& in_pin1 = HAL_CHECK((hal::lpc40xx::input_pin::get<1, 23>()));
   auto& in_pin2 = HAL_CHECK((hal::lpc40xx::input_pin::get<1, 22>()));
 
-  auto& can_pin = HAL_CHECK((hal::lpc40xx::input_pin::get<1, 20>()));
+  auto& can_en = HAL_CHECK((hal::lpc40xx::output_pin::get<1, 20>()));
+  auto& motor_en = HAL_CHECK((hal::lpc40xx::output_pin::get<1, 19>()));
 
   auto& pwm_1_6 = HAL_CHECK((hal::lpc40xx::pwm::get<1, 6>()));
   auto& pwm_1_5 = HAL_CHECK((hal::lpc40xx::pwm::get<1, 5>()));
@@ -61,7 +62,8 @@ hal::result<sjsu::hardware_map> initialize_target()
                              .in_pin0 = &in_pin0,
                              .in_pin1 = &in_pin1,
                              .in_pin2 = &in_pin2,
-                             .can_pin = &can_pin,
+                             .can_en = &can_en,
+                             .motor_en = &motor_en,
                              .pwm_1_6 = &pwm_1_6,
                              .pwm_1_5 = &pwm_1_5,
                              .adc_4 = &adc_4,

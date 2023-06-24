@@ -36,7 +36,14 @@ hal::status application(sjsu::hardware_map& p_map)
   auto& magnet1 = *p_map.in_pin1;
   auto& magnet2 = *p_map.in_pin2;
   auto& can = *p_map.can;
-  auto& can_pin = *p_map.can_pin;
+  auto& can_en = *p_map.can_en;
+  auto& motor_en = *p_map.motor_en;
+
+  HAL_CHECK(motor_en.level(false));
+
+  HAL_CHECK(can_en.level(true));
+  HAL_CHECK(hal::delay(clock, 10ms));
+  HAL_CHECK(can_en.level(false));
 
   std::array<hal::byte, 8192> buffer{};
   static std::string_view get_request = "";
@@ -81,17 +88,6 @@ hal::status application(sjsu::hardware_map& p_map)
   HAL_CHECK(hal::write(terminal, "Server found\n"));
 
   auto can_router = hal::can_router::create(can).value();
-  
-  while (!can_router) {
-    if (!can_router) {
-        HAL_CHECK(hal::write(terminal, "Failed to establish CAN router\n"));
-      }
-    HAL_CHECK(can_pin.level(true));
-    HAL_CHECK(hal::delay(counter, 10ms));
-    HAL_CHECK(can_pin.level(false));
-    can_router = hal::can_router::create(can).value();
-  }
-
 
   auto left_steer_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, clock, 6.0, 0x141));
@@ -106,9 +102,9 @@ hal::status application(sjsu::hardware_map& p_map)
   auto right_hub_motor =
     HAL_CHECK(hal::rmd::drc::create(can_router, clock, 15.0, 0x144));
 
-  Drive::tri_wheel_router::leg right(right_steer_motor, right_hub_motor, magnet0);
-  Drive::tri_wheel_router::leg left(left_steer_motor, left_hub_motor, magnet2);
-  Drive::tri_wheel_router::leg back(back_steer_motor, back_hub_motor, magnet1);
+  Drive::tri_wheel_router::leg left(left_steer_motor, left_hub_motor, magnet0); // Leg A
+  Drive::tri_wheel_router::leg back(back_steer_motor, back_hub_motor, magnet1); // Leg B
+  Drive::tri_wheel_router::leg right(right_steer_motor, right_hub_motor, magnet2); // Leg C
 
   Drive::tri_wheel_router tri_wheel{ right, left, back };
   Drive::drive_commands commands;
