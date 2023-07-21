@@ -16,7 +16,7 @@ class arm_mission_control : public mission_control {
         return hall::success()
     }
     private:
-
+    
 }
 
 } 

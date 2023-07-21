@@ -27,36 +27,36 @@ hal::result<application_framework> initialize_platform()
   // setting clock
   HAL_CHECK(hal::lpc40::clock::maximum(12.0_MHz));
 
-  auto& clock = hal::lpc40::clock::get();
+  static auto& clock = hal::lpc40::clock::get();
   auto cpu_frequency = clock.get_frequency(hal::lpc40xx::peripheral::cpu);
   static hal::cortex_m::dwt_counter counter(cpu_frequency);
 
   // setting up serial
-  auto& uart0 = HAL_CHECK((hal::lpc40::uart::get<0, 64>(hal::serial::settings{
+  static auto& uart0 = HAL_CHECK((hal::lpc40::uart::get<0, 64>(hal::serial::settings{
     .baud_rate = 38400,
   })));
 
 
   // servos, we need to init all of the mc_x motors then call make_servo 
   // in order to pass servos into the application
-  hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
-  auto& can = HAL_CHECK((hal::lpc40::can::get<2>(can_settings)));
+  static hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
+  static auto& can = HAL_CHECK((hal::lpc40::can::get<2>(can_settings)));
 
-
+  
 
 
   // homing pins
-  auto& in_pin0 = HAL_CHECK((hal::lpc40::input_pin::get<1, 15>()));
-  auto& in_pin1 = HAL_CHECK((hal::lpc40::input_pin::get<1, 23>()));
-  auto& in_pin2 = HAL_CHECK((hal::lpc40::input_pin::get<1, 22>()));
+  static auto& in_pin0 = HAL_CHECK((hal::lpc40::input_pin::get<1, 15>()));
+  static auto& in_pin1 = HAL_CHECK((hal::lpc40::input_pin::get<1, 23>()));
+  static auto& in_pin2 = HAL_CHECK((hal::lpc40::input_pin::get<1, 22>()));
 
   // mission control object
-  auto& uart1 =
+  static auto& uart1 =
     HAL_CHECK((hal::lpc40::uart::get<1, 8192>(hal::serial::settings{
       .baud_rate = 115200,
     })));
 
-  static arm_mission_control arm_mc(/* ... */);
+  static arm_mission_control arm_mc();
 
   return application_framework{.reset = []() { hal::cortex_m::reset(); },
                               .mission_control = mc,

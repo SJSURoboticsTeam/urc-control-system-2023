@@ -35,8 +35,8 @@ struct mc_commands
 
 class mission_control {
     public:
-    hal::result<mc_commands> get_commands() = 0;
-    hal::status send_commands() = 0;
+    virtual hal::result<mc_commands> get_commands() = 0;
+    virtual hal::status send_commands() = 0;
 };
 
 }
