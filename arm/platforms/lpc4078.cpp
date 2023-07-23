@@ -26,23 +26,42 @@ hal::result<application_framework> initialize_platform()
   
   // setting clock
   HAL_CHECK(hal::lpc40::clock::maximum(12.0_MHz));
-
   static auto& clock = hal::lpc40::clock::get();
   auto cpu_frequency = clock.get_frequency(hal::lpc40xx::peripheral::cpu);
   static hal::cortex_m::dwt_counter counter(cpu_frequency);
 
-  // setting up serial
+  // Serial
   static auto& uart0 = HAL_CHECK((hal::lpc40::uart::get<0, 64>(hal::serial::settings{
     .baud_rate = 38400,
   })));
-
 
   // servos, we need to init all of the mc_x motors then call make_servo 
   // in order to pass servos into the application
   static hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
   static auto& can = HAL_CHECK((hal::lpc40::can::get<2>(can_settings)));
-
   
+  auto can_router = hal::can_router::create(can).value();
+
+  auto rotunda_mc_x =
+  HAL_CHECK(hal::rmd::mc_x::create(can_router, clock, 8.0, 0x141));
+  auto rotunda_mc_x_servo = 
+  HAL_CHECK(hal::rmd::make_servo(rotunda_mc_x, 100.0_rpm));
+
+  auto shoulder_mc_x =
+  HAL_CHECK(hal::rmd::drc::create(can_router, clock, 8.0, 0x141));
+  auto shoulder_mc_x_servo = HAL_CHECK(hal::rmd::make_servo(shoulder_mc_x, 100.0_rpm));
+
+  auto elbow_mc_x = 
+  HAL_CHECK(hal::rmd::drc::create(can_router, clock, 8.0, 0x141));
+  auto elbow_mc_x_servo = HAL_CHECK(hal::rmd::make_servo(elbow_mc_x, 100.0_rpm));
+
+  auto left_wrist_mc_x =
+  HAL_CHECK(hal::rmd::drc::create(can_router, clock, 8.0, 0x141));
+  auto left_wrist_mc_x_servo = HAL_CHECK(hal::rmd::make_servo(left_wrist_mc_x, 100.0_rpm));
+
+  auto right_wrist_mc_x =
+  HAL_CHECK(hal::rmd::drc::create(can_router, clock, 8.0, 0x141));
+  auto right_wrist_mc_x_servo = HAL_CHECK(hal::rmd::make_servo(right_wrist_mc_x, 100.0_rpm));
 
 
   // homing pins
@@ -56,10 +75,17 @@ hal::result<application_framework> initialize_platform()
       .baud_rate = 115200,
     })));
 
-  static arm_mission_control arm_mc();
+  static sjsu::arm::arm_mission_control arm_mc();
 
   return application_framework{.reset = []() { hal::cortex_m::reset(); },
                               .mission_control = mc,
+                              .rotunda_servo = rotunda_mc_x_servo,
+                              .shoulder_servo = shoulder_mc_x_servo,
+                              .elbow_servo = elbow_mc_x_servo,
+                              .left_wrist_servo = left_wrist_mc_x_servo,
+                              .right_wrist_servo = right_wrist_mc_x_servo,
+                              .terminal = uart0,
+
                               };
 }
 
