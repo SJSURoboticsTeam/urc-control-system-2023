@@ -1,3 +1,4 @@
+#pragma once
 #include <libhal/motor.hpp>
 #include <libhal/serial.hpp>
 #include <libhal/servo.hpp>

@@ -1,3 +1,4 @@
+#pragma once
 #include <libhal-armcortex/dwt_counter.hpp>
 #include <libhal-armcortex/startup.hpp>
 #include <libhal-armcortex/system_control.hpp>
@@ -9,6 +10,9 @@
 #include <libhal-util/units.hpp>
 #include <libhal-rmd/mc_x.hpp>
 #include <libhal-rmd/mc_x_servo.hpp>
+#include <libhal-pca/pca9685.hpp>
+#include <libhal-lpc40/pwm.hpp>
+#include <libhal-soft/rc_servo.hpp>
 #include "../arm_mission_control.hpp"
 
 namespace sjsu::arm {
@@ -26,7 +30,7 @@ hal::result<application_framework> initialize_platform()
   
   // setting clock
   HAL_CHECK(hal::lpc40::clock::maximum(12.0_MHz));
-  static auto& clock = hal::lpc40::clock::get();
+  auto& clock = hal::lpc40::clock::get();
   auto cpu_frequency = clock.get_frequency(hal::lpc40xx::peripheral::cpu);
   static hal::cortex_m::dwt_counter counter(cpu_frequency);
 
@@ -40,34 +44,37 @@ hal::result<application_framework> initialize_platform()
   static hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
   static auto& can = HAL_CHECK((hal::lpc40::can::get<2>(can_settings)));
   
-  auto can_router = hal::can_router::create(can).value();
+  static auto& can_router = hal::can_router::create(can).value();
 
-  auto rotunda_mc_x =
+  static auto& rotunda_mc_x =
   HAL_CHECK(hal::rmd::mc_x::create(can_router, clock, 8.0, 0x141));
-  auto rotunda_mc_x_servo = 
+  static auto& rotunda_mc_x_servo = 
   HAL_CHECK(hal::rmd::make_servo(rotunda_mc_x, 100.0_rpm));
 
-  auto shoulder_mc_x =
+  static auto& shoulder_mc_x =
   HAL_CHECK(hal::rmd::drc::create(can_router, clock, 8.0, 0x141));
-  auto shoulder_mc_x_servo = HAL_CHECK(hal::rmd::make_servo(shoulder_mc_x, 100.0_rpm));
+  static auto& shoulder_mc_x_servo = HAL_CHECK(hal::rmd::make_servo(shoulder_mc_x, 100.0_rpm));
 
-  auto elbow_mc_x = 
+  static auto& elbow_mc_x = 
   HAL_CHECK(hal::rmd::drc::create(can_router, clock, 8.0, 0x141));
-  auto elbow_mc_x_servo = HAL_CHECK(hal::rmd::make_servo(elbow_mc_x, 100.0_rpm));
+  static auto& elbow_mc_x_servo = HAL_CHECK(hal::rmd::make_servo(elbow_mc_x, 100.0_rpm));
 
-  auto left_wrist_mc_x =
+  static auto& left_wrist_mc_x =
   HAL_CHECK(hal::rmd::drc::create(can_router, clock, 8.0, 0x141));
-  auto left_wrist_mc_x_servo = HAL_CHECK(hal::rmd::make_servo(left_wrist_mc_x, 100.0_rpm));
+  static auto& left_wrist_mc_x_servo = HAL_CHECK(hal::rmd::make_servo(left_wrist_mc_x, 100.0_rpm));
 
-  auto right_wrist_mc_x =
+  static auto& right_wrist_mc_x =
   HAL_CHECK(hal::rmd::drc::create(can_router, clock, 8.0, 0x141));
-  auto right_wrist_mc_x_servo = HAL_CHECK(hal::rmd::make_servo(right_wrist_mc_x, 100.0_rpm));
+  static auto& right_wrist_mc_x_servo = HAL_CHECK(hal::rmd::make_servo(right_wrist_mc_x, 100.0_rpm));
 
-
-  // homing pins
-  static auto& in_pin0 = HAL_CHECK((hal::lpc40::input_pin::get<1, 15>()));
-  static auto& in_pin1 = HAL_CHECK((hal::lpc40::input_pin::get<1, 23>()));
-  static auto& in_pin2 = HAL_CHECK((hal::lpc40::input_pin::get<1, 22>()));
+  static auto& pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c, 0b100'0000));
+  static auto& pwm0 = pca9685.get_pwm_channel<0>();
+  auto servo_settings = hal::rc_servo::settings{.min_angle = 0.0_deg,
+                                        .max_angle = 180.0_deg,
+                                        .min_microseconds = 500,
+                                        .max_microseconds = 2500,
+                                        };
+  static auto& end_effector_servo = HAL_CHECK(hal::rc_servo::create(pwm0, servo_settings))
 
   // mission control object
   static auto& uart1 =
@@ -75,17 +82,18 @@ hal::result<application_framework> initialize_platform()
       .baud_rate = 115200,
     })));
 
-  static sjsu::arm::arm_mission_control arm_mc();
+  static sjsu::arm::arm_mission_control& arm_mc();
 
   return application_framework{.reset = []() { hal::cortex_m::reset(); },
-                              .mission_control = mc,
-                              .rotunda_servo = rotunda_mc_x_servo,
-                              .shoulder_servo = shoulder_mc_x_servo,
-                              .elbow_servo = elbow_mc_x_servo,
-                              .left_wrist_servo = left_wrist_mc_x_servo,
-                              .right_wrist_servo = right_wrist_mc_x_servo,
+                              .mission_control = &arm_mc,
+                              .rotunda_servo = &rotunda_mc_x_servo,
+                              .shoulder_servo = &shoulder_mc_x_servo,
+                              .elbow_servo = &elbow_mc_x_servo,
+                              .left_wrist_servo = &left_wrist_mc_x_servo,
+                              .right_wrist_servo = &right_wrist_mc_x_servo,
+                              .end_effector = &end_effector_servo,
+                              .clock = &counter,
                               .terminal = uart0,
-
                               };
 }
 
