@@ -20,24 +20,25 @@
 #include <cstdio>
 #include <cstring>
 
-#include "application.hpp"
+#include "applications/application.hpp"
 
 int main()
 {
-  // Step 1. Call the processor initializer. Setups up processor to run
+  // Step 1. Call the processor initializer. Setups processor to run
   // applications such as turning on a coprocessor, or copying memory from
   // storage to memory.
-  if (!initialize_processor()) {
+  if (!sjsu::drive::initialize_processor()) {
     hal::halt();
   }
 
-  auto application_resource = initialize_platform();
+  auto application_resource = sjsu::drive::initialize_platform();
 
   if (!application_resource) {
     hal::halt();
   }
 
-  auto is_finished = application(application_resource.value());
+  auto is_finished = sjsu::drive::application(application_resource.value());
+  // do error handling here
 
   if (!is_finished) {
     application_resource.value().reset();

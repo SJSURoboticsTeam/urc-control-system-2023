@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <string_view>
 
-namespace arm {
+namespace sjsu::arm {
 // joint_angles order [rotunda, shoulder, elbow, wrist_pitch, wrist_yaw]
 // hand_angles order [pinky, ring, middle, index, thumb]
 const char kResponseBodyFormat[] =
@@ -11,7 +11,7 @@ const char kResponseBodyFormat[] =
   "d,%d,%d,%d,%d]}\n";
 const char kGETRequestFormat[] =
   "arm?heartbeat_count=%d&is_operational=%d&speed=%d&rotunda_angle=%d&shoulder_"
-  "angle=%d&elbow_angle=%d&wrist_pitch_angle=%d&wrist_roll_angle=%d&rr9_angle=%"
+  "angle=%d&elbow_angle=%d&wrist_pitch_angle=%d&wrist_roll_angle=%d&end_effector_angle=%"
   "d";
 
 struct mc_commands
@@ -24,22 +24,7 @@ struct mc_commands
   int elbow_angle = 0;
   int wrist_pitch_angle = 0;
   int wrist_roll_angle = 0;
-  int rr9_angle = 0;
-
-  hal::status print(hal::serial& terminal)
-  {
-    hal::print<128>(terminal,
-                    kResponseBodyFormat,
-                    heartbeat_count,
-                    is_operational,
-                    speed,
-                    rotunda_angle,
-                    shoulder_angle,
-                    elbow_angle,
-                    wrist_pitch_angle,
-                    wrist_roll_angle,
-                    rr9_angle);
-    return hal::success();
-  }
+  int end_effector_angle = 0;
+  int precision_offset = 0;
 };
 }  // namespace arm
