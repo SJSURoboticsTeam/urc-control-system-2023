@@ -168,17 +168,19 @@ hal::result<application_framework> initialize_platform()
       .baud_rate = 115200,
     })));
 
-  constexpr std::string_view ssid = "ssid";
-  constexpr std::string_view password = "password";
+  constexpr std::string_view ssid = "SJSU Robotics 2.4GHz";
+  constexpr std::string_view password = "R0Bot1cs3250";
+  
+  // still need to decide what we want the static IP to be
   constexpr std::string_view ip = "";
   constexpr auto socket_config = hal::esp8266::at::socket_config{
     .type = hal::esp8266::at::socket_type::tcp,
-    .domain = "httpstat.us",
-    .port = 80,
+    .domain = "13.56.207.97",
+    .port = 5000,
   };
 
   std::string_view get_request = "GET /drive HTTP/1.1\r\n"
-                                "Host: httpstat.us:80\r\n"
+                                "Host: 13.56.207.97:5000\r\n"
                                 "\r\n";
 
 
