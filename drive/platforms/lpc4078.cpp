@@ -61,9 +61,6 @@ hal::result<application_framework> initialize_platform()
   static auto left_leg_drc_servo = HAL_CHECK(hal::make_servo(left_leg_steer_drc, 10.0_rpm));
   auto left_leg_mag = HAL_CHECK(hal::lpc40::input_pin::get(1, 22, hal::input_pin::settings{}));
 
-  std::pair<hal::servo*, float> left_servo_offset(&left_leg_drc_servo, 0.0f);
-  std::pair<hal::input_pin*, bool> left_mag_home(&left_leg_mag, false);
-
   static auto left_leg_hub_drc = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x142));
   static auto left_leg_drc_motor = HAL_CHECK(hal::make_motor(left_leg_hub_drc, 100.0_rpm));
   static auto left_leg_drc_speed_sensor = HAL_CHECK(make_speed_sensor(left_leg_hub_drc));
@@ -72,9 +69,6 @@ hal::result<application_framework> initialize_platform()
   static auto right_leg_steer_drc = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x143));
   static auto right_leg_drc_servo = HAL_CHECK(hal::make_servo(right_leg_steer_drc, 10.0_rpm));
   auto right_leg_mag = HAL_CHECK(hal::lpc40::input_pin::get(1, 15, hal::input_pin::settings{}));
-
-  std::pair<hal::servo*, float> right_servo_offset(&right_leg_drc_servo, 0.0f);
-  std::pair<hal::input_pin*, bool> right_mag_home(&right_leg_mag, false);
 
   static auto right_leg_hub_drc = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x144));
   static auto right_leg_drc_motor = HAL_CHECK(hal::make_motor(right_leg_hub_drc, 100.0_rpm));
@@ -85,52 +79,41 @@ hal::result<application_framework> initialize_platform()
   static auto back_leg_drc_servo = HAL_CHECK(hal::make_servo(back_leg_steer_drc, 10.0_rpm));
   auto back_leg_mag = HAL_CHECK(hal::lpc40::input_pin::get(1, 23, hal::input_pin::settings{}));
 
-  std::pair<hal::servo*, float> back_servo_offset(&back_leg_drc_servo, 0.0f);
-  std::pair<hal::input_pin*, bool> back_mag_home(&back_leg_mag, false);
-
   static auto back_leg_hub_drc = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x146));
   static auto back_leg_drc_motor = HAL_CHECK(hal::make_motor(back_leg_hub_drc, 100.0_rpm));
   static auto back_leg_drc_speed_sensor = HAL_CHECK(make_speed_sensor(back_leg_hub_drc));
 
-  // for the 4th leg implementation
   // static auto extra_leg_steer_drc = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x147));
   // static auto extra_leg_drc_servo = HAL_CHECK(hal::make_servo(extra_leg_steer_drc, 10.0_rpm));
   // auto extra_leg_mag = HAL_CHECK(hal::lpc40::input_pin::get(1, 23, hal::input_pin::settings{}));
-
-  // std::pair<hal::servo*, float> extra_servo_offset(&extra_leg_drc_servo, 0.0f);
-  // std::pair<hal::input_pin*, bool> extra_mag_home(&extra_leg_mag, false);
 
   // static auto extra_leg_hub_drc = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x148));
   // static auto extra_leg_drc_motor = HAL_CHECK(hal::make_motor(extra_leg_hub_drc, 100.0_rpm));
   // static auto extra_leg_drc_speed_sensor = HAL_CHECK(make_speed_sensor(extra_leg_hub_drc));
 
-  // change this to 4 for 4 legs
   const int number_of_legs = 3;
 
-  // uncomment extra_servo_offset here
-  std::array<std::pair<hal::servo*, float>, number_of_legs> servo_offsets = {
-        left_servo_offset, 
-        right_servo_offset, 
-        back_servo_offset,
-        // extra_servo_offset
+  std::array<hal::servo*, number_of_legs> servos = {
+        &left_leg_drc_servo, 
+        &right_leg_drc_servo, 
+        &back_leg_drc_servo,
+        // &extra_leg_drc_servo
     };
 
-  // uncomment extra_mag_home here
-    std::array<std::pair<hal::input_pin*, bool>, number_of_legs> magnets_home = {
-        left_mag_home, 
-        right_mag_home, 
-        back_mag_home,
-        // extra_mag_home
+    std::array<hal::input_pin*, number_of_legs> magnets_home = {
+        &left_leg_mag, 
+        &right_leg_mag, 
+        &back_leg_mag,
+        // extra_leg_mag
     };
   
 
-  HAL_CHECK(home(servo_offsets, magnets_home, counter));
+  auto offsets = HAL_CHECK(home<number_of_legs>(servos, magnets_home, counter));
 
-  static auto left_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(left_leg_drc_servo, servo_offsets[0].second));
-  static auto right_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(right_leg_drc_servo, servo_offsets[1].second));
-  static auto back_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(back_leg_drc_servo, servo_offsets[2].second));
-  // uncomment this for 4 legged imeplementation
-  // static auto extra_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(extra_leg_drc_servo, servo_offsets[2].second));
+  static auto left_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(left_leg_drc_servo, offsets[0]));
+  static auto right_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(right_leg_drc_servo, offsets[1]));
+  static auto back_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(back_leg_drc_servo, offsets[2]));
+  // static auto extra_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(extra_leg_drc_servo, offsets[3]));
 
   leg left_leg{.steer = &left_leg_drc_offset_servo, 
               .propulsion = &left_leg_drc_motor,
@@ -146,7 +129,7 @@ hal::result<application_framework> initialize_platform()
               .propulsion = &back_leg_drc_motor,
               .spd_sensor = &back_leg_drc_speed_sensor,
               };
-  // uncomment this for 4 legged implementation
+
   // leg extra_leg{.steer = &extra_leg_drc_offset_servo, 
   //             .propulsion = &extra_leg_drc_motor,
   //             .spd_sensor = &extra_leg_drc_speed_sensor,
@@ -170,7 +153,7 @@ hal::result<application_framework> initialize_platform()
 
   constexpr std::string_view ssid = "SJSU Robotics 2.4GHz";
   constexpr std::string_view password = "R0Bot1cs3250";
-  
+
   // still need to decide what we want the static IP to be
   constexpr std::string_view ip = "";
   constexpr auto socket_config = hal::esp8266::at::socket_config{
