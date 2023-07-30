@@ -18,16 +18,21 @@ namespace sjsu::drive {
 class esp8266_mission_control : public mission_control
 {
 public:
-  hal::result<esp8266_mission_control> create(hal::esp8266::at& p_esp8266,
+  static hal::result<esp8266_mission_control> create(hal::esp8266::at& p_esp8266,
     hal::serial& p_console,
     const std::string_view p_ssid,
     const std::string_view p_password,
     const hal::esp8266::at::socket_config& p_config,
     const std::string_view p_ip,
-    const std::chrono::seconds p_time_to_timeout)
+    hal::timeout auto& p_timeout, 
+    const std::string_view p_url_extension,
+    std::span<hal::byte> p_buffer)
   {
-    return esp8266_mission_control(p_esp8266, p_console,
-    p_ssid, p_password, p_config, p_ip, p_time_to_timeout);
+    esp8266_mission_control esp_mission_control = esp8266_mission_control(p_esp8266, p_console,
+    p_ssid, p_password, p_config, p_ip, p_url_extension, p_buffer);
+    HAL_CHECK(esp_mission_control.establish_connection(p_timeout));
+
+    return esp_mission_control;
   }
 
 private:
@@ -39,25 +44,113 @@ private:
     const std::string_view p_password,
     const hal::esp8266::at::socket_config& p_config,
     const std::string_view p_ip,
-    const std::chrono::seconds p_time_to_timeout) : m_esp8266(&p_esp8266), m_console(p_console), 
-      m_ssid(p_ssid), m_password(p_password), m_config(p_config), m_ip(p_ip), 
-      m_time_to_timeout(p_time_to_timeout)
+    const std::string_view p_url_extension,
+    std::span<hal::byte> p_buffer) : m_esp8266(&p_esp8266), m_console(p_console), 
+      m_ssid(p_ssid), m_password(p_password), m_config(p_config), m_ip(p_ip), m_url_extension(p_url_extension),
+      m_buffer(p_buffer)
       {
       }
 
   drive_commands impl_get_command(
     hal::function_ref<hal::timeout_function> p_timeout) override
   {
-    auto timeout = hal::create_timeout(clock, p_time_to_timeout);
-    if(establish_connection(timeout)) {
-      // read commands if no error was thrown, otherwise leave gracefully
-      parse_commands();
+    bool write_error = false;
+    bool header_finished = false;
+    bool read_complete = true;
+    auto fill_content = hal::stream::fill(m_buffer)
+    if (write_error) {
+      hal::print(m_console, "Reconnecting...\n");
+      // Wait 1s before attempting to reconnect
+
+      auto result = establish_connection(
+        m_esp8266, m_console, m_ssid, m_password, m_socket_config, m_ip, p_timeout);
+      if (!result) {
+        continue;
+      }
+      write_error = false;
+    }
+
+    if (read_complete) {
+      // Minimalist GET request to example.com domain
+      static constexpr std::string_view get_request = "GET /" + m_url_extension + " HTTP/1.1\r\n"
+                                                      "Host: "+ m_config.domain +":"+ m_config.port +"\r\n"
+                                                      "\r\n";
+
+      hal::delay(p_counter, 50ms);
+
+      // Send out HTTP GET request
+      auto status = m_esp8266.server_write(hal::as_bytes(get_request), p_timeout);
+
+      if (!status) {
+        hal::print(console, "\nFailed to write to server!\n");
+        write_error = true;
+        continue;
+      }
+
+      read_complete = false;
+      header_finished = false;
+    }
+
+    auto received = HAL_CHECK(m_esp8266.server_read(buffer)).data;
+    auto remainder = received | http_header_parser.find_header_start |
+                     http_header_parser.find_content_length |
+                     http_header_parser.parse_content_length |
+                     http_header_parser.find_end_of_header;
+
+    if (!header_finished &&
+        hal::finished(http_header_parser.find_end_of_header)) {
+      auto content_length = http_header_parser.parse_content_length.value();
+      fill_payload = hal::stream::fill(m_buffer, content_length);
+      header_finished = true;
+    }
+
+    if (header_finished && hal::in_progress(fill_payload)) {
+      remainder | fill_payload;
+      if (hal::finished(fill_payload.state())) {
+
+        m_commands = parse_commands();
+
+        read_complete = true;
+        http_header_parser = new_http_header_parser();
+        fill_payload = hal::stream::fill(m_buffer);
+      }
     }
 
     return m_commands;
   }
 
-  hal::status parse_commands() {}
+  m_commands parse_commands() {
+
+    auto result = to_string_view(m_buffer);
+    auto start = result.find('{');
+    auto end = result.find('}');
+    auto response = result.substr(start, end - start + 1);
+    static constexpr int expected_number_of_arguments = 6;
+    drive_commands commands;
+    response = response.substr(response.find('{'));
+    int actual_arguments = sscanf(response.data(),
+                                  kResponseBodyFormat,
+                                  &commands.heartbeat_count,
+                                  &commands.is_operational,
+                                  &commands.wheel_orientation,
+                                  &commands.mode,
+                                  &commands.speed,
+                                  &commands.angle);
+    if (actual_arguments != expected_number_of_arguments) {
+      hal::print<200>(terminal,
+                      "Received %d arguments, expected %d\n",
+                      actual_arguments,
+                      expected_number_of_arguments);
+      return hal::new_error(std::errc::invalid_argument);
+    }
+    return commands;
+  }
+
+  std::string_view to_string_view(std::span<const hal::byte> p_span)
+  {
+    return std::string_view(reinterpret_cast<const char*>(p_span.data()),
+                            p_span.size());
+  }
 
   enum class connection_state
   {
@@ -153,6 +246,7 @@ private:
   std::string_view m_password;
   hal::esp8266::at::socket_config& m_config;
   std::string_view m_ip;
-  std::chrono::seconds m_time_to_timeout;
+  std::string_view m_url_extension;
+  std::span<hal::byte> m_buffer
 };
 } 

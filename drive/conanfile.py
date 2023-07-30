@@ -31,6 +31,7 @@ class application(ConanFile):
         self.requires("libhal-util/[^2.0.0]")
         self.requires("libhal-rmd/[^2.0.0]")
         self.requires("libhal-soft/[^2.0.0]")
+        self.requires("libhal-esp8266/[^2.0.0]")
 
         # List of supported platforms
         if str(self.options.platform).startswith("lpc40"):

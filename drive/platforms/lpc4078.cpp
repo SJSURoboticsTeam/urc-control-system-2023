@@ -16,7 +16,7 @@
 
 #include "../platform-implementations/drc_speed_sensor.cpp"
 
-#include "../platform-implementations/drive_mission_control.cpp"
+#include "../platform-implementations/esp8266_mission_control.cpp"
 #include "../platform-implementations/mission_control.hpp"
 #include "../applications/application.hpp"
 #include "../platform-implementations/home.hpp"
@@ -103,6 +103,21 @@ hal::result<application_framework> initialize_platform()
     HAL_CHECK((hal::lpc40::uart::get(1, recieve_buffer1, hal::serial::settings{
       .baud_rate = 115200,
     })));
+
+  constexpr std::string_view ssid = "ssid";
+  constexpr std::string_view password = "password";
+  constexpr std::string_view ip = "";
+  constexpr auto socket_config = hal::esp8266::at::socket_config{
+    .type = hal::esp8266::at::socket_type::tcp,
+    .domain = "httpstat.us",
+    .port = 80,
+  };
+  constexpr std::string_view url_extension = "drive";
+
+  std::array<hal::byte, 128> buffer{};
+  
+  auto timeout = hal::create_timeout(counter, 10s);
+  auto esp8266 = HAL_CHECK(hal::esp8266::at::create(serial, timeout));
 
   static sjsu::drive::drive_mission_control drive_mc{};
 
