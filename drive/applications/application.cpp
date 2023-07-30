@@ -18,9 +18,9 @@ hal::status application(application_framework& p_framework)
   using namespace std::chrono_literals;
   using namespace hal::literals;
 
-  auto& back_leg = *p_framework.back_leg;
-  auto& right_leg = *p_framework.right_leg;
-  auto& left_leg = *p_framework.left_leg;
+  auto& left_leg = p_framework.legs[0];
+  auto& right_leg = p_framework.legs[1];
+  auto& back_leg = p_framework.legs[2];
   auto& mission_control = *p_framework.mc;
   auto& terminal = *p_framework.terminal;
   auto& clock = *p_framework.clock;

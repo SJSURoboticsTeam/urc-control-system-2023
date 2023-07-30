@@ -10,8 +10,8 @@
 namespace sjsu::drive
 {
 
-inline hal::status home(std::span<std::pair<std::shared_ptr<hal::servo>, float>> p_servo_offsets,
-                        std::span<std::pair<std::shared_ptr<hal::input_pin>, bool>> p_magnets,
+inline hal::status home(std::span<std::pair<hal::servo*, float>> p_servo_offsets,
+                        std::span<std::pair<hal::input_pin*, bool>> p_magnets,
                         hal::steady_clock& p_counter) {
 
     using namespace std::chrono_literals;

@@ -18,9 +18,7 @@ struct leg {
 
 struct application_framework
 {
-  leg* back_leg;
-  leg* right_leg;
-  leg* left_leg;
+  std::span<leg> legs;
 
   mission_control* mc;
 
