@@ -91,7 +91,7 @@ hal::result<application_framework> initialize_platform()
   // static auto extra_leg_drc_motor = HAL_CHECK(hal::make_motor(extra_leg_hub_drc, 100.0_rpm));
   // static auto extra_leg_drc_speed_sensor = HAL_CHECK(make_speed_sensor(extra_leg_hub_drc));
 
-  const int number_of_legs = 3;
+  const size_t number_of_legs = 3;
 
   std::array<hal::servo*, number_of_legs> servos = {
         &left_leg_drc_servo, 

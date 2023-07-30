@@ -9,8 +9,9 @@
 
 namespace sjsu::drive
 {
-template <int number_of_legs>
+
 // this function will return offsets in the same order of servos passed in
+template <size_t number_of_legs>
 inline hal::result<std::span<float>> home(std::span<hal::servo*> p_servos,
                                         std::span<hal::input_pin*> p_magnets,
                                         hal::steady_clock& p_counter) {
