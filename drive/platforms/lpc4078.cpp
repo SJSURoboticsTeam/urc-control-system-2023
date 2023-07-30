@@ -90,30 +90,29 @@ hal::result<application_framework> initialize_platform()
   // static auto extra_leg_hub_drc = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x148));
   // static auto extra_leg_drc_motor = HAL_CHECK(hal::make_motor(extra_leg_hub_drc, 100.0_rpm));
   // static auto extra_leg_drc_speed_sensor = HAL_CHECK(make_speed_sensor(extra_leg_hub_drc));
+  
+  static auto left_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(left_leg_drc_servo, 0.0f));
+  static auto right_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(right_leg_drc_servo, 0.0f));
+  static auto back_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(back_leg_drc_servo, 0.0f));
+  // static auto extra_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(extra_leg_drc_servo, offsets[3]));
 
   const size_t number_of_legs = 3;
 
-  std::array<hal::servo*, number_of_legs> servos = {
-        &left_leg_drc_servo, 
-        &right_leg_drc_servo, 
-        &back_leg_drc_servo,
-        // &extra_leg_drc_servo
+  std::array<offset_servo*, number_of_legs> offset_servos = {
+        &left_leg_drc_offset_servo, 
+        &right_leg_drc_offset_servo, 
+        &back_leg_drc_offset_servo,
+        // &extra_leg_drc_offset_servo
     };
 
-    std::array<hal::input_pin*, number_of_legs> magnets_home = {
-        &left_leg_mag, 
-        &right_leg_mag, 
-        &back_leg_mag,
-        // extra_leg_mag
-    };
-  
+  std::array<input_pin_homed, number_of_legs> magnets_home = {
+      input_pin_homed{&left_leg_mag, false},
+      input_pin_homed{&right_leg_mag, false},
+      input_pin_homed{&back_leg_mag, false}, 
+      // input_pin_homed{extra_leg_mag, false}, 
+  };
 
-  auto offsets = HAL_CHECK(home<number_of_legs>(servos, magnets_home, counter));
-
-  static auto left_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(left_leg_drc_servo, offsets[0]));
-  static auto right_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(right_leg_drc_servo, offsets[1]));
-  static auto back_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(back_leg_drc_servo, offsets[2]));
-  // static auto extra_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(extra_leg_drc_servo, offsets[3]));
+  HAL_CHECK(home(offset_servos, magnets_home, counter));
 
   leg left_leg{.steer = &left_leg_drc_offset_servo, 
               .propulsion = &left_leg_drc_motor,

@@ -11,6 +11,7 @@ public:
         return offset_servo(p_servo, p_offset);
     }
 
+    hal::degrees m_offset;
 private:
     offset_servo(hal::servo& p_servo, hal::degrees p_offset) : m_servo(&p_servo), m_offset(p_offset) 
     {
@@ -20,7 +21,6 @@ private:
         return HAL_CHECK(m_servo->position(p_position + m_offset));
     }
 
-    hal::degrees m_offset;
     hal::servo* m_servo;
 };
 

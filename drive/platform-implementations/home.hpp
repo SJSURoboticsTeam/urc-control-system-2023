@@ -5,27 +5,23 @@
 #include <libhal-util/steady_clock.hpp>
 #include <libhal/input_pin.hpp>
 #include <libhal-util/units.hpp>
+#include "offset_servo.hpp"
 
 
 namespace sjsu::drive
 {
 
 // this function will return offsets in the same order of servos passed in
-template <size_t number_of_legs>
-inline hal::result<std::span<float>> home(std::span<hal::servo*> p_servos,
-                                        std::span<hal::input_pin*> p_magnets,
+inline hal::status home(std::span<offset_servo*> p_servos,
+                                        std::span<input_pin_homed> p_magnets,
                                         hal::steady_clock& p_counter) {
 
     using namespace std::chrono_literals;
     using namespace hal::literals;
 
-    static std::array<float, number_of_legs> offsets{};
-    std::array<bool, number_of_legs> homed{};
-    homed.fill(false);
-    
     // if the sizes are not the same then return an error
-    if ((p_servos.size() != number_of_legs) && (p_magnets.size() != number_of_legs)) {
-        return std::span<float>(offsets);
+    if (p_servos.size() != p_magnets.size()) {
+        return hal::success();
     }
 
     bool going_to_60 = false;
@@ -39,8 +35,8 @@ inline hal::result<std::span<float>> home(std::span<hal::servo*> p_servos,
 
     // move them if 0 was home position due to inaccuracy
     for (int i = 0; i < p_servos.size(); i++) {
-        if (!(HAL_CHECK(p_magnets[i]->level()).state)) {
-            offsets[i] = 60;
+        if (!(HAL_CHECK(p_magnets[i].magnet->level()).state)) {
+            p_servos[i]->m_offset = 60;
             HAL_CHECK(p_servos[i]->position(60.0_deg));
             going_to_60 = true;
         }
@@ -56,22 +52,22 @@ inline hal::result<std::span<float>> home(std::span<hal::servo*> p_servos,
 
         for (int i = 0; i < p_servos.size(); i++) {
 
-            if(!homed[i]) {
+            if(!p_magnets[i].homed) {
 
-                homed[i] = !(HAL_CHECK(p_magnets[i]->level()).state);
+                p_magnets[i].homed = !(HAL_CHECK(p_magnets[i].magnet->level()).state);
                 hal::delay(p_counter, 10ms);
 
-                if (homed[i]) {
+                if (p_magnets[i].homed) {
                     number_of_legs_homed++;
                     continue;
                 } 
-                offsets[i]++;
-                HAL_CHECK(p_servos[i]->position(hal::degrees(offsets[i])));
+                p_servos[i]->m_offset++;
+                HAL_CHECK(p_servos[i]->position(hal::degrees(p_servos[i]->m_offset)));
             }
             hal::delay(p_counter, 100ms);
         }
     }
-    return std::span<float>(offsets);
+    return hal::success();
 }
 
 }

@@ -5,10 +5,16 @@
 #include <libhal/motor.hpp>
 #include <libhal/steady_clock.hpp>
 #include <libhal/timeout.hpp>
+#include <libhal/input_pin.hpp>
 #include "../platform-implementations/speed_sensor.hpp"
 #include "../platform-implementations/mission_control.hpp"
 
 namespace sjsu::drive {
+
+struct input_pin_homed {
+  hal::input_pin* magnet;
+  bool homed;
+};
 
 struct leg {
   hal::servo* steer;
