@@ -1,3 +1,5 @@
+#include <string_view>
+
 #include <libhal-armcortex/dwt_counter.hpp>
 #include <libhal-armcortex/startup.hpp>
 #include <libhal-armcortex/system_control.hpp>
@@ -33,6 +35,7 @@ hal::status initialize_processor(){
 hal::result<application_framework> initialize_platform() 
 {
   using namespace hal::literals;
+  using namespace std::chrono_literals;
   
   // setting clock
   HAL_CHECK(hal::lpc40::clock::maximum(12.0_MHz));
@@ -55,45 +58,61 @@ hal::result<application_framework> initialize_platform()
 
   static auto left_leg_steer_drc = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x141));
   static auto left_leg_drc_servo = HAL_CHECK(hal::make_servo(left_leg_steer_drc, 10.0_rpm));
+  auto left_leg_mag = HAL_CHECK(hal::lpc40::input_pin::get(1, 22, hal::input_pin::settings{}));
 
   static auto left_leg_hub_drc = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x142));
   static auto left_leg_drc_motor = HAL_CHECK(hal::make_motor(left_leg_hub_drc, 100.0_rpm));
   static auto left_leg_drc_speed_sensor = HAL_CHECK(make_speed_sensor(left_leg_hub_drc));
   
-  leg left_leg{.steer = &left_leg_drc_servo, 
-              .propulsion = &left_leg_drc_motor,
-              .spd_sensor = &left_leg_drc_speed_sensor,
-              };
 
   static auto right_leg_steer_drc = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x143));
   static auto right_leg_drc_servo = HAL_CHECK(hal::make_servo(right_leg_steer_drc, 10.0_rpm));
+  auto right_leg_mag = HAL_CHECK(hal::lpc40::input_pin::get(1, 15, hal::input_pin::settings{}));
 
   static auto right_leg_hub_drc = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x144));
   static auto right_leg_drc_motor = HAL_CHECK(hal::make_motor(right_leg_hub_drc, 100.0_rpm));
   static auto right_leg_drc_speed_sensor = HAL_CHECK(make_speed_sensor(right_leg_hub_drc));
+
+
+  static auto back_leg_steer_drc = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x145));
+  static auto back_leg_drc_servo = HAL_CHECK(hal::make_servo(back_leg_steer_drc, 10.0_rpm));
+  auto back_leg_mag = HAL_CHECK(hal::lpc40::input_pin::get(1, 23, hal::input_pin::settings{}));
+
+  static auto back_leg_hub_drc = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x146));
+  static auto back_leg_drc_motor = HAL_CHECK(hal::make_motor(back_leg_hub_drc, 100.0_rpm));
+  static auto back_leg_drc_speed_sensor = HAL_CHECK(make_speed_sensor(back_leg_hub_drc));
+
+
+  std::pair<hal::servo*, float> left_servo_offset(left_leg_drc_servo, 0.0f);
+  std::pair<hal::servo*, float> right_servo_offset(right_leg_drc_servo, 0.0f);
+  std::pair<hal::servo*, float> back_servo_offset(back_leg_drc_servo, 0.0f);
+
+  std::span<std::pair<hal::servo*, hal::lpc40::input_pin&>> servo_offsets(
+    left_servo_offset, right_servo_offset, back_servo_offset);
+
+  std:pair<<hal::input_pin*, bool> left_mag_home(left_leg_mag, false);
+  std:pair<<hal::input_pin*, bool> right_mag_home(left_leg_mag, false);
+  std:pair<<hal::input_pin*, bool> back_mag_home(left_leg_mag, false);
+  
+  std::span<std::pair<hal::lpc40::input_pin, bool>> magnets_home(left_mag_home, right_mag_home, back_mag_home);
+
+  HAL_CHECK(home(servo_offsets, magnets_home, counter));
+
+  static auto left_leg_drc_offset_servo = HAL_CHECK(offset_servo::create())
+  leg left_leg{.steer = &left_leg_drc_servo, 
+              .propulsion = &left_leg_drc_motor,
+              .spd_sensor = &left_leg_drc_speed_sensor,
+              };
 
   leg right_leg{.steer = &right_leg_drc_servo, 
               .propulsion = &right_leg_drc_motor,
               .spd_sensor = &right_leg_drc_speed_sensor,
               };
 
-  static auto back_leg_steer_drc = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x145));
-  static auto back_leg_drc_servo = HAL_CHECK(hal::make_servo(back_leg_steer_drc, 10.0_rpm));
-
-  static auto back_leg_hub_drc = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x146));
-  static auto back_leg_drc_motor = HAL_CHECK(hal::make_motor(back_leg_hub_drc, 100.0_rpm));
-  static auto back_leg_drc_speed_sensor = HAL_CHECK(make_speed_sensor(back_leg_hub_drc));
-  
   leg back_leg{.steer = &back_leg_drc_servo, 
               .propulsion = &back_leg_drc_motor,
               .spd_sensor = &back_leg_drc_speed_sensor,
               };
-
-  auto back_leg_mag = HAL_CHECK(hal::lpc40::input_pin::get(1, 23, hal::input_pin::settings{}));
-  auto right_leg_mag = HAL_CHECK(hal::lpc40::input_pin::get(1, 15, hal::input_pin::settings{}));
-  auto left_leg_mag = HAL_CHECK(hal::lpc40::input_pin::get(1, 22, hal::input_pin::settings{}));
-
-  HAL_CHECK(home(*back_leg.steer, *right_leg.steer, *left_leg.steer, back_leg_mag, right_leg_mag, left_leg_mag, counter));
 
   // mission control object
 
@@ -112,20 +131,26 @@ hal::result<application_framework> initialize_platform()
     .domain = "httpstat.us",
     .port = 80,
   };
-  constexpr std::string_view url_extension = "drive";
 
-  std::array<hal::byte, 128> buffer{};
+  std::string_view get_request = "GET /drive HTTP/1.1\r\n"
+                                "Host: httpstat.us:80\r\n"
+                                "\r\n";
+
+
+  std::array<hal::byte, 256> buffer{};
   
   auto timeout = hal::create_timeout(counter, 10s);
-  auto esp8266 = HAL_CHECK(hal::esp8266::at::create(serial, timeout));
+  auto esp8266 = HAL_CHECK(hal::esp8266::at::create(uart0, timeout));
 
-  static sjsu::drive::drive_mission_control drive_mc{};
+  static auto esp_mission_control = HAL_CHECK(sjsu::drive::esp8266_mission_control::create(esp8266, 
+                                  uart0, ssid, password, socket_config, 
+                                  ip, timeout, buffer, get_request));
 
   return application_framework{.back_leg = &back_leg,
                               .right_leg = &right_leg,
                               .left_leg = &left_leg,
 
-                              .mc = &drive_mc,
+                              .mc = &esp_mission_control,
                               
                               .terminal = &uart0,
                               .clock = &counter,

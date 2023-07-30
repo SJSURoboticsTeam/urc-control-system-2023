@@ -10,92 +10,70 @@
 namespace sjsu::drive
 {
 
-inline hal::result<bool> step(hal::servo& p_servo, hal::input_pin& p_magnet, int& p_servo_offset, hal::steady_clock& p_counter)
-  {
+
+// in order for this function to work, the size of the span of magnets and the servo_offsets need
+// to be the same length, the magnets also have to be in the spans in the same order that they are
+// in for the servo offsets or else this function will not work.
+inline hal::status home(std::span<std::pair<hal::servo*, float>> p_servo_offsets, 
+                        std::span<std::pair<hal::input_pin*, bool>> p_magnets,
+                        hal::steady_clock& p_counter) {
+
     using namespace std::chrono_literals;
     using namespace hal::literals;
-    // level returns true if it is high, and the magnet is high when
-    // it is not
-    // ***********NOTE THIS MAY NOT WORK
-    bool homed = !(HAL_CHECK(p_magnet.level()).state);
-    hal::delay(p_counter, 10ms);
 
-    if (homed) {
-      return false;
+    // if the sizes are not the same then return an error
+    // TODO: find out how to throw errors
+    if (p_servo_offsets.size() != p_magnets.size()) {
+      return hal::success();
     }
-    p_servo_offset++;
-    HAL_CHECK(p_servo.position(hal::degrees(p_servo_offset)));
-    return true;
-  }
 
-inline hal::status home(hal::servo& p_back_servo, hal::servo& p_right_servo, hal::servo& p_left_servo, 
-    hal::input_pin& p_back_magnet, hal::input_pin& p_right_magnet, hal::input_pin& p_left_magnet, hal::steady_clock& p_counter) {
 
-    using namespace std::chrono_literals;
-    using namespace hal::literals;
+    bool going_to_60 = false;
+    for(int i = 0; i < p_servo_offsets.size(); i++) {
+      HAL_CHECK(p_servo_offsets[i].first.position(0.0_deg));
+      hal::delay(p_counter, 10ms);
+    }
 
-   int back_wheel_offset = 0, right_wheel_offset = 0, left_wheel_offset = 0;
-   bool going_to_60 = false;
-
-    HAL_CHECK(p_left_servo.position(0.0_deg));
-    hal::delay(p_counter, 10ms);
-    HAL_CHECK(p_right_servo.position(0.0_deg));
-    hal::delay(p_counter, 10ms);
-    HAL_CHECK(p_back_servo.position(0.0_deg));
-
-    // max angle that the wheels will have to turn is 60 degrees for
-    // this step, so 2rpm is 720deg/min which is 12 deg/sec which
-    // means we need to wait 5 seconds to move 60 degrees but wait 6
-    // seconds to be safe
+    // max time needed to move to 0 from anywhere at 2 rpms
     hal::delay(p_counter, 6s);
 
-    // these are active high
-    bool leftPinLow = !(HAL_CHECK(p_left_magnet.level()).state),
-         rightPinLow = !(HAL_CHECK(p_right_magnet.level()).state),
-         backPinLow = !(HAL_CHECK(p_back_magnet.level()).state);
-
-    hal::delay(p_counter, 10ms);
-
-    // TODO: put explanation for this V
     // move them if 0 was home position due to inacuracy
-    if (leftPinLow) {
-      left_wheel_offset = 60;
-      HAL_CHECK(p_left_servo.position(60.0_deg));
-      going_to_60 = true;
-    }
-    if (rightPinLow) {
-      right_wheel_offset = 60;
-      HAL_CHECK(p_right_servo.position(60.0_deg));
-      going_to_60 = true;
-    }
-    if (backPinLow) {
-      back_wheel_offset = 60;
-      HAL_CHECK(p_back_servo.position(60.0_deg));
-      going_to_60 = true;
+    for(int i = 0; i < p_servo_offsets.size(); i++) {
+      if (!(HAL_CHECK(p_magnets[i].second.level()).state)) {
+        p_servo[i].second = 60;
+        HAL_CHECK(p_servo[i].first.position(60.0_deg));
+        going_to_60 = true;
+      }
     }
 
-    // then if it is going to 60 we need to delay the same amount as
-    // the math above
+    // then if it is going to 60 we need to delay the same amount as above
     if (going_to_60) {
       hal::delay(p_counter, 6s);
     }
 
-    bool leftNotHome = true, rightNotHome = true, backNotHome = true;
+    int number_of_legs_homed = 0;
+    while (number_of_legs_homed != p_servo_offsets.size()) {
+      for(int i = 0; i < p_servo_offsets.size(); i++) {
+        bool homed = p_magnets[i].second;
 
-    while (leftNotHome || rightNotHome || backNotHome) {
-      if (leftNotHome) {
-        leftNotHome = HAL_CHECK(step(p_left_servo, p_left_magnet, left_wheel_offset, p_counter));
-      }
-      if (rightNotHome) {
-        rightNotHome = HAL_CHECK(step(p_right_servo, p_right_magnet, right_wheel_offset, p_counter));
-      }
-      if (backNotHome) {
-        backNotHome = HAL_CHECK(step(p_back_servo, p_back_magnet, back_wheel_offset, p_counter));
-      }
+        if(!homed) {
+          p_magnets[i].second = !(HAL_CHECK(p_magnets[i].level()).state);
+          hal::delay(p_counter, 10ms);
+
+          homed = p_magnets[i].second;
+          if (homed) {
+            all_are_homed++;
+            continue;
+          }
+
+          float offset = p_servo_offsets[i].second++;
+          HAL_CHECK(p_servo_offsets[i].first.position(hal::degrees(offset)));
+        }
       hal::delay(p_counter, 100ms);
     }
     return hal::success();
-  
+    }
+    
 }
 
 

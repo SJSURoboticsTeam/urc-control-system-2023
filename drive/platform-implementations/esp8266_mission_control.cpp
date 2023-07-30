@@ -18,18 +18,18 @@ namespace sjsu::drive {
 class esp8266_mission_control : public mission_control
 {
 public:
-  static hal::result<esp8266_mission_control> create(hal::esp8266::at& p_esp8266,
+    static hal::result<esp8266_mission_control> create(hal::esp8266::at& p_esp8266,
     hal::serial& p_console,
     const std::string_view p_ssid,
     const std::string_view p_password,
     const hal::esp8266::at::socket_config& p_config,
     const std::string_view p_ip,
     hal::timeout auto& p_timeout, 
-    const std::string_view p_url_extension,
-    std::span<hal::byte> p_buffer)
+    std::span<hal::byte> p_buffer,
+    std::string_view p_get_request)
   {
     esp8266_mission_control esp_mission_control = esp8266_mission_control(p_esp8266, p_console,
-    p_ssid, p_password, p_config, p_ip, p_url_extension, p_buffer);
+    p_ssid, p_password, p_config, p_ip, p_buffer, p_get_request);
     HAL_CHECK(esp_mission_control.establish_connection(p_timeout));
 
     return esp_mission_control;
@@ -39,59 +39,54 @@ private:
 
   esp8266_mission_control(hal::esp8266::at& p_esp8266,
     hal::serial& p_console,
-    hal::steady_clock* clock,
     const std::string_view p_ssid,
     const std::string_view p_password,
     const hal::esp8266::at::socket_config& p_config,
     const std::string_view p_ip,
-    const std::string_view p_url_extension,
-    std::span<hal::byte> p_buffer) : m_esp8266(&p_esp8266), m_console(p_console), 
-      m_ssid(p_ssid), m_password(p_password), m_config(p_config), m_ip(p_ip), m_url_extension(p_url_extension),
-      m_buffer(p_buffer)
+    std::span<hal::byte> p_buffer,
+    std::string_view p_get_request) : m_esp8266(p_esp8266), m_console(p_console), 
+      m_ssid(p_ssid), m_password(p_password), m_config(p_config), m_ip(p_ip),
+      m_buffer(p_buffer), m_get_request(p_get_request)
       {
       }
 
-  drive_commands impl_get_command(
+  hal::result<mc_commands> impl_get_command(
     hal::function_ref<hal::timeout_function> p_timeout) override
   {
+
+    using namespace std::literals;
+
+    auto http_header_parser = new_http_header_parser();
     bool write_error = false;
     bool header_finished = false;
     bool read_complete = true;
-    auto fill_content = hal::stream::fill(m_buffer)
+    auto fill_payload = hal::stream::fill(m_buffer);
     if (write_error) {
       hal::print(m_console, "Reconnecting...\n");
       // Wait 1s before attempting to reconnect
 
-      auto result = establish_connection(
-        m_esp8266, m_console, m_ssid, m_password, m_socket_config, m_ip, p_timeout);
+      auto result = establish_connection(p_timeout);
       if (!result) {
-        continue;
+        return m_commands;
       }
       write_error = false;
     }
 
     if (read_complete) {
-      // Minimalist GET request to example.com domain
-      static constexpr std::string_view get_request = "GET /" + m_url_extension + " HTTP/1.1\r\n"
-                                                      "Host: "+ m_config.domain +":"+ m_config.port +"\r\n"
-                                                      "\r\n";
-
-      hal::delay(p_counter, 50ms);
 
       // Send out HTTP GET request
-      auto status = m_esp8266.server_write(hal::as_bytes(get_request), p_timeout);
-
+      auto status = m_esp8266.server_write(hal::as_bytes(m_get_request), p_timeout);
       if (!status) {
-        hal::print(console, "\nFailed to write to server!\n");
+        hal::print(m_console, "\nFailed to write to server!\n");
         write_error = true;
-        continue;
+        return m_commands;
       }
 
       read_complete = false;
       header_finished = false;
     }
 
-    auto received = HAL_CHECK(m_esp8266.server_read(buffer)).data;
+    auto received = HAL_CHECK(m_esp8266.server_read(m_buffer)).data;
     auto remainder = received | http_header_parser.find_header_start |
                      http_header_parser.find_content_length |
                      http_header_parser.parse_content_length |
@@ -108,7 +103,7 @@ private:
       remainder | fill_payload;
       if (hal::finished(fill_payload.state())) {
 
-        m_commands = parse_commands();
+        m_commands = HAL_CHECK(parse_commands());
 
         read_complete = true;
         http_header_parser = new_http_header_parser();
@@ -119,14 +114,14 @@ private:
     return m_commands;
   }
 
-  m_commands parse_commands() {
+  hal::result<mc_commands> parse_commands() {
 
     auto result = to_string_view(m_buffer);
     auto start = result.find('{');
     auto end = result.find('}');
     auto response = result.substr(start, end - start + 1);
     static constexpr int expected_number_of_arguments = 6;
-    drive_commands commands;
+    mc_commands commands;
     response = response.substr(response.find('{'));
     int actual_arguments = sscanf(response.data(),
                                   kResponseBodyFormat,
@@ -137,11 +132,11 @@ private:
                                   &commands.speed,
                                   &commands.angle);
     if (actual_arguments != expected_number_of_arguments) {
-      hal::print<200>(terminal,
+      hal::print<200>(m_console,
                       "Received %d arguments, expected %d\n",
                       actual_arguments,
                       expected_number_of_arguments);
-      return hal::new_error(std::errc::invalid_argument);
+      return m_commands;
     }
     return commands;
   }
@@ -188,7 +183,7 @@ private:
           state = connection_state::set_ip_address;
           break;
         case connection_state::set_ip_address:
-          if (!p_ip.empty()) {
+          if (!m_ip.empty()) {
             hal::print(m_console, "Setting IP Address to: ");
             hal::print(m_console, m_ip);
             hal::print(m_console, " ...\n");
@@ -226,6 +221,14 @@ private:
     return hal::success();
   }
 
+  struct http_header_parser_t
+  {
+    hal::stream::find find_header_start;
+    hal::stream::find find_content_length;
+    hal::stream::parse<std::uint32_t> parse_content_length;
+    hal::stream::find find_end_of_header;
+  };
+
   http_header_parser_t new_http_header_parser()
   {
     using namespace std::literals;
@@ -239,14 +242,14 @@ private:
     };
   }
 
-  drive_commands m_commands{};
+  mc_commands m_commands{};
   hal::esp8266::at& m_esp8266;
   hal::serial& m_console;
   std::string_view m_ssid;
   std::string_view m_password;
-  hal::esp8266::at::socket_config& m_config;
+  const hal::esp8266::at::socket_config& m_config;
   std::string_view m_ip;
-  std::string_view m_url_extension;
-  std::span<hal::byte> m_buffer
+  std::span<hal::byte> m_buffer;
+  std::string_view m_get_request;
 };
 } 

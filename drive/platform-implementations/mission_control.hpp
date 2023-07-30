@@ -16,7 +16,6 @@ static constexpr char kGETRequestFormat[] =
   "drive?heartbeat_count=%d&is_operational=%d&wheel_orientation=%d&drive_mode=%"
   "c&speed=%d&angle=%d";
 
-}
 
 class mission_control
 {
@@ -52,17 +51,16 @@ class mission_control
    * commands have been received, then this should return the default
    * initialized command.
    */
-  drive_commands get_command(hal::function_ref<hal::timeout_function> p_timeout)
+  hal::result<mc_commands> get_command(hal::function_ref<hal::timeout_function> p_timeout)
   {
     return impl_get_command(p_timeout);
   }
 
-  virtual ~mission_control();
+  virtual ~mission_control() = default;
 
 private:
-
-  
-
-  virtual drive_commands impl_get_command(
+  virtual hal::result<mc_commands> impl_get_command(
     hal::function_ref<hal::timeout_function> p_timeout) = 0;
 };
+
+}

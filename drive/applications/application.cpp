@@ -49,7 +49,6 @@ hal::status application(application_framework& p_framework)
     HAL_CHECK(tri_wheel.move(arguments, clock));
 
     // TODO(#issue_number): Use time out timer
-    // TODO(#): Fix up parsing
   }
 
   return hal::success();
