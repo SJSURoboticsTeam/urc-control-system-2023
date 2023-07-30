@@ -22,6 +22,7 @@
 #include "../platform-implementations/mission_control.hpp"
 #include "../applications/application.hpp"
 #include "../platform-implementations/home.hpp"
+#include "../platform-implementations/offset_servo.hpp"
 
 namespace sjsu::drive {
 
@@ -82,34 +83,45 @@ hal::result<application_framework> initialize_platform()
   static auto back_leg_drc_motor = HAL_CHECK(hal::make_motor(back_leg_hub_drc, 100.0_rpm));
   static auto back_leg_drc_speed_sensor = HAL_CHECK(make_speed_sensor(back_leg_hub_drc));
 
+  const int number_of_legs = 3;
 
-  std::pair<hal::servo*, float> left_servo_offset(left_leg_drc_servo, 0.0f);
-  std::pair<hal::servo*, float> right_servo_offset(right_leg_drc_servo, 0.0f);
-  std::pair<hal::servo*, float> back_servo_offset(back_leg_drc_servo, 0.0f);
+  std::pair<std::shared_ptr<hal::servo>, float> left_servo_offset(&left_leg_drc_servo, 0.0f);
+  std::pair<std::shared_ptr<hal::servo>, float> right_servo_offset(&right_leg_drc_servo, 0.0f);
+  std::pair<std::shared_ptr<hal::servo>, float> back_servo_offset(&back_leg_drc_servo, 0.0f);
 
-  std::span<std::pair<hal::servo*, hal::lpc40::input_pin&>> servo_offsets(
-    left_servo_offset, right_servo_offset, back_servo_offset);
+  std::array<std::pair<std::shared_ptr<hal::servo>, float>, number_of_legs> servo_offsets = {
+        left_servo_offset, right_servo_offset, back_servo_offset
+    };
 
-  std:pair<<hal::input_pin*, bool> left_mag_home(left_leg_mag, false);
-  std:pair<<hal::input_pin*, bool> right_mag_home(left_leg_mag, false);
-  std:pair<<hal::input_pin*, bool> back_mag_home(left_leg_mag, false);
+  std::span<std::pair<std::shared_ptr<hal::servo>, float>> servo_offsets_span(servo_offsets);
+
+  std::pair<std::shared_ptr<hal::input_pin>, bool> left_mag_home(&left_leg_mag, false);
+  std::pair<std::shared_ptr<hal::input_pin>, bool> right_mag_home(&right_leg_mag, false);
+  std::pair<std::shared_ptr<hal::input_pin>, bool> back_mag_home(&back_leg_mag, false);
+
+    std::array<std::pair<std::shared_ptr<hal::input_pin>, bool>, number_of_legs> magnets_home = {
+        left_mag_home, right_mag_home, back_mag_home
+    };
   
-  std::span<std::pair<hal::lpc40::input_pin, bool>> magnets_home(left_mag_home, right_mag_home, back_mag_home);
+  std::span<std::pair<std::shared_ptr<hal::input_pin>, bool>> magnets_home_span(magnets_home);
 
-  HAL_CHECK(home(servo_offsets, magnets_home, counter));
+  HAL_CHECK(home(servo_offsets_span, magnets_home, counter));
 
-  static auto left_leg_drc_offset_servo = HAL_CHECK(offset_servo::create())
-  leg left_leg{.steer = &left_leg_drc_servo, 
+  static auto left_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(left_leg_drc_servo, servo_offsets[0].second));
+  static auto right_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(right_leg_drc_servo, servo_offsets[1].second));
+  static auto back_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(back_leg_drc_servo, servo_offsets[2].second));
+
+  leg left_leg{.steer = &left_leg_drc_offset_servo, 
               .propulsion = &left_leg_drc_motor,
               .spd_sensor = &left_leg_drc_speed_sensor,
               };
 
-  leg right_leg{.steer = &right_leg_drc_servo, 
+  leg right_leg{.steer = &right_leg_drc_offset_servo, 
               .propulsion = &right_leg_drc_motor,
               .spd_sensor = &right_leg_drc_speed_sensor,
               };
 
-  leg back_leg{.steer = &back_leg_drc_servo, 
+  leg back_leg{.steer = &back_leg_drc_offset_servo, 
               .propulsion = &back_leg_drc_motor,
               .spd_sensor = &back_leg_drc_speed_sensor,
               };
