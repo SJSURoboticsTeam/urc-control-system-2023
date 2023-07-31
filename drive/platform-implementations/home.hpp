@@ -7,26 +7,24 @@
 #include <libhal-util/units.hpp>
 #include "offset_servo.hpp"
 
-
 namespace sjsu::drive
 {
+struct homing {
+  offset_servo* servo;
+  hal::input_pin* magnet;
+  bool homed = false;
+};
 
 // this function will return offsets in the same order of servos passed in
-inline hal::status home(std::span<offset_servo*> p_servos,
-                                        std::span<input_pin_homed> p_magnets,
-                                        hal::steady_clock& p_counter) {
+inline hal::status home(std::span<homing*> p_homing_structs,
+                        hal::steady_clock& p_counter) {
 
     using namespace std::chrono_literals;
     using namespace hal::literals;
 
-    // if the sizes are not the same then return an error
-    if (p_servos.size() != p_magnets.size()) {
-        return hal::success();
-    }
-
     bool going_to_60 = false;
-    for (int i = 0; i < p_servos.size(); i++) {
-        HAL_CHECK(p_servos[i]->position(0.0_deg));
+    for (int i = 0; i < p_homing_structs.size(); i++) {
+        HAL_CHECK(p_homing_structs[i]->servo->position(0.0_deg));
         hal::delay(p_counter, 10ms);
     }
 
@@ -34,10 +32,10 @@ inline hal::status home(std::span<offset_servo*> p_servos,
     hal::delay(p_counter, 6s);
 
     // move them if 0 was home position due to inaccuracy
-    for (int i = 0; i < p_servos.size(); i++) {
-        if (!(HAL_CHECK(p_magnets[i].magnet->level()).state)) {
-            p_servos[i]->m_offset = 60;
-            HAL_CHECK(p_servos[i]->position(60.0_deg));
+    for (int i = 0; i < p_homing_structs.size(); i++) {
+        if (!(HAL_CHECK(p_homing_structs[i]->magnet->level()).state)) {
+            p_homing_structs[i]->servo->set_offset(60.0_deg);
+            HAL_CHECK(p_homing_structs[i]->servo->position(60.0_deg));
             going_to_60 = true;
         }
     }
@@ -48,21 +46,22 @@ inline hal::status home(std::span<offset_servo*> p_servos,
     }
 
     int number_of_legs_homed = 0;
-    while (number_of_legs_homed != p_servos.size()) {
+    while (number_of_legs_homed != p_homing_structs.size()) {
 
-        for (int i = 0; i < p_servos.size(); i++) {
+        for (int i = 0; i < p_homing_structs.size(); i++) {
 
-            if(!p_magnets[i].homed) {
+            if(!p_homing_structs[i]->homed) {
 
-                p_magnets[i].homed = !(HAL_CHECK(p_magnets[i].magnet->level()).state);
+                p_homing_structs[i]->homed = !(HAL_CHECK(p_homing_structs[i]->magnet->level()).state);
                 hal::delay(p_counter, 10ms);
 
-                if (p_magnets[i].homed) {
+                if (p_homing_structs[i]->homed) {
                     number_of_legs_homed++;
                     continue;
                 } 
-                p_servos[i]->m_offset++;
-                HAL_CHECK(p_servos[i]->position(hal::degrees(p_servos[i]->m_offset)));
+                auto new_offset = p_homing_structs[i]->servo->get_offset() + 1.0_deg;
+                p_homing_structs[i]->servo->set_offset(new_offset);
+                HAL_CHECK(p_homing_structs[i]->servo->position(hal::degrees(new_offset)));
             }
             hal::delay(p_counter, 100ms);
         }

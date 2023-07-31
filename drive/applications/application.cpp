@@ -34,8 +34,6 @@ hal::status application(application_framework& p_framework)
   sjsu::drive::command_lerper lerp;
 
   hal::delay(clock, 1000ms);
-  // tri_wheel.home(clock);
-  hal::delay(clock, 1000ms);
   HAL_CHECK(hal::write(terminal, "Starting control loop..."));
 
   while (true) {

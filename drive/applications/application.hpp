@@ -8,13 +8,9 @@
 #include <libhal/input_pin.hpp>
 #include "../platform-implementations/speed_sensor.hpp"
 #include "../platform-implementations/mission_control.hpp"
+#include "../platform-implementations/offset_servo.hpp"
 
 namespace sjsu::drive {
-
-struct input_pin_homed {
-  hal::input_pin* magnet;
-  bool homed;
-};
 
 struct leg {
   hal::servo* steer;
