@@ -83,6 +83,7 @@ hal::result<application_framework> initialize_platform()
   static auto right_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(right_leg_drc_servo, 0.0f));
   auto right_home = homing{&right_leg_drc_offset_servo, &right_leg_mag, false};
 
+
   // back leg
   static auto back_leg_steer_drc = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 8.0, 0x145));
   static auto back_leg_drc_servo = HAL_CHECK(hal::make_servo(back_leg_steer_drc, 10.0_rpm));
@@ -106,7 +107,7 @@ hal::result<application_framework> initialize_platform()
   // static auto extra_leg_drc_speed_sensor = HAL_CHECK(make_speed_sensor(extra_leg_hub_drc));
   
   // static auto extra_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(extra_leg_drc_servo, 0.0f));
-  // auto extra_home = homing{&extra_leg_drc_offset_servo, extra_leg_mag, false};
+  // auto extra_home = homing{&extra_leg_drc_offset_servo, &extra_leg_mag, false};
 
   const size_t number_of_legs = 3;
 
@@ -143,7 +144,7 @@ hal::result<application_framework> initialize_platform()
     left_leg, 
     right_leg, 
     back_leg,
-    // extra_leg
+    // extra_leg,
   };
 
   // mission control object
