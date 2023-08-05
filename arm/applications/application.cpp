@@ -1,51 +1,56 @@
 #include <libhal-util/serial.hpp>
 #include <libhal/steady_clock.hpp>
+#include <libhal-util/steady_clock.hpp>
+
+#include "../implementations/joint_router.hpp"
+#include "../implementations/speed_control.hpp"
+#include "../implementations/rules_engine.hpp"
+
 
 #include "application.hpp"
 
-hal::status application(application_framework& p_framework)
+namespace sjsu::arm {
+
+hal::status application(sjsu::arm::application_framework& p_framework)
 {
 
   using namespace std::chrono_literals;
   using namespace hal::literals;
 
   auto& terminal = *p_framework.terminal;
-  auto& clock = *p_framework.steady_clock;
-  auto& rotunda_servo = *rotunda_servo;
-  auto& shoulder_servo = *shoulder_servo;
-  auto& elbow_servo = *elbow_servo;
-  auto& left_wrist_servo = *left_wrist_servo;
-  auto& right_wrist_servo = *right_wrist_servo;
-  auto& end_effector = *end_effector;
+  auto& clock = *p_framework.clock;
+  auto& rotunda_servo = *p_framework.rotunda_servo;
+  auto& shoulder_servo = *p_framework.shoulder_servo;
+  auto& elbow_servo = *p_framework.elbow_servo;
+  auto& left_wrist_servo = *p_framework.left_wrist_servo;
+  auto& right_wrist_servo = *p_framework.right_wrist_servo;
+  // auto& end_effector = *p_framework.end_effector;
 
   // mission control init should go here, if anything is needed
   
   std::string_view json;
 
-  sjsu::arm::joint_router arm(rotunda_servo,
+  joint_router arm(rotunda_servo,
                         shoulder_servo,
                         elbow_servo,
                         left_wrist_servo,
-                        right_wrist_servo,
-                        end_effector);
+                        right_wrist_servo);
 
-  sjsu::arm::mc_commands commands;
-  sjsu::arm::motors_feedback feedback;
-  sjsu::arm::speed_control speed_control;
+  mission_control::mc_commands commands;
+  speed_control speed_control;
 
   HAL_CHECK(hal::write(terminal, "Starting control loop..."));
-  HAL_CHECK(hal::delay(clock, 1000ms));
+  hal::delay(clock, 1000ms);
 
   while (true) {
 
-    commands = sjsu::arm::validate_commands(commands);
+    commands = validate_commands(commands);
 
-    commands = speed_control.lerp(commands)
-
-    commands.print(terminal);
+    commands = speed_control.lerp(commands);
 
     arm.move(commands);
   }
 
   return hal::success();
+}
 }

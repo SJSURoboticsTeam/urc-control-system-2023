@@ -43,14 +43,14 @@ hal::status application(sjsu::hardware_map& p_map)
   HAL_CHECK(hal::write(terminal, "Starting program...\n"));
   auto wifi_result = hal::esp8266::at::wlan_client::create(
     esp,
-    "SJSU Robotics 2.4GHz",
+    "TP-Link_FC30",
     "R0Bot1cs3250",
     hal::create_timeout(clock, 10s).value()); 
 
   while (!wifi_result) {
     wifi_result = hal::esp8266::at::wlan_client::create(
       esp,
-      "SJSU Robotics 2.4GHz",
+      "TP-Link_FC30",
       "R0Bot1cs3250",
       hal::create_timeout(clock, 10s).value());
       if (!wifi_result) {
@@ -66,7 +66,7 @@ hal::status application(sjsu::hardware_map& p_map)
     HAL_CHECK(hal::create_timeout(clock, 1s)), 
     {
       .type = hal::socket::type::tcp,
-      .domain = "13.56.207.97",
+      .domain = "192.168.0.150",
       .port = "5000",
     });
     // this is for the web server hosted by nate: http://13.56.207.97:5000/drive
@@ -114,7 +114,7 @@ hal::status application(sjsu::hardware_map& p_map)
   while (true) {
     buffer.fill('.');
     get_request = "GET /drive HTTP/1.1\r\n"
-                  "Host: 13.56.207.97:5000/\r\n"
+                  "Host: 192.168.0.150:5000/\r\n"
                   "\r\n";
 
     auto write_result = socket.write(

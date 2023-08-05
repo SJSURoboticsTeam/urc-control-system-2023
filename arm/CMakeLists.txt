@@ -14,6 +14,7 @@ endif()
 find_package(libhal-${platform_library} REQUIRED CONFIG)
 find_package(libhal-util REQUIRED CONFIG)
 find_package(libhal-rmd REQUIRED CONFIG)
+find_package(libhal-soft REQUIRED CONFIG)
 
 add_executable(${PROJECT_NAME}
     main.cpp
@@ -24,6 +25,7 @@ target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 target_link_libraries(${PROJECT_NAME} PRIVATE
     libhal::${platform_library}
     libhal::util
-    libhal::rmd)
+    libhal::rmd
+    libhal::soft)
 
 libhal_post_build(${PROJECT_NAME})

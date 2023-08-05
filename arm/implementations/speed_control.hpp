@@ -1,13 +1,13 @@
 #pragma once
 
-#include "../dto/arm_dto.hpp"
+#include "../applications/mission_control.hpp"
 
 namespace sjsu::arm {
 
 class speed_control {
     public:
    
-    mc_commands lerp(mc_commands p_commands_to_set) {
+   mission_control::mc_commands lerp(mission_control::mc_commands p_commands_to_set) {
         
         float lerp_constant = .01f;
 
@@ -42,10 +42,10 @@ class speed_control {
                         p_commands_to_set.speed * lerp_constant);
 
         // lerping end effector
-        p_commands_to_set.end_effector_angle = 
-                std::lerp(m_current_settings.end_effector_angle, 
-                        p_commands_to_set.end_effector_angle, 
-                        p_commands_to_set.speed * lerp_constant);
+        // p_commands_to_set.end_effector_angle = 
+        //         std::lerp(m_current_settings.end_effector_angle, 
+        //                 p_commands_to_set.end_effector_angle, 
+        //                 p_commands_to_set.speed * lerp_constant);
 
         // set this to the current value to allow for lerping to the next step
         m_current_settings = p_commands_to_set;
@@ -53,7 +53,7 @@ class speed_control {
     }
 
     private:
-    mc_commands m_current_settings;
-}
+    mission_control::mc_commands m_current_settings;
+};
 
 }

@@ -27,17 +27,17 @@ int main()
   // Step 1. Call the processor initializer. Setups processor to run
   // applications such as turning on a coprocessor, or copying memory from
   // storage to memory.
-  if (!initialize_processor()) {
+  if (!sjsu::arm::initialize_processor()) {
     hal::halt();
   }
 
-  auto application_resource = initialize_platform();
+  auto application_resource = sjsu::arm::initialize_platform();
 
   if (!application_resource) {
     hal::halt();
   }
 
-  auto is_finished = application(application_resource.value);
+  auto is_finished = sjsu::arm::application(application_resource.value());
   // do error handling here
 
   if (!is_finished) {

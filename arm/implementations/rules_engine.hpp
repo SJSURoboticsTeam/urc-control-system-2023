@@ -1,8 +1,7 @@
 #pragma once
 
-#include "../dto/arm_dto.hpp"
-
-namespace arm {
+#include "../applications/mission_control.hpp"
+namespace sjsu::arm {
 // static constexpr int kMaxSpeed = 20;
 // static constexpr int kMinShoulderAngle = 0;
 // static constexpr int kMaxShoulderAngle = 90;
@@ -11,7 +10,7 @@ namespace arm {
 // static constexpr int kMinWristPitchAngle = -90;
 // static constexpr int kMaxWristPitchAngle = 90;
 
-inline mc_commands validate_commands(mc_commands commands)
+inline mission_control::mc_commands validate_commands(mission_control::mc_commands commands)
 {
 
   if (commands.speed < 1 || commands.speed > 5) {
