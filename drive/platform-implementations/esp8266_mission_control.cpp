@@ -55,12 +55,14 @@ private:
   {
 
     using namespace std::literals;
-
+    hal::print(*m_console, "inside imp comm\n");
     auto http_header_parser = new_http_header_parser();
     bool write_error = false;
     bool header_finished = false;
     bool read_complete = true;
     auto fill_payload = hal::stream::fill(m_buffer);
+    hal::print(*m_console, "after initial stuff\n");
+
     if (write_error) {
       hal::print(*m_console, "Reconnecting...\n");
       // Wait 1s before attempting to reconnect
@@ -71,11 +73,14 @@ private:
       }
       write_error = false;
     }
+    hal::print(*m_console, "after write error\n");
 
     if (read_complete) {
 
       // Send out HTTP GET request
       auto status = m_esp8266->server_write(hal::as_bytes(m_get_request), p_timeout);
+      hal::print(*m_console, "got status\n");
+
       if (!status) {
         hal::print(*m_console, "\nFailed to write to server!\n");
         write_error = true;
@@ -85,19 +90,22 @@ private:
       read_complete = false;
       header_finished = false;
     }
+    hal::print(*m_console, "after read complete\n");
 
     auto received = HAL_CHECK(m_esp8266->server_read(m_buffer)).data;
     auto remainder = received | http_header_parser.find_header_start |
                      http_header_parser.find_content_length |
                      http_header_parser.parse_content_length |
                      http_header_parser.find_end_of_header;
-    
+    hal::print(*m_console, "after received\n");
+
     if (!header_finished &&
         hal::finished(http_header_parser.find_end_of_header)) {
       auto content_length = http_header_parser.parse_content_length.value();
       fill_payload = hal::stream::fill(m_buffer, content_length);
       header_finished = true;
     }
+    hal::print(*m_console, "after header finished\n");
 
     if (header_finished && hal::in_progress(fill_payload)) {
       remainder | fill_payload;

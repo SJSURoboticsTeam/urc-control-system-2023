@@ -35,11 +35,12 @@ hal::status application(application_framework& p_framework)
 
   hal::delay(clock, 1000ms);
   HAL_CHECK(hal::write(terminal, "Starting control loop..."));
-  auto timeout = hal::create_timeout(clock, 500ms);
 
-  commands = HAL_CHECK(mission_control.get_command(timeout));
   while (true) {
     // hal::print(terminal, "validating commands\n");
+    auto timeout = hal::create_timeout(clock, 10s);
+
+    commands = HAL_CHECK(mission_control.get_command(timeout));
     commands = sjsu::drive::validate_commands(commands);
     // hal::print(terminal, "switching steer modes\n");
     commands = mode_switcher.switch_steer_mode(

@@ -174,7 +174,7 @@ hal::result<application_framework> initialize_platform()
                                 "\r\n";
 
   HAL_CHECK(hal::write(uart0, "created get request\n"));
-  std::array<hal::byte, 256> buffer{};
+  std::array<hal::byte, 1024> buffer{};
   HAL_CHECK(hal::write(uart0, "created buffer\n"));
   auto timeout = hal::create_timeout(counter, 10s);
   HAL_CHECK(hal::write(uart0, "created timeout\n"));
