@@ -91,7 +91,7 @@ private:
                      http_header_parser.find_content_length |
                      http_header_parser.parse_content_length |
                      http_header_parser.find_end_of_header;
-
+    
     if (!header_finished &&
         hal::finished(http_header_parser.find_end_of_header)) {
       auto content_length = http_header_parser.parse_content_length.value();
@@ -101,10 +101,11 @@ private:
 
     if (header_finished && hal::in_progress(fill_payload)) {
       remainder | fill_payload;
+      hal::print(*m_console, "header finished and fill payload in progress\n");
       if (hal::finished(fill_payload.state())) {
-
+        hal::print(*m_console, "fill payload finished\n");
         m_commands = HAL_CHECK(parse_commands());
-
+        hal::print(*m_console, "finished parsing comamnds\n");
         read_complete = true;
         http_header_parser = new_http_header_parser();
         fill_payload = hal::stream::fill(m_buffer);
@@ -117,6 +118,7 @@ private:
   hal::result<mc_commands> parse_commands() {
 
     auto result = to_string_view(m_buffer);
+
     auto start = result.find('{');
     auto end = result.find('}');
     auto response = result.substr(start, end - start + 1);
@@ -136,8 +138,18 @@ private:
                       "Received %d arguments, expected %d\n",
                       actual_arguments,
                       expected_number_of_arguments);
+      
       return m_commands;
     }
+    hal::print<200>(*m_console,
+                      "HB: %d\t, IO %d\t, WO: %d\t, DM: %c\t, Speed: %d\n, Angle: %d\n",
+                      commands.heartbeat_count,
+                      commands.is_operational,
+                      commands.wheel_orientation,
+                      commands.mode,
+                      commands.speed,
+                      commands.angle
+                      );
     return commands;
   }
 

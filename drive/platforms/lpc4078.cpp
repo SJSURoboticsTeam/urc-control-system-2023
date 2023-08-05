@@ -119,7 +119,7 @@ hal::result<application_framework> initialize_platform()
         // &extra_home,
     };
   HAL_CHECK(hal::write(uart0, "entering homing loop\n"));
-  HAL_CHECK(home(homing_structs, counter, &uart0));
+  //HAL_CHECK(home(homing_structs, counter, &uart0));
   HAL_CHECK(hal::write(uart0, "homing finished\n"));
 
   leg left_leg{.steer = &left_leg_drc_offset_servo, 
@@ -158,25 +158,25 @@ hal::result<application_framework> initialize_platform()
       .baud_rate = 115200,
     })));
 
-  constexpr std::string_view ssid = "SJSU Robotics 2.4GHz";
+  constexpr std::string_view ssid = "SJSU Robotics 2.4GHz"; //change to wifi name that you are using
   constexpr std::string_view password = "R0Bot1cs3250";
 
   // still need to decide what we want the static IP to be
   constexpr std::string_view ip = "";
   constexpr auto socket_config = hal::esp8266::at::socket_config{
     .type = hal::esp8266::at::socket_type::tcp,
-    .domain = "192.168.0.150",
+    .domain = "13.56.207.97",
     .port = 5000,
   };
   HAL_CHECK(hal::write(uart0, "created Socket\n"));
   std::string_view get_request = "GET /drive HTTP/1.1\r\n"
-                                "Host: 192.168.0.150:5000\r\n"
+                                "Host: 13.56.207.97:5000\r\n"
                                 "\r\n";
 
   HAL_CHECK(hal::write(uart0, "created get request\n"));
   std::array<hal::byte, 256> buffer{};
   HAL_CHECK(hal::write(uart0, "created buffer\n"));
-  auto timeout = hal::create_timeout(counter, 40s);
+  auto timeout = hal::create_timeout(counter, 10s);
   HAL_CHECK(hal::write(uart0, "created timeout\n"));
   auto esp8266 = HAL_CHECK(hal::esp8266::at::create(uart1, timeout));
   HAL_CHECK(hal::write(uart0, "created esp\n"));
