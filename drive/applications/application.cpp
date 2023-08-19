@@ -37,24 +37,16 @@ hal::status application(application_framework& p_framework)
   HAL_CHECK(hal::write(terminal, "Starting control loop..."));
 
   while (true) {
-    // hal::print(terminal, "validating commands\n");
     auto timeout = hal::create_timeout(clock, 10s);
 
-    commands = HAL_CHECK(mission_control.get_command(timeout));
+    commands = mission_control.get_command(timeout).value();
     commands = sjsu::drive::validate_commands(commands);
-    // hal::print(terminal, "switching steer modes\n");
     commands = mode_switcher.switch_steer_mode(
       commands, arguments, motor_speeds, terminal);
-    // hal::print(terminal, "Lerping commands\n");
     commands.speed = lerp.lerp(commands.speed);
 
-// hal::print(terminal, "selecting modes\n");
-    // commands.print();
     arguments = sjsu::drive::select_mode(commands);
-    // hal::print(terminal, "Moving legs\n");
     HAL_CHECK(tri_wheel.move(arguments, clock));
-
-    // TODO(#issue_number): Use time out timer
   }
 
   return hal::success();

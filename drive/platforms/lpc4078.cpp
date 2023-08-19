@@ -23,6 +23,7 @@
 #include "../applications/application.hpp"
 #include "../platform-implementations/home.hpp"
 #include "../platform-implementations/offset_servo.hpp"
+#include "../platform-implementations/helper.hpp"
 
 namespace sjsu::drive {
 
@@ -158,36 +159,48 @@ hal::result<application_framework> initialize_platform()
       .baud_rate = 115200,
     })));
 
-  constexpr std::string_view ssid = "SJSU Robotics 2.4GHz"; //change to wifi name that you are using
-  constexpr std::string_view password = "R0Bot1cs3250";
+  static constexpr std::string_view ssid = "TP-Link_FC30"; //change to wifi name that you are using
+  static constexpr std::string_view password = "R0Bot1cs3250";
 
   // still need to decide what we want the static IP to be
-  constexpr std::string_view ip = "";
+  static constexpr std::string_view ip = "";
   constexpr auto socket_config = hal::esp8266::at::socket_config{
     .type = hal::esp8266::at::socket_type::tcp,
-    .domain = "13.56.207.97",
+    .domain = "192.168.0.211",
     .port = 5000,
   };
   HAL_CHECK(hal::write(uart0, "created Socket\n"));
-  std::string_view get_request = "GET /drive HTTP/1.1\r\n"
-                                "Host: 13.56.207.97:5000\r\n"
+  static constexpr std::string_view get_request = "GET /drive HTTP/1.1\r\n"
+                                "Host: 192.168.0.211:5000\r\n"
                                 "\r\n";
 
   HAL_CHECK(hal::write(uart0, "created get request\n"));
-  std::array<hal::byte, 1024> buffer{};
+  static std::array<hal::byte, 1024> buffer{};
   HAL_CHECK(hal::write(uart0, "created buffer\n"));
+
+  static auto helper = serial_mirror(uart1, uart0);
+
   auto timeout = hal::create_timeout(counter, 10s);
   HAL_CHECK(hal::write(uart0, "created timeout\n"));
-  auto esp8266 = HAL_CHECK(hal::esp8266::at::create(uart1, timeout));
+  auto esp8266 = HAL_CHECK(hal::esp8266::at::create(helper, timeout));
   HAL_CHECK(hal::write(uart0, "created esp\n"));
-  static auto esp_mission_control = HAL_CHECK(sjsu::drive::esp8266_mission_control::create(esp8266, 
+  auto mc_timeout = hal::create_timeout(counter, 10s);
+  static auto esp_mission_control = sjsu::drive::esp8266_mission_control::create(esp8266, 
                                   uart0, ssid, password, socket_config, 
-                                  ip, timeout, buffer, get_request));
+                                  ip, mc_timeout, buffer, get_request);
+  while(esp_mission_control.has_error()) {
+    hal::print(uart0, "retrying mission control creation\n");
+    mc_timeout = hal::create_timeout(counter, 30s);
+    esp_mission_control = sjsu::drive::esp8266_mission_control::create(esp8266, 
+                                    uart0, ssid, password, socket_config, 
+                                    ip, mc_timeout, buffer, get_request);
+  }
+
   HAL_CHECK(hal::write(uart0, "Created mission control"));
-HAL_CHECK(hal::write(uart0, "Finished making application framework"));
+  HAL_CHECK(hal::write(uart0, "Finished making application framework"));
   return application_framework{.legs = legs,
 
-                              .mc = &esp_mission_control,
+                              .mc = &esp_mission_control.value(),
                               
                               .terminal = &uart0,
                               .clock = &counter,

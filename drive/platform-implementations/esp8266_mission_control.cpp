@@ -46,7 +46,8 @@ private:
     std::span<hal::byte> p_buffer,
     std::string_view p_get_request) : m_esp8266(&p_esp8266), m_console(&p_console), 
       m_ssid(p_ssid), m_password(p_password), m_config(p_config), m_ip(p_ip),
-      m_buffer(p_buffer), m_get_request(p_get_request)
+      m_buffer(p_buffer), m_get_request(p_get_request), m_fill_payload(hal::stream::fill(m_buffer)),
+      m_http_header_parser(new_http_header_parser())
       {
       }
 
@@ -56,14 +57,8 @@ private:
 
     using namespace std::literals;
     hal::print(*m_console, "inside imp comm\n");
-    auto http_header_parser = new_http_header_parser();
-    bool write_error = false;
-    bool header_finished = false;
-    bool read_complete = true;
-    auto fill_payload = hal::stream::fill(m_buffer);
-    hal::print(*m_console, "after initial stuff\n");
 
-    if (write_error) {
+    if (m_write_error) {
       hal::print(*m_console, "Reconnecting...\n");
       // Wait 1s before attempting to reconnect
 
@@ -71,52 +66,56 @@ private:
       if (!result) {
         return m_commands;
       }
-      write_error = false;
+      m_write_error = false;
     }
     hal::print(*m_console, "after write error\n");
 
-    if (read_complete) {
+    if (m_read_complete) {
 
       // Send out HTTP GET request
+      
+      hal::write(*m_console, hal::as_bytes(m_get_request));
       auto status = m_esp8266->server_write(hal::as_bytes(m_get_request), p_timeout);
+
       hal::print(*m_console, "got status\n");
 
       if (!status) {
         hal::print(*m_console, "\nFailed to write to server!\n");
-        write_error = true;
+        hal::print(*m_console, m_get_request);
+        m_write_error = true;
         return m_commands;
       }
 
-      read_complete = false;
-      header_finished = false;
+      m_read_complete = false;
+      m_header_finished = false;
     }
     hal::print(*m_console, "after read complete\n");
 
     auto received = HAL_CHECK(m_esp8266->server_read(m_buffer)).data;
-    auto remainder = received | http_header_parser.find_header_start |
-                     http_header_parser.find_content_length |
-                     http_header_parser.parse_content_length |
-                     http_header_parser.find_end_of_header;
+    auto remainder = received | m_http_header_parser.find_header_start |
+                     m_http_header_parser.find_content_length |
+                     m_http_header_parser.parse_content_length |
+                     m_http_header_parser.find_end_of_header;
     hal::print(*m_console, "after received\n");
 
-    if (!header_finished &&
-        hal::finished(http_header_parser.find_end_of_header)) {
-      auto content_length = http_header_parser.parse_content_length.value();
-      fill_payload = hal::stream::fill(m_buffer, content_length);
-      header_finished = true;
+    if (!m_header_finished &&
+        hal::finished(m_http_header_parser.find_end_of_header)) {
+      auto content_length = m_http_header_parser.parse_content_length.value();
+      m_fill_payload = hal::stream::fill(m_buffer, content_length);
+      m_header_finished = true;
     }
     hal::print(*m_console, "after header finished\n");
 
-    if (header_finished && hal::in_progress(fill_payload)) {
-      remainder | fill_payload;
+    if (m_header_finished && hal::in_progress(m_fill_payload)) {
+      remainder | m_fill_payload;
       hal::print(*m_console, "header finished and fill payload in progress\n");
-      if (hal::finished(fill_payload.state())) {
+      if (hal::finished(m_fill_payload.state())) {
         hal::print(*m_console, "fill payload finished\n");
         m_commands = HAL_CHECK(parse_commands());
         hal::print(*m_console, "finished parsing comamnds\n");
-        read_complete = true;
-        http_header_parser = new_http_header_parser();
-        fill_payload = hal::stream::fill(m_buffer);
+        m_read_complete = true;
+        m_http_header_parser = new_http_header_parser();
+        m_fill_payload = hal::stream::fill(m_buffer);
       }
     }
 
@@ -274,5 +273,10 @@ private:
   std::string_view m_ip;
   std::span<hal::byte> m_buffer;
   std::string_view m_get_request;
+  http_header_parser_t m_http_header_parser;
+  bool m_write_error = false;
+  bool m_header_finished = false;
+  bool m_read_complete = true;
+  hal::stream::fill m_fill_payload;
 };
 } 
