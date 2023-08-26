@@ -70,7 +70,7 @@ hal::result<application_framework> initialize_platform()
   static auto left_leg_drc_speed_sensor = HAL_CHECK(make_speed_sensor(left_leg_hub_drc));
   
   static auto left_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(left_leg_drc_servo, 0.0f));
-  auto left_home = homing{&left_leg_drc_offset_servo, &left_leg_mag, false};
+  static auto left_home = homing{&left_leg_drc_offset_servo, &left_leg_mag, false};
 
   HAL_CHECK(hal::write(uart0, "created left leg\n"));
   // right leg
@@ -83,7 +83,7 @@ hal::result<application_framework> initialize_platform()
   static auto right_leg_drc_speed_sensor = HAL_CHECK(make_speed_sensor(right_leg_hub_drc));
 
   static auto right_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(right_leg_drc_servo, 0.0f));
-  auto right_home = homing{&right_leg_drc_offset_servo, &right_leg_mag, false};
+  static auto right_home = homing{&right_leg_drc_offset_servo, &right_leg_mag, false};
   HAL_CHECK(hal::write(uart0, "created right leg\n"));
 
   // back leg
@@ -96,7 +96,7 @@ hal::result<application_framework> initialize_platform()
   static auto back_leg_drc_speed_sensor = HAL_CHECK(make_speed_sensor(back_leg_hub_drc));
 
   static auto back_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(back_leg_drc_servo, 0.0f));
-  auto back_home = homing{&back_leg_drc_offset_servo, &back_leg_mag, false};
+  static auto back_home = homing{&back_leg_drc_offset_servo, &back_leg_mag, false};
 
   HAL_CHECK(hal::write(uart0, "created back leg\n"));
   // extra leg
@@ -109,11 +109,11 @@ hal::result<application_framework> initialize_platform()
   // static auto extra_leg_drc_speed_sensor = HAL_CHECK(make_speed_sensor(extra_leg_hub_drc));
   
   // static auto extra_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(extra_leg_drc_servo, 0.0f));
-  // auto extra_home = homing{&extra_leg_drc_offset_servo, &extra_leg_mag, false};
+  // static auto extra_home = homing{&extra_leg_drc_offset_servo, &extra_leg_mag, false};
 
   const size_t number_of_legs = 3;
 
-  std::array<homing*, number_of_legs> homing_structs = {
+  static std::array<homing*, number_of_legs> homing_structs = {
         &left_home,
         &right_home,
         &back_home,
@@ -123,27 +123,27 @@ hal::result<application_framework> initialize_platform()
   //HAL_CHECK(home(homing_structs, counter, &uart0));
   HAL_CHECK(hal::write(uart0, "homing finished\n"));
 
-  leg left_leg{.steer = &left_leg_drc_offset_servo, 
+  static leg left_leg{.steer = &left_leg_drc_offset_servo, 
               .propulsion = &left_leg_drc_motor,
               .spd_sensor = &left_leg_drc_speed_sensor,
               };
 
-  leg right_leg{.steer = &right_leg_drc_offset_servo, 
+  static leg right_leg{.steer = &right_leg_drc_offset_servo, 
               .propulsion = &right_leg_drc_motor,
               .spd_sensor = &right_leg_drc_speed_sensor,
               };
 
-  leg back_leg{.steer = &back_leg_drc_offset_servo, 
+  static leg back_leg{.steer = &back_leg_drc_offset_servo, 
               .propulsion = &back_leg_drc_motor,
               .spd_sensor = &back_leg_drc_speed_sensor,
               };
   HAL_CHECK(hal::write(uart0, "Legs init'd"));
-  // leg extra_leg{.steer = &extra_leg_drc_offset_servo, 
+  // static leg extra_leg{.steer = &extra_leg_drc_offset_servo, 
   //             .propulsion = &extra_leg_drc_motor,
   //             .spd_sensor = &extra_leg_drc_speed_sensor,
   //             };
 
-  std::array<leg, number_of_legs> legs = {
+  static std::array<leg, number_of_legs> legs = {
     left_leg, 
     right_leg, 
     back_leg,
@@ -174,6 +174,8 @@ hal::result<application_framework> initialize_platform()
                                 "Host: 192.168.0.211:5000\r\n"
                                 "\r\n";
 
+// static constexpr std::string_view get_request = "g";
+
   HAL_CHECK(hal::write(uart0, "created get request\n"));
   static std::array<hal::byte, 1024> buffer{};
   HAL_CHECK(hal::write(uart0, "created buffer\n"));
@@ -182,10 +184,10 @@ hal::result<application_framework> initialize_platform()
 
   auto timeout = hal::create_timeout(counter, 10s);
   HAL_CHECK(hal::write(uart0, "created timeout\n"));
-  auto esp8266 = HAL_CHECK(hal::esp8266::at::create(helper, timeout));
+  static auto esp8266 = HAL_CHECK(hal::esp8266::at::create(helper, timeout));
   HAL_CHECK(hal::write(uart0, "created esp\n"));
   auto mc_timeout = hal::create_timeout(counter, 10s);
-  static auto esp_mission_control = sjsu::drive::esp8266_mission_control::create(esp8266, 
+  auto esp_mission_control = sjsu::drive::esp8266_mission_control::create(esp8266, 
                                   uart0, ssid, password, socket_config, 
                                   ip, mc_timeout, buffer, get_request);
   while(esp_mission_control.has_error()) {
@@ -195,12 +197,13 @@ hal::result<application_framework> initialize_platform()
                                     uart0, ssid, password, socket_config, 
                                     ip, mc_timeout, buffer, get_request);
   }
+  static auto drive_mission_control = esp_mission_control.value();
 
   HAL_CHECK(hal::write(uart0, "Created mission control"));
   HAL_CHECK(hal::write(uart0, "Finished making application framework"));
   return application_framework{.legs = legs,
 
-                              .mc = &esp_mission_control.value(),
+                              .mc = &drive_mission_control,
                               
                               .terminal = &uart0,
                               .clock = &counter,

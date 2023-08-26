@@ -56,7 +56,6 @@ private:
   {
 
     using namespace std::literals;
-    hal::print(*m_console, "inside imp comm\n");
 
     if (m_write_error) {
       hal::print(*m_console, "Reconnecting...\n");
@@ -68,17 +67,12 @@ private:
       }
       m_write_error = false;
     }
-    hal::print(*m_console, "after write error\n");
-
     if (m_read_complete) {
 
       // Send out HTTP GET request
       
-      hal::write(*m_console, hal::as_bytes(m_get_request));
       auto status = m_esp8266->server_write(hal::as_bytes(m_get_request), p_timeout);
-
-      hal::print(*m_console, "got status\n");
-
+      
       if (!status) {
         hal::print(*m_console, "\nFailed to write to server!\n");
         hal::print(*m_console, m_get_request);
@@ -89,14 +83,12 @@ private:
       m_read_complete = false;
       m_header_finished = false;
     }
-    hal::print(*m_console, "after read complete\n");
 
     auto received = HAL_CHECK(m_esp8266->server_read(m_buffer)).data;
     auto remainder = received | m_http_header_parser.find_header_start |
                      m_http_header_parser.find_content_length |
                      m_http_header_parser.parse_content_length |
                      m_http_header_parser.find_end_of_header;
-    hal::print(*m_console, "after received\n");
 
     if (!m_header_finished &&
         hal::finished(m_http_header_parser.find_end_of_header)) {
@@ -104,21 +96,16 @@ private:
       m_fill_payload = hal::stream::fill(m_buffer, content_length);
       m_header_finished = true;
     }
-    hal::print(*m_console, "after header finished\n");
 
     if (m_header_finished && hal::in_progress(m_fill_payload)) {
       remainder | m_fill_payload;
-      hal::print(*m_console, "header finished and fill payload in progress\n");
       if (hal::finished(m_fill_payload.state())) {
-        hal::print(*m_console, "fill payload finished\n");
         m_commands = HAL_CHECK(parse_commands());
-        hal::print(*m_console, "finished parsing comamnds\n");
         m_read_complete = true;
         m_http_header_parser = new_http_header_parser();
         m_fill_payload = hal::stream::fill(m_buffer);
       }
     }
-
     return m_commands;
   }
 
@@ -181,7 +168,6 @@ private:
     connection_state state = connection_state::check_ap_connection;
 
     while (state != connection_state::connection_established) {
-      hal::print(*m_console, "loop\n");
       switch (state) {
         case connection_state::check_ap_connection:
           hal::print(*m_console, "Checking if AP \"");
