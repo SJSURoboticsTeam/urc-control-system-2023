@@ -89,7 +89,6 @@ private:
                      m_http_header_parser.find_content_length |
                      m_http_header_parser.parse_content_length |
                      m_http_header_parser.find_end_of_header;
-
     if (!m_header_finished &&
         hal::finished(m_http_header_parser.find_end_of_header)) {
       auto content_length = m_http_header_parser.parse_content_length.value();
@@ -98,8 +97,11 @@ private:
     }
 
     if (m_header_finished && hal::in_progress(m_fill_payload)) {
+      hal::print(*m_console, "payload in progress");
       remainder | m_fill_payload;
       if (hal::finished(m_fill_payload.state())) {
+        hal::print(*m_console, "finished payload");
+        hal::print(*m_console, m_buffer);
         m_commands = HAL_CHECK(parse_commands());
         m_read_complete = true;
         m_http_header_parser = new_http_header_parser();
