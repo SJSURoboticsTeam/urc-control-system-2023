@@ -23,6 +23,7 @@ add_executable(${PROJECT_NAME}
     platforms/${platform}.cpp)
 target_include_directories(${PROJECT_NAME} PUBLIC .)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
+target_link_options(${PROJECT_NAME} PRIVATE -u _printf_float)
 target_link_libraries(${PROJECT_NAME} PRIVATE
     libhal::${platform_library}
     libhal::util

@@ -48,9 +48,6 @@ hal::status application(application_framework& p_framework)
     commands.speed = lerp.lerp(commands.speed);
     hal::print<50>(terminal, "speed 3: %d\n", commands.speed);
     arguments = sjsu::drive::select_mode(commands);
-    hal::print<50>(terminal, "back speed 4: %f\n", static_cast<float>(arguments.back.speed));
-    hal::print<50>(terminal, "left speed 4: %f\n", static_cast<float>(arguments.left.speed));
-    hal::print<50>(terminal, "right speed 4: %f\n", static_cast<float>(arguments.right.speed));
     HAL_CHECK(tri_wheel.move(arguments, clock));
   }
 
