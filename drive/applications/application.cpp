@@ -41,12 +41,9 @@ hal::status application(application_framework& p_framework)
 
     commands = mission_control->get_command(timeout).value();
     commands = sjsu::drive::validate_commands(commands);
-    hal::print<50>(terminal, "speed 1: %d\n", commands.speed);
-    // commands = mode_switcher.switch_steer_mode(
-    //   commands, arguments, motor_speeds, terminal);
-      hal::print<50>(terminal, "speed 2: %d\n", commands.speed);
+    commands = mode_switcher.switch_steer_mode(
+      commands, arguments, motor_speeds, terminal);
     commands.speed = lerp.lerp(commands.speed);
-    hal::print<50>(terminal, "speed 3: %d\n", commands.speed);
     arguments = sjsu::drive::select_mode(commands);
     HAL_CHECK(tri_wheel.move(arguments, clock));
   }
