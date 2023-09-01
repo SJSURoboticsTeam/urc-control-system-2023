@@ -25,7 +25,7 @@ private:
         using namespace hal::literals;
         
         auto speed = 0.0_rpm;
-        hal::print<100>(*m_console, "speed read: %d\n", speed); 
+        hal::print<100>(*m_console, "speed read: %f\n", speed); 
 
         return speed_sensor::read_t{.speed = 0.0_rpm};
     }    

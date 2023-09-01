@@ -17,8 +17,8 @@ private:
     {
     }
 
-    hal::result<hal::motor::power_t> driver_power(hal::rpm p_speed) override {
-        hal::print<10>(*m_console, "speed: %d\n", p_speed);
+    hal::result<hal::motor::power_t> driver_power(float p_speed) override {
+        hal::print<20>(*m_console, "speed: %f\n", p_speed);
         return hal::motor::power_t{};
     }
 

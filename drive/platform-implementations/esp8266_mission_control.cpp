@@ -46,7 +46,7 @@ private:
     std::span<hal::byte> p_buffer,
     std::string_view p_get_request) : m_esp8266(&p_esp8266), m_console(&p_console), 
       m_ssid(p_ssid), m_password(p_password), m_config(p_config), m_ip(p_ip),
-      m_buffer(p_buffer), m_get_request(p_get_request), m_fill_payload(hal::stream::fill(m_buffer)),
+      m_buffer(p_buffer), m_get_request(p_get_request), m_fill_payload(hal::stream_fill(m_buffer)),
       m_http_header_parser(new_http_header_parser())
       {
       }
@@ -54,7 +54,6 @@ private:
   hal::result<mc_commands> impl_get_command(
     hal::function_ref<hal::timeout_function> p_timeout) override
   {
-
     using namespace std::literals;
 
     if (m_write_error) {
@@ -89,24 +88,30 @@ private:
                      m_http_header_parser.find_content_length |
                      m_http_header_parser.parse_content_length |
                      m_http_header_parser.find_end_of_header;
+    std::uint32_t content_length;
     if (!m_header_finished &&
         hal::finished(m_http_header_parser.find_end_of_header)) {
-      auto content_length = m_http_header_parser.parse_content_length.value();
-      m_fill_payload = hal::stream::fill(m_buffer, content_length);
+      content_length = m_http_header_parser.parse_content_length.value();
       m_header_finished = true;
     }
 
-    if (m_header_finished && hal::in_progress(m_fill_payload)) {
-      hal::print(*m_console, "payload in progress");
-      remainder | m_fill_payload;
-      if (hal::finished(m_fill_payload.state())) {
-        hal::print(*m_console, "finished payload");
-        hal::print(*m_console, m_buffer);
-        m_commands = HAL_CHECK(parse_commands());
-        m_read_complete = true;
-        m_http_header_parser = new_http_header_parser();
-        m_fill_payload = hal::stream::fill(m_buffer);
+    if (m_header_finished) {
+      for(int i=0; i < content_length; i++) {
+        m_buffer[i] = remainder[i];
       }
+      hal::print(*m_console, "Finished payload\n");
+      m_commands = HAL_CHECK(parse_commands());
+          hal::print<200>(*m_console,
+                      "HB: %d\t, IO %d\t, WO: %d\t, DM: %c\t, Speed: %d\n, Angle: %d\n",
+                      m_commands.heartbeat_count,
+                      m_commands.is_operational,
+                      m_commands.wheel_orientation,
+                      m_commands.mode,
+                      m_commands.speed,
+                      m_commands.angle
+                      );
+      m_read_complete = true;
+      m_http_header_parser = new_http_header_parser();
     }
     return m_commands;
   }
@@ -233,10 +238,10 @@ private:
 
   struct http_header_parser_t
   {
-    hal::stream::find find_header_start;
-    hal::stream::find find_content_length;
-    hal::stream::parse<std::uint32_t> parse_content_length;
-    hal::stream::find find_end_of_header;
+    hal::stream_find find_header_start;
+    hal::stream_find find_content_length;
+    hal::stream_parse<std::uint32_t> parse_content_length;
+    hal::stream_find find_end_of_header;
   };
 
   http_header_parser_t new_http_header_parser()
@@ -244,11 +249,11 @@ private:
     using namespace std::literals;
 
     return http_header_parser_t{
-      .find_header_start = hal::stream::find(hal::as_bytes("HTTP/1.1 "sv)),
+      .find_header_start = hal::stream_find(hal::as_bytes("HTTP/1.1 "sv)),
       .find_content_length =
-        hal::stream::find(hal::as_bytes("Content-Length: "sv)),
-      .parse_content_length = hal::stream::parse<std::uint32_t>(),
-      .find_end_of_header = hal::stream::find(hal::as_bytes("\r\n\r\n"sv)),
+        hal::stream_find(hal::as_bytes("Content-Length: "sv)),
+      .parse_content_length = hal::stream_parse<std::uint32_t>(),
+      .find_end_of_header = hal::stream_find(hal::as_bytes("\r\n\r\n"sv)),
     };
   }
 
@@ -265,6 +270,6 @@ private:
   bool m_write_error = false;
   bool m_header_finished = false;
   bool m_read_complete = true;
-  hal::stream::fill m_fill_payload;
+  hal::stream_fill m_fill_payload;
 };
 } 

@@ -18,10 +18,10 @@ private:
     }
 
     hal::result<hal::servo::position_t> driver_position(hal::degrees p_position) override {
-        hal::print<10>(*m_console, "position: %d\n", p_position);
+        hal::print<20>(*m_console, "position: %f\n", static_cast<float>(p_position));
         return hal::servo::position_t{};
     }
-
+    
     hal::serial* m_console;
 };
 
