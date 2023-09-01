@@ -12,8 +12,6 @@
 
 #include <libhal-util/units.hpp>
 #include <libhal-rmd/drc.hpp>
-#include <libhal-rmd/drc_servo.hpp>
-#include <libhal-rmd/drc_motor.hpp>
 #include <libhal-lpc40/input_pin.hpp>
 
 #include "../platform-implementations/drc_speed_sensor.cpp"

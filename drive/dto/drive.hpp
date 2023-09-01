@@ -10,8 +10,8 @@ using namespace hal::literals;
 
 struct drive_arguments
 {
-  hal::rpm speed = 0;
-  hal::degrees angle = 0;
+  hal::rpm speed = 0.0_rpm;
+  hal::degrees angle = 0.0_deg;
 };
 
 struct tri_wheel_router_arguments
