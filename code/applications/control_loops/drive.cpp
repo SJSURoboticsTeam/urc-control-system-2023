@@ -7,6 +7,8 @@
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
 
+#include "common/util.hpp"
+#include "../../hardware_map.hpp"
 #include "../../drive/implementation/command_lerper.hpp"
 #include "../../drive/implementation/mission_control_handler.hpp"
 #include "../../drive/implementation/mode_select.hpp"
@@ -14,15 +16,7 @@
 #include "../../drive/implementation/rules_engine.hpp"
 #include "../../drive/implementation/tri_wheel_router.hpp"
 
-#include "../../hardware_map.hpp"
-
-#include <libhal-esp8266/at/socket.hpp>
-#include <libhal-esp8266/at/wlan_client.hpp>
-#include <libhal-esp8266/util.hpp>
-
 #include <string_view>
-
-#include "common/util.hpp"
 
 hal::status application(sjsu::hardware_map& p_map)
 {
@@ -36,14 +30,12 @@ hal::status application(sjsu::hardware_map& p_map)
   auto& magnet1 = *p_map.in_pin1;
   auto& magnet2 = *p_map.in_pin2;
   auto& can = *p_map.can;
-  auto& can_en = *p_map.can_en;
-  auto& motor_en = *p_map.motor_en;
+  auto& motor_en = *p_map.pwm_1_6;
 
-  HAL_CHECK(motor_en.level(false));
-
-  HAL_CHECK(can_en.level(true));
-  HAL_CHECK(hal::delay(clock, 10ms));
-  HAL_CHECK(can_en.level(false));
+  HAL_CHECK(motor_en.frequency(20.0_kHz));
+  HAL_CHECK(motor_en.duty_cycle(1.0f));
+  HAL_CHECK(hal::delay(clock, 100ms));
+  HAL_CHECK(motor_en.duty_cycle(0.40f));
 
   std::array<hal::byte, 8192> buffer{};
   static std::string_view get_request = "";

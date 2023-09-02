@@ -3,6 +3,8 @@
 #include <libhal-esp8266/at/socket.hpp>
 #include <libhal-esp8266/at/wlan_client.hpp>
 #include <libhal-esp8266/util.hpp>
+#include <libhal-lpc40xx/can.hpp>
+#include <libhal-lpc40xx/input_pin.hpp>
 #include <libhal-rmd/drc.hpp>
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
@@ -22,6 +24,13 @@ hal::status application(sjsu::hardware_map& p_map)
   auto& terminal = *p_map.terminal;
   auto& clock = *p_map.steady_clock;
   auto& esp = *p_map.esp;
+  auto& motor_en = *p_map.pwm_1_6;
+
+  HAL_CHECK(motor_en.frequency(20.0_kHz));
+  HAL_CHECK(motor_en.duty_cycle(1.0f));
+  HAL_CHECK(hal::delay(clock, 100ms));
+  HAL_CHECK(motor_en.duty_cycle(0.40f));
+
 
   HAL_CHECK(hal::delay(clock, 1s));
 
@@ -29,27 +38,27 @@ hal::status application(sjsu::hardware_map& p_map)
 
   auto left_steer_motor =
     HAL_CHECK(hal::rmd::drc::create(router, clock, 15.0, 0x141));
-  auto right_steer_motor =
-    HAL_CHECK(hal::rmd::drc::create(router, clock, 15.0, 0x143));
-  auto back_steer_motor =
-    HAL_CHECK(hal::rmd::drc::create(router, clock, 15.0, 0x145));
-  auto left_hub_motor =
-    HAL_CHECK(hal::rmd::drc::create(router, clock, 15.0, 0x142));
-  auto right_hub_motor =
-    HAL_CHECK(hal::rmd::drc::create(router, clock, 15.0, 0x144));
-  auto back_hub_motor =
-    HAL_CHECK(hal::rmd::drc::create(router, clock, 15.0, 0x146));
+  // auto right_steer_motor =
+  //   HAL_CHECK(hal::rmd::drc::create(router, clock, 15.0, 0x143));
+  // auto back_steer_motor =
+  //   HAL_CHECK(hal::rmd::drc::create(router, clock, 15.0, 0x145));
+  // auto left_hub_motor =
+  //   HAL_CHECK(hal::rmd::drc::create(router, clock, 15.0, 0x142));
+  // auto right_hub_motor =
+  //   HAL_CHECK(hal::rmd::drc::create(router, clock, 15.0, 0x144));
+  // auto back_hub_motor =
+  //   HAL_CHECK(hal::rmd::drc::create(router, clock, 15.0, 0x146));
 
-  HAL_CHECK(hal::delay(*p_map.steady_clock, 1s));
+  HAL_CHECK(hal::delay(clock, 1s));
 
   HAL_CHECK(hal::write(terminal, "Starting!\n"));
 
-  left_steer_motor.velocity_control(5.0_rpm);
-  right_steer_motor.velocity_control(5.0_rpm);
-  back_steer_motor.velocity_control(5.0_rpm);
-  left_hub_motor.velocity_control(5.0_rpm);
-  right_hub_motor.velocity_control(5.0_rpm);
-  back_hub_motor.velocity_control(5.0_rpm);
+  HAL_CHECK(left_steer_motor.velocity_control(5.0_rpm));
+  // right_steer_motor.velocity_control(5.0_rpm);
+  // back_steer_motor.velocity_control(5.0_rpm);
+  // left_hub_motor.velocity_control(5.0_rpm);
+  // right_hub_motor.velocity_control(5.0_rpm);
+  // back_hub_motor.velocity_control(5.0_rpm);
 
   while (true) {
     HAL_CHECK(hal::delay(clock, 1s));
