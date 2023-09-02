@@ -47,7 +47,7 @@ hal::status application(sjsu::arm::application_framework& p_framework)
     commands = validate_commands(commands);
 
     commands = speed_control.lerp(commands);
-
+    
     arm.move(commands);
   }
 

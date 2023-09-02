@@ -1,9 +1,8 @@
 #pragma once
-#include <libhal/servo.hpp>
 #include <libhal-util/units.hpp>
+#include <libhal/servo.hpp>
 
 #include "../applications/mission_control.hpp"
-
 
 namespace sjsu::arm {
 class joint_router
@@ -22,21 +21,24 @@ public:
   {
   }
 
-  hal::result<mission_control::mc_commands> move(mission_control::mc_commands p_arguments)
+  hal::result<mission_control::mc_commands> move(
+    mission_control::mc_commands p_arguments)
   {
 
-    HAL_CHECK(m_rotunda.position(static_cast<float>(p_arguments.rotunda_angle)));
+    HAL_CHECK(
+      m_rotunda.position(static_cast<float>(p_arguments.rotunda_angle)));
 
-    HAL_CHECK(m_shoulder.position(static_cast<float>(p_arguments.shoulder_angle)));
+    HAL_CHECK(
+      m_shoulder.position(static_cast<float>(p_arguments.shoulder_angle)));
 
     HAL_CHECK(m_elbow.position(static_cast<float>(p_arguments.elbow_angle)));
 
-    int left_wrist_angle = static_cast<float>(p_arguments.wrist_roll_angle) + 
-                              static_cast<float>(p_arguments.wrist_pitch_angle);
+    int left_wrist_angle = static_cast<float>(p_arguments.wrist_roll_angle) +
+                           static_cast<float>(p_arguments.wrist_pitch_angle);
     HAL_CHECK(m_left_wrist.position(static_cast<float>(left_wrist_angle)));
 
-    int right_wrist_angle = static_cast<float>(p_arguments.wrist_roll_angle) - 
-                              static_cast<float>(p_arguments.wrist_pitch_angle);
+    int right_wrist_angle = static_cast<float>(p_arguments.wrist_roll_angle) -
+                            static_cast<float>(p_arguments.wrist_pitch_angle);
     HAL_CHECK(m_right_wrist.position(static_cast<float>(right_wrist_angle)));
 
     return p_arguments;
@@ -49,4 +51,4 @@ private:
   hal::servo& m_left_wrist;
   hal::servo& m_right_wrist;
 };
-}  // namespace arm
+}  // namespace sjsu::arm
