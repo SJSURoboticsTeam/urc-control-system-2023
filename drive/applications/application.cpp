@@ -18,10 +18,10 @@ hal::status application(application_framework& p_framework)
   using namespace std::chrono_literals;
   using namespace hal::literals;
 
-  auto& left_leg = p_framework.legs[0];
-  auto& right_leg = p_framework.legs[1];
-  auto& back_leg = p_framework.legs[2];
-  auto& mission_control = p_framework.mc;
+  auto& left_leg = *(p_framework.legs[0]);
+  auto& right_leg = *(p_framework.legs[1]);
+  auto& back_leg = *(p_framework.legs[2]);
+  auto& mission_control = *(p_framework.mc);
   auto& terminal = *p_framework.terminal;
   auto& clock = *p_framework.clock;
 
@@ -37,9 +37,10 @@ hal::status application(application_framework& p_framework)
   HAL_CHECK(hal::write(terminal, "Starting control loop..."));
 
   while (true) {
+    motor_speeds = HAL_CHECK(tri_wheel.get_motor_feedback());
     auto timeout = hal::create_timeout(clock, 10s);
 
-    commands = mission_control->get_command(timeout).value();
+    commands = mission_control.get_command(timeout).value();
     commands = sjsu::drive::validate_commands(commands);
     commands = mode_switcher.switch_steer_mode(
       commands, arguments, motor_speeds, terminal);

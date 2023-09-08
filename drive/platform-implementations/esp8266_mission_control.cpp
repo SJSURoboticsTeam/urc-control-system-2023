@@ -99,7 +99,6 @@ private:
       for(int i=0; i < content_length; i++) {
         m_buffer[i] = remainder[i];
       }
-      hal::print(*m_console, "Finished payload\n");
       m_commands = HAL_CHECK(parse_commands());
           hal::print<200>(*m_console,
                       "HB: %d\t, IO %d\t, WO: %d\t, DM: %c\t, Speed: %d\n, Angle: %d\n",
