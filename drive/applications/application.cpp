@@ -47,6 +47,9 @@ hal::status application(application_framework& p_framework)
     commands.speed = lerp.lerp(commands.speed);
     arguments = sjsu::drive::select_mode(commands);
     HAL_CHECK(tri_wheel.move(arguments, clock));
+    arguments.left.print(terminal);
+    arguments.right.print(terminal);
+    arguments.back.print(terminal);
   }
 
   return hal::success();
