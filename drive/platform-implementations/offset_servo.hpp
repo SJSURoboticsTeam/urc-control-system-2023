@@ -25,7 +25,7 @@ private:
     }
 
     hal::result<hal::servo::position_t> driver_position(hal::degrees p_position) override {
-        return HAL_CHECK(m_servo->position(p_position + m_offset));
+        return HAL_CHECK(m_servo->position(p_position - m_offset));
     }
 
     hal::degrees m_offset;
