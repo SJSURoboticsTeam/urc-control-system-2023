@@ -163,8 +163,8 @@ hal::result<application_framework> initialize_platform()
 
   static std::array<leg*, number_of_legs> legs = {
     &left_leg, 
-    &right_leg, 
-    &back_leg,
+    &back_leg, 
+    &right_leg,
     // extra_leg,
   };
 
@@ -192,10 +192,10 @@ hal::result<application_framework> initialize_platform()
                                 "\r\n";
 
   static std::array<hal::byte, 1024> buffer{};
-  static auto helper = serial_mirror(uart1, uart0);
+  // static auto helper = serial_mirror(uart1, uart0);
 
   auto timeout = hal::create_timeout(counter, 10s);
-  static auto esp8266 = HAL_CHECK(hal::esp8266::at::create(helper, timeout));
+  static auto esp8266 = HAL_CHECK(hal::esp8266::at::create(uart1, timeout));
   auto mc_timeout = hal::create_timeout(counter, 10s);
   auto esp_mission_control = sjsu::drive::esp8266_mission_control::create(esp8266, 
                                   uart0, ssid, password, socket_config, 

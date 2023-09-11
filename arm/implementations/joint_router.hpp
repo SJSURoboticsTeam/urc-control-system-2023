@@ -2,7 +2,7 @@
 #include <libhal-util/units.hpp>
 #include <libhal/servo.hpp>
 
-#include "../applications/mission_control.hpp"
+#include "../platform-implementations/mission_control.hpp"
 
 namespace sjsu::arm {
 class joint_router
@@ -29,7 +29,7 @@ public:
       m_rotunda.position(static_cast<float>(p_arguments.rotunda_angle)));
 
     HAL_CHECK(
-      m_shoulder.position(static_cast<float>(p_arguments.shoulder_angle)));
+      m_shoulder.position(static_cast<float>(-p_arguments.shoulder_angle)));
 
     HAL_CHECK(m_elbow.position(static_cast<float>(p_arguments.elbow_angle)));
 
