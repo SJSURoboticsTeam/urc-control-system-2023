@@ -1,7 +1,7 @@
 
 cmake_minimum_required(VERSION 3.20)
 
-project(starter_project.elf VERSION 0.0.1 LANGUAGES CXX)
+project(arm_main.elf VERSION 0.0.1 LANGUAGES CXX)
 
 set(platform_library $ENV{LIBHAL_PLATFORM_LIBRARY})
 set(platform $ENV{LIBHAL_PLATFORM})
