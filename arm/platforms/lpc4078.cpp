@@ -53,27 +53,27 @@ hal::result<application_framework> initialize_platform()
   static auto can_router = hal::can_router::create(can).value();
 
   static auto rotunda_mc_x =
-    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 8.0, 0x141));
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x141));
   static auto rotunda_mc_x_servo =
     HAL_CHECK(hal::make_servo(rotunda_mc_x, 100.0_rpm));
 
   static auto shoulder_mc_x =
-    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 8 * 65 / 16, 0x141));
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0 * 65 / 30, 0x142));
   static auto shoulder_mc_x_servo =
     HAL_CHECK(hal::make_servo(shoulder_mc_x, 100.0_rpm));
 
   static auto elbow_mc_x =
-    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 8 * 5 / 2, 0x141));
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0 * 40 / 30, 0x143));
   static auto elbow_mc_x_servo =
     HAL_CHECK(hal::make_servo(elbow_mc_x, 100.0_rpm));
 
   static auto left_wrist_mc_x =
-    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 8.0, 0x141));
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x144));
   static auto left_wrist_mc_x_servo =
     HAL_CHECK(hal::make_servo(left_wrist_mc_x, 100.0_rpm));
 
   static auto right_wrist_mc_x =
-    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 8.0, 0x141));
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x145));
   static auto right_wrist_mc_x_servo =
     HAL_CHECK(hal::make_servo(right_wrist_mc_x, 100.0_rpm));
 
