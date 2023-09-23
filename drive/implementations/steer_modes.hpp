@@ -7,9 +7,9 @@
 
 namespace sjsu::drive {
 
-static constexpr float left_leg_drive_offset = 41;
-static constexpr float right_leg_drive_offset = 200;
-static constexpr float back_leg_drive_offset = 122;
+static constexpr float left_leg_drive_offset = 0;   // 41
+static constexpr float right_leg_drive_offset = 0; // 200
+static constexpr float back_leg_drive_offset = 0;  // 122
 static constexpr float left_leg_spin_offset = 242;
 static constexpr float right_leg_spin_offset = 0;
 static constexpr float back_leg_spin_offset = 0;

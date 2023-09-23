@@ -136,8 +136,11 @@ hal::result<application_framework> initialize_platform()
         &back_home,
         // &extra_home,
     };
-  HAL_CHECK(home(homing_structs, counter, &uart0));
 
+  HAL_CHECK(home(homing_structs, counter, &uart0));
+  hal::print<100>(uart0, "right offset: %f", right_home.servo->get_offset());
+  hal::print<100>(uart0, "left offset: %f", left_home.servo->get_offset());
+  hal::print<100>(uart0, "back offset: %f", back_home.servo->get_offset());
   static leg left_leg{.steer = &left_leg_drc_offset_servo, 
               .propulsion = &left_leg_drc_motor,
               .steer_speed_sensor = &left_leg_drc_steer_speed_sensor,
@@ -160,6 +163,10 @@ hal::result<application_framework> initialize_platform()
   //             .spd_sensor = &extra_leg_drc_speed_sensor,
   //             .propulsion_speed_sensor = &
   //             };
+
+  hal::print<100>(uart0, "right offset: %f", right_leg_drc_offset_servo.get_offset());
+  hal::print<100>(uart0, "left offset: %f", left_leg_drc_offset_servo.get_offset());
+  hal::print<100>(uart0, "back offset: %f", back_leg_drc_offset_servo.get_offset());
 
   static std::array<leg*, number_of_legs> legs = {
     &left_leg, 
