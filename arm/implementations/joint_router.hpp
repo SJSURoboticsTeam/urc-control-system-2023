@@ -2,7 +2,7 @@
 #include <libhal-util/units.hpp>
 #include <libhal/servo.hpp>
 
-#include "../applications/mission_control.hpp"
+#include "../platform-implementations/mission_control.hpp"
 
 namespace sjsu::arm {
 class joint_router
