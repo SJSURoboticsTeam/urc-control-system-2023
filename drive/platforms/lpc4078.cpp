@@ -59,7 +59,6 @@ hal::result<application_framework> initialize_platform()
   static auto can = HAL_CHECK((hal::lpc40::can::get(2, can_settings)));
 
   static auto can_router = hal::can_router::create(can).value();
-  
   // left leg
 
   static auto left_leg_steer_drc = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 6.0, 0x141));
@@ -74,7 +73,6 @@ hal::result<application_framework> initialize_platform()
   static auto left_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(left_leg_drc_servo, 0.0f));
 
   static auto left_home = homing{&left_leg_drc_offset_servo, &left_leg_mag, false};
-
   // static auto left_leg_drc_speed_sensor = HAL_CHECK(print_speed_sensor::make_speed_sensor(uart0));
   // static auto left_leg_drc_offset_servo  = HAL_CHECK(print_servo::create(uart0));
   // static auto left_leg_drc_motor = HAL_CHECK(print_motor::create(uart0));
@@ -92,7 +90,6 @@ hal::result<application_framework> initialize_platform()
 
   static auto right_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(right_leg_drc_servo, 0.0f));
   static auto right_home = homing{&right_leg_drc_offset_servo, &right_leg_mag, false};
-
   // static auto right_leg_drc_speed_sensor = HAL_CHECK(print_speed_sensor::make_speed_sensor(uart0));
   // static auto right_leg_drc_offset_servo  = HAL_CHECK(print_servo::create(uart0));
   // static auto right_leg_drc_motor = HAL_CHECK(print_motor::create(uart0));
@@ -127,7 +124,6 @@ hal::result<application_framework> initialize_platform()
   
   // static auto extra_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(extra_leg_drc_servo, 0.0f));
   // static auto extra_home = homing{&extra_leg_drc_offset_servo, &extra_leg_mag, false};
-
   const size_t number_of_legs = 3;
 
   static std::array<homing*, number_of_legs> homing_structs = {
@@ -163,15 +159,12 @@ hal::result<application_framework> initialize_platform()
   //             .spd_sensor = &extra_leg_drc_speed_sensor,
   //             .propulsion_speed_sensor = &
   //             };
-
-  hal::print<100>(uart0, "right offset: %f", right_leg_drc_offset_servo.get_offset());
-  hal::print<100>(uart0, "left offset: %f", left_leg_drc_offset_servo.get_offset());
-  hal::print<100>(uart0, "back offset: %f", back_leg_drc_offset_servo.get_offset());
+// 
 
   static std::array<leg*, number_of_legs> legs = {
     &left_leg, 
-    &back_leg, 
-    &right_leg,
+    &right_leg, 
+    &back_leg,
     // extra_leg,
   };
 

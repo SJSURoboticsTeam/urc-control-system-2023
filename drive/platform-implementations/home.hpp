@@ -26,7 +26,7 @@ inline hal::status home(std::span<homing*> p_homing_structs,
     bool going_to_60 = false;
     for (int i = 0; i < p_homing_structs.size(); i++) {
         HAL_CHECK(p_homing_structs[i]->servo->position(0.0_deg));
-        hal::delay(p_counter, 10ms);
+        hal::delay(p_counter, 2ms);
     }
 
     // max time needed to move to 0 from anywhere at 2 rpms
@@ -52,7 +52,7 @@ inline hal::status home(std::span<homing*> p_homing_structs,
             if(!p_homing_structs[i]->homed) {
 
                 p_homing_structs[i]->homed = !(HAL_CHECK(p_homing_structs[i]->magnet->level()).state);
-                hal::delay(p_counter, 10ms);
+                hal::delay(p_counter, 2ms);
                 if (p_homing_structs[i]->homed) {
                     number_of_legs_homed++;
                     continue;

@@ -16,7 +16,7 @@ public:
   }
 
 private:
-  static constexpr float speed_lerp = 0.4f;
+  static constexpr float speed_lerp = 0.1f;
   float previous_speed = 0;  // don't touch mode or wheel orientation logic
 };
 }  // namespace Drive
