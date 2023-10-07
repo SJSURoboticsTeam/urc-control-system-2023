@@ -5,6 +5,7 @@
 #include <libhal/serial.hpp>
 #include <libhal/servo.hpp>
 #include <libhal/steady_clock.hpp>
+#include <libhal-util/serial.hpp>
 #include <libhal/timeout.hpp>
 
 namespace sjsu::arm{
@@ -31,6 +32,12 @@ class mission_control
     int wrist_pitch_angle = 0;
     int wrist_roll_angle = 0;
     int rr9_angle = 0;
+
+    hal::status print(hal::serial* terminal){
+      hal::print<128>(*terminal, "HB: %d\nIS_OP: %d\nSpeed: %d\nRotunda: %d\nShoulder: %d\nElbow: %d\n WRP: %d\n WRR: %d\n RR9: %d\n",heartbeat_count, is_operational, speed, rotunda_angle, shoulder_angle, elbow_angle, wrist_pitch_angle, rr9_angle);
+      return hal::success();
+    }
+
   };
   /**
    * @brief Get the command object

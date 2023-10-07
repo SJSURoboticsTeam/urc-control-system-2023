@@ -49,11 +49,9 @@ hal::status application(sjsu::arm::application_framework& p_framework)
     commands = mission_control.get_command(timeout).value();
     commands = sjsu::arm::validate_commands(commands);
 
-    hal::print<128>(terminal, "lmao 1\n");
     commands = validate_commands(commands);
-    hal::print<128>(terminal, "lmao 2\n");
     commands = speed_control.lerp(commands);
-    hal::print<128>(terminal, "lmao 3\n");
+    commands.print(&terminal);
     arm.move(commands);
   }
 

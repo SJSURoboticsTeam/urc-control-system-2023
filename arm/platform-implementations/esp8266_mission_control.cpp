@@ -102,7 +102,7 @@ private:
       // hal::print<2048>(*m_console,
       //                 "recieved \n\n %s\n",
       //                 received);
-
+    auto reveived_val = received.
     auto remainder = received | m_http_header_parser.find_header_start |
                      m_http_header_parser.find_content_length |
                      m_http_header_parser.parse_content_length |

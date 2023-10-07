@@ -17,9 +17,9 @@ inline mission_control::mc_commands validate_commands(mission_control::mc_comman
     commands.speed = 1;
   }
 
-  if (!commands.is_operational) {
-    commands.speed = 1;
-  }
+  // if (!commands.is_operational) {
+  //   commands.speed = 1;
+  // }
   return commands;
 }
 }  // namespace arm
