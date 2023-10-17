@@ -11,7 +11,7 @@
 #include <libhal-util/units.hpp>
 // #include <libhal-pca/pca9685.hpp>
 #include "../applications/application.hpp"
-
+#include "../platform-implementations/helper.hpp"
 #include "../platform-implementations/esp8266_mission_control.cpp"
 
 #include <libhal-lpc40/clock.hpp>
@@ -115,16 +115,16 @@ hal::result<application_framework> initialize_platform()
                                 "\r\n";
 
   static std::array<hal::byte, 2048> buffer{};
-  // static auto helper = serial_mirror(uart1, uart0);
+  static auto helper = serial_mirror(uart1, uart0);
 
   auto timeout = hal::create_timeout(counter, 10s);
-  static auto esp8266 = HAL_CHECK(hal::esp8266::at::create(uart1, timeout));
+  static auto esp8266 = HAL_CHECK(hal::esp8266::at::create(helper, timeout));
   auto mc_timeout = hal::create_timeout(counter, 10s);
   auto esp_mission_control = sjsu::arm::esp8266_mission_control::create(esp8266, 
                                   uart0, ssid, password, socket_config, 
                                   ip, mc_timeout, buffer, get_request);
   while(esp_mission_control.has_error()) {
-    mc_timeout = hal::create_timeout(counter, 30s);
+    mc_timeout = hal::create_timeout(counter, 10s);
     esp_mission_control = sjsu::arm::esp8266_mission_control::create(esp8266, 
                                     uart0, ssid, password, socket_config, 
                                     ip, mc_timeout, buffer, get_request);

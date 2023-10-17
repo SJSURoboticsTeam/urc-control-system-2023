@@ -28,8 +28,8 @@ public:
     HAL_CHECK(
       m_rotunda.position(static_cast<float>(p_arguments.rotunda_angle)));
 
-    HAL_CHECK(
-      m_shoulder.position(static_cast<float>(p_arguments.shoulder_angle)));
+    // HAL_CHECK(
+    //   m_shoulder.position(static_cast<float>(p_arguments.shoulder_angle)));
 
     HAL_CHECK(m_elbow.position(static_cast<float>(p_arguments.elbow_angle)));
 
