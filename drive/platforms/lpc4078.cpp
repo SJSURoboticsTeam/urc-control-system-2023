@@ -181,7 +181,7 @@ hal::result<application_framework> initialize_platform()
 
   // still need to decide what we want the static IP to be
   static constexpr std::string_view ip = "";
-  constexpr auto socket_config = hal::esp8266::at::socket_config{
+  static constexpr auto socket_config = hal::esp8266::at::socket_config{
     .type = hal::esp8266::at::socket_type::tcp,
     .domain = "192.168.0.211",
     .port = 5000,
@@ -197,7 +197,7 @@ hal::result<application_framework> initialize_platform()
   auto timeout = hal::create_timeout(counter, 10s);
   static auto esp8266 = HAL_CHECK(hal::esp8266::at::create(uart1, timeout));
   auto mc_timeout = hal::create_timeout(counter, 10s);
-  auto esp_mission_control = sjsu::drive::esp8266_mission_control::create(esp8266, 
+  static auto esp_mission_control = sjsu::drive::esp8266_mission_control::create(esp8266, 
                                   uart0, ssid, password, socket_config, 
                                   ip, mc_timeout, buffer, get_request);
   while(esp_mission_control.has_error()) {

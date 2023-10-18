@@ -24,11 +24,12 @@ add_executable(${PROJECT_NAME}
 target_include_directories(${PROJECT_NAME} PUBLIC .)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 target_link_options(${PROJECT_NAME} PRIVATE -u _printf_float)
-target_link_libraries(${PROJECT_NAME} PRIVATE
+target_link_libraries(${PROJECT_NAME} PRIVATEr
     libhal::${platform_library}
     libhal::util
     libhal::rmd
     libhal::soft
     libhal::esp8266)
-
+# target_link_options(${PROJECT_NAME} INTERFACE "LINKER:--no-warn-rwx-segments")
 libhal_post_build(${PROJECT_NAME})
+
