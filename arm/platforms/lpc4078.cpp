@@ -112,6 +112,8 @@ hal::result<application_framework> initialize_platform()
   HAL_CHECK(hal::write(uart0, "created Socket\n"));
   static constexpr std::string_view get_request = "GET /arm HTTP/1.1\r\n"
                                 "Host: 192.168.0.211:5000\r\n"
+                                "Keep-Alive: timeout=1000\r\n"
+                                "Connection: keep-alive\r\n"
                                 "\r\n";
 
   static std::array<hal::byte, 2048> buffer{};
