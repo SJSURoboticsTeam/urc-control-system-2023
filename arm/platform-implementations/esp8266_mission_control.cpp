@@ -69,7 +69,8 @@ private:
   {
     using namespace std::literals;
 
-    if (m_write_error) {
+    auto dumfuck = HAL_CHECK(m_esp8266->is_connected_to_server(p_timeout));
+    if (m_write_error || !dumfuck) {
       hal::print(*m_console, "Reconnecting...\n");
       // Wait 1s before attempting to reconnect
 
@@ -96,17 +97,21 @@ private:
       m_read_complete = false;
       m_header_finished = false;
     }
-
     auto received = HAL_CHECK(m_esp8266->server_read(m_buffer)).data;
-
-      // hal::print<2048>(*m_console,
-      //                 "recieved \n\n %s\n",
-      //                 received);
-    // auto reveived_val = received.
     auto remainder = received | m_http_header_parser.find_header_start |
                      m_http_header_parser.find_content_length |
                      m_http_header_parser.parse_content_length |
                      m_http_header_parser.find_end_of_header;
+
+    auto dumfuck2 = HAL_CHECK(m_esp8266->is_connected_to_server(p_timeout));
+    // if(dumfuck2){
+    //   m_write_error = true;
+    //   return m_commands;
+    // }
+    hal::print<1024>(*m_console, "IS CONNECTED TO SERVER: %d\n", dumfuck2);
+    // auto app_connection = HAL_CHECK(m_esp8266->is_connected_to_app(p_timeout));
+
+
     std::uint32_t content_length;
     if (!m_header_finished &&
         hal::finished(m_http_header_parser.find_end_of_header)) {
@@ -134,7 +139,7 @@ private:
     auto response = result.substr(start, end - start + 1);
     static constexpr int expected_number_of_arguments = 9;
     sjsu::arm::mission_control::mc_commands commands;
-    // response = response.substr(response.find('{'));
+    response = response.substr(response.find('{'));
     int actual_arguments = sscanf(response.data(),
                                   kResponseBodyFormat,
                                   &commands.heartbeat_count,
@@ -146,12 +151,7 @@ private:
                                   &commands.wrist_pitch_angle,
                                   &commands.wrist_roll_angle,
                                   &commands.rr9_angle);
-    hal::print<2048>(*m_console,
-                    "%s\n",
-                    response.data());
-                    
     if (actual_arguments != expected_number_of_arguments) {
-      
       hal::print<2048>(*m_console,
                       "Received %d arguments, expected %d\n",
                       actual_arguments,
@@ -160,7 +160,7 @@ private:
       return m_commands;
     }
     hal::print<200>(*m_console,
-                      "HB: %d\t, IO %d\t, Speed: %d\t, Rotuda: %c\t, Shoulder: %d\n, Elbow: %d\n, WR_Pitch: %d\n, WR_Roll: %d\n, Endo: %d\n",
+                      "HB: %d\n, IO %d\n, Speed: %d\n, Rotuda: %c\n, Shoulder: %d\n, Elbow: %d\n, WR_Pitch: %d\n, WR_Roll: %d\n, Endo: %d\n",
                       commands.heartbeat_count,
                       commands.is_operational,
                       commands.speed,

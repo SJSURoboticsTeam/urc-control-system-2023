@@ -45,14 +45,15 @@ hal::status application(sjsu::arm::application_framework& p_framework)
 
   while (true) {
     
-    auto timeout = hal::create_timeout(clock, 10s);
+    auto timeout = hal::create_timeout(clock, 180s);
     commands = mission_control.get_command(timeout).value();
-    commands = sjsu::arm::validate_commands(commands);
+    // commands = sjsu::arm::validate_commands(commands);
 
     commands = validate_commands(commands);
     commands = speed_control.lerp(commands);
     commands.print(&terminal);
-    arm.move(commands);
+    // HAL_CHECK(hal::write(terminal, "end of loop\n"));
+    // arm.move(commands);
   }
 
   return hal::success();
