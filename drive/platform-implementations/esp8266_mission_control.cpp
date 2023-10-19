@@ -167,45 +167,40 @@ private:
     return m_commands;
   }
 
-  void parse_commands()
-  {
-    auto result = to_string_view(m_command_buffer);
+  hal::result<mc_commands> parse_commands() {
 
-    static constexpr int expected_number_of_arguments = 9;
-    sjsu::drive::mission_control::mc_commands commands;
+    auto result = to_string_view(m_buffer);
+    static constexpr int expected_number_of_arguments = 6;
+    mc_commands commands;
+
     int actual_arguments = sscanf(result.data(),
                                   kResponseBodyFormat,
                                   &commands.heartbeat_count,
                                   &commands.is_operational,
+                                  &commands.wheel_orientation,
+                                  &commands.mode,
                                   &commands.speed,
-                                  &commands.rotunda_angle,
-                                  &commands.shoulder_angle,
-                                  &commands.elbow_angle,
-                                  &commands.wrist_pitch_angle,
-                                  &commands.wrist_roll_angle,
-                                  &commands.rr9_angle);
+                                  &commands.angle);
     if (actual_arguments != expected_number_of_arguments) {
-      hal::print<2048>(*m_console,
-                       "Received %d arguments, expected %d\n",
-                       actual_arguments,
-                       expected_number_of_arguments);
-      return;
+      hal::print<200>(*m_console,
+                      "Received %d arguments, expected %d\n",
+                      actual_arguments,
+                      expected_number_of_arguments);
+      
+      return m_commands;
     }
-    hal::print<200>(
-      *m_console,
-      "HB: %d,\n IO %d,\n Speed: %d,\n Rotuda: %d,\n Shoulder: %d,\n Elbow: "
-      "%d,\n WR_Pitch: %d,\n WR_Roll: %d,\n Endo: %d\n",
-      commands.heartbeat_count,
-      commands.is_operational,
-      commands.speed,
-      commands.rotunda_angle,
-      commands.shoulder_angle,
-      commands.elbow_angle,
-      commands.wrist_pitch_angle,
-      commands.wrist_roll_angle,
-      commands.rr9_angle);
-    m_commands = commands;
+    hal::print<200>(*m_console,
+                      "HB: %d\t, IO %d\t, WO: %d\t, DM: %c\t, Speed: %d\n, Angle: %d\n",
+                      commands.heartbeat_count,
+                      commands.is_operational,
+                      commands.wheel_orientation,
+                      commands.mode,
+                      commands.speed,
+                      commands.angle
+                      );
+    return commands;
   }
+
 
   std::string_view to_string_view(std::span<const hal::byte> p_span)
   {
