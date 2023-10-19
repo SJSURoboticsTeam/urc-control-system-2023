@@ -5,10 +5,9 @@
 #include <libhal/serial.hpp>
 #include <libhal/servo.hpp>
 #include <libhal/steady_clock.hpp>
-#include <libhal-util/serial.hpp>
 #include <libhal/timeout.hpp>
 
-namespace sjsu::arm{
+namespace sjsu::arm {
 
 const char kResponseBodyFormat[] =
   "{\"heartbeat_count\":%d,\"is_operational\":%d,\"speed\":%d,\"angles\":[%d,%"
@@ -20,7 +19,7 @@ const char kGETRequestFormat[] =
 
 class mission_control
 {
-  public:
+public:
   struct mc_commands
   {
     int heartbeat_count = 0;
@@ -33,11 +32,29 @@ class mission_control
     int wrist_roll_angle = 0;
     int rr9_angle = 0;
 
-    hal::status print(hal::serial* terminal){
-      hal::print<128>(*terminal, "HB: %d\nIS_OP: %d\nSpeed: %d\nRotunda: %d\nShoulder: %d\nElbow: %d\n WRP: %d\n WRR: %d\n RR9: %d\n",heartbeat_count, is_operational, speed, rotunda_angle, shoulder_angle, elbow_angle, wrist_pitch_angle, rr9_angle);
+    hal::status print(hal::serial* terminal)
+    {
+      hal::print<128>(*terminal,
+                      "HB: %d\n"
+                      "IS_OP: %d\n"
+                      "Speed: %d\n"
+                      "Rotunda: %d\n"
+                      "Shoulder: %d\n"
+                      "Elbow: %d\n"
+                      " WRP: %d\n"
+                      " WRR: %d\n"
+                      " RR9: %d\n",
+                      heartbeat_count,
+                      is_operational,
+                      speed,
+                      rotunda_angle,
+                      shoulder_angle,
+                      elbow_angle,
+                      wrist_pitch_angle,
+                      wrist_roll_angle,
+                      rr9_angle);
       return hal::success();
     }
-
   };
   /**
    * @brief Get the command object
@@ -61,7 +78,8 @@ class mission_control
    * commands have been received, then this should return the default
    * initialized command.
    */
-  hal::result<mc_commands> get_command(hal::function_ref<hal::timeout_function> p_timeout)
+  hal::result<mc_commands> get_command(
+    hal::function_ref<hal::timeout_function> p_timeout)
   {
     return impl_get_command(p_timeout);
   }
@@ -73,4 +91,4 @@ private:
     hal::function_ref<hal::timeout_function> p_timeout) = 0;
 };
 
-}
+}  // namespace sjsu::arm

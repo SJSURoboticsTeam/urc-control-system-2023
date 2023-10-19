@@ -62,6 +62,7 @@ private:
     , m_fill_payload(hal::stream_fill(m_buffer))
     , m_http_header_parser(new_http_header_parser())
   {
+    m_buffer_len = 0;
   }
 
   hal::result<mc_commands> impl_get_command(
@@ -69,16 +70,24 @@ private:
   {
     using namespace std::literals;
 
-    auto dumfuck = HAL_CHECK(m_esp8266->is_connected_to_server(p_timeout));
-    if (m_write_error || !dumfuck) {
+    // auto dumfuck = HAL_CHECK(m_esp8266->is_connected_to_server(p_timeout));
+    if (m_write_error) {
       hal::print(*m_console, "Reconnecting...\n");
       // Wait 1s before attempting to reconnect
 
       auto result = establish_connection(p_timeout);
       if (!result) {
+        hal::print(*m_console, "Failure!!!\n");
         return m_commands;
       }
+
+      hal::print(*m_console, "CONNECTION RE-ESTABLISHED!!\n");
+      m_read_complete = true;
+      m_buffer_len = 0;
+      m_content_length = 0;
+      m_http_header_parser = new_http_header_parser();
       m_write_error = false;
+      m_header_finished = false;
     }
     if (m_read_complete) {
 
@@ -94,6 +103,7 @@ private:
         return m_commands;
       }
 
+      m_missed_read = 0;
       m_read_complete = false;
       m_header_finished = false;
     }
@@ -103,44 +113,68 @@ private:
                      m_http_header_parser.parse_content_length |
                      m_http_header_parser.find_end_of_header;
 
-    auto dumfuck2 = HAL_CHECK(m_esp8266->is_connected_to_server(p_timeout));
+    m_missed_read++;
+    if (m_missed_read > 15) {
+      hal::print(*m_console, "READ MISS!!!\n");
+      m_write_error = true;
+      return m_commands;
+    }
+    // auto dumfuck2 = HAL_CHECK(m_esp8266->is_connected_to_server(p_timeout));
     // if(dumfuck2){
     //   m_write_error = true;
     //   return m_commands;
     // }
-    hal::print<1024>(*m_console, "IS CONNECTED TO SERVER: %d\n", dumfuck2);
-    // auto app_connection = HAL_CHECK(m_esp8266->is_connected_to_app(p_timeout));
 
+    // hal::print<1024>(*m_console, "IS CONNECTED TO SERVER: %d\n", dumfuck2);
+    // auto app_connection =
+    // HAL_CHECK(m_esp8266->is_connected_to_app(p_timeout));
 
-    std::uint32_t content_length;
     if (!m_header_finished &&
         hal::finished(m_http_header_parser.find_end_of_header)) {
-      content_length = m_http_header_parser.parse_content_length.value();
+      m_content_length = m_http_header_parser.parse_content_length.value();
       m_header_finished = true;
+      std::fill(m_command_buffer.begin(), m_command_buffer.end(), 0);
+      remainder = remainder.subspan(1);
     }
 
     if (m_header_finished) {
-      for (int i = 0; i < content_length; i++) {
-        m_buffer[i] = remainder[i];
+      hal::print<128>(*m_console, " read miss = %u\n", m_missed_read);
+
+      auto tmp = m_content_length - m_buffer_len;
+      auto byte_to_read = std::min((size_t)tmp, remainder.size());
+
+      for (int i = 0; i < byte_to_read; i++) {
+        m_command_buffer[m_buffer_len + i] = remainder[i];
       }
-      m_commands = HAL_CHECK(parse_commands());
-      m_read_complete = true;
-      m_http_header_parser = new_http_header_parser();
+      m_buffer_len += byte_to_read;
+      hal::print<1024>(*m_console,
+                       "M header has finished, remainder size: %d, buffer "
+                       "data: %.*s, buffer len %d, content length %d\n",
+                       remainder.size(),
+                       m_buffer_len + 1,
+                       m_command_buffer.data(),
+                       m_buffer_len,
+                       m_content_length);
+
+      if (m_buffer_len >= m_content_length) {
+        hal::print(*m_console, "content length has been met \n");
+        m_read_complete = true;
+        m_buffer_len = 0;
+        parse_commands();
+        m_commands.print(m_console);
+        m_http_header_parser = new_http_header_parser();
+      }
     }
     return m_commands;
   }
 
-  hal::result<mc_commands> parse_commands()
+  void parse_commands()
   {
-    auto result = to_string_view(m_buffer);
+    auto result = to_string_view(m_command_buffer);
 
-    auto start = result.find('{');
-    auto end = result.find('}');
-    auto response = result.substr(start, end - start + 1);
     static constexpr int expected_number_of_arguments = 9;
     sjsu::arm::mission_control::mc_commands commands;
-    response = response.substr(response.find('{'));
-    int actual_arguments = sscanf(response.data(),
+    int actual_arguments = sscanf(result.data(),
                                   kResponseBodyFormat,
                                   &commands.heartbeat_count,
                                   &commands.is_operational,
@@ -153,25 +187,25 @@ private:
                                   &commands.rr9_angle);
     if (actual_arguments != expected_number_of_arguments) {
       hal::print<2048>(*m_console,
-                      "Received %d arguments, expected %d\n",
-                      actual_arguments,
-                      expected_number_of_arguments);
-      
-      return m_commands;
+                       "Received %d arguments, expected %d\n",
+                       actual_arguments,
+                       expected_number_of_arguments);
+      return;
     }
-    hal::print<200>(*m_console,
-                      "HB: %d\n, IO %d\n, Speed: %d\n, Rotuda: %c\n, Shoulder: %d\n, Elbow: %d\n, WR_Pitch: %d\n, WR_Roll: %d\n, Endo: %d\n",
-                      commands.heartbeat_count,
-                      commands.is_operational,
-                      commands.speed,
-                      commands.rotunda_angle,
-                      commands.shoulder_angle,
-                      commands.elbow_angle,
-                      commands.wrist_pitch_angle,
-                      commands.wrist_roll_angle,
-                      commands.rr9_angle
-                      );
-    return commands;
+    hal::print<200>(
+      *m_console,
+      "HB: %d,\n IO %d,\n Speed: %d,\n Rotuda: %d,\n Shoulder: %d,\n Elbow: "
+      "%d,\n WR_Pitch: %d,\n WR_Roll: %d,\n Endo: %d\n",
+      commands.heartbeat_count,
+      commands.is_operational,
+      commands.speed,
+      commands.rotunda_angle,
+      commands.shoulder_angle,
+      commands.elbow_angle,
+      commands.wrist_pitch_angle,
+      commands.wrist_roll_angle,
+      commands.rr9_angle);
+    m_commands = commands;
   }
 
   std::string_view to_string_view(std::span<const hal::byte> p_span)
@@ -285,11 +319,15 @@ private:
   const hal::esp8266::at::socket_config& m_config;
   std::string_view m_ip;
   std::span<hal::byte> m_buffer;
+  std::array<hal::byte, 128> m_command_buffer;
   std::string_view m_get_request;
   http_header_parser_t m_http_header_parser;
+  size_t m_buffer_len;
   bool m_write_error = false;
   bool m_header_finished = false;
   bool m_read_complete = true;
   hal::stream_fill m_fill_payload;
+  size_t m_content_length;
+  std::uint32_t m_missed_read = 0;
 };
 }  // namespace sjsu::arm
