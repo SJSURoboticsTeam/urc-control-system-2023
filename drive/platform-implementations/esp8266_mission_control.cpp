@@ -12,7 +12,7 @@
 #include <libhal-util/timeout.hpp>
 #include <libhal/timeout.hpp>
 
-namespace sjsu::arm {
+namespace sjsu::drive {
 
 class esp8266_mission_control : public mission_control
 {
@@ -161,7 +161,6 @@ private:
         m_read_complete = true;
         m_buffer_len = 0;
         parse_commands();
-        m_commands.print(m_console);
         m_http_header_parser = new_http_header_parser();
       }
     }
@@ -173,7 +172,7 @@ private:
     auto result = to_string_view(m_command_buffer);
 
     static constexpr int expected_number_of_arguments = 9;
-    sjsu::arm::mission_control::mc_commands commands;
+    sjsu::drive::mission_control::mc_commands commands;
     int actual_arguments = sscanf(result.data(),
                                   kResponseBodyFormat,
                                   &commands.heartbeat_count,
