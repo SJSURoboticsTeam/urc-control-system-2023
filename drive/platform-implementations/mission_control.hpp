@@ -28,6 +28,23 @@ class mission_control
     int wheel_orientation = 0;
     int is_operational = 0;
     int heartbeat_count = 0;
+    hal::status print(hal::serial* terminal)
+    {
+      hal::print<128>(*terminal,
+                      "HB: %d\n"
+                      "IS_OP: %d\n"
+                      "Speed: %d\n"
+                      "Angle: %d\n"
+                      "Mode: %c\n"
+                      "Wheel Orientation: %d\n",
+                      heartbeat_count,
+                      is_operational,
+                      speed,
+                      angle,
+                      mode,
+                      wheel_orientation);
+      return hal::success();
+    }
   };
   /**
    * @brief Get the command object

@@ -12,66 +12,90 @@
 #include <libhal-util/timeout.hpp>
 #include <libhal/timeout.hpp>
 
-
 namespace sjsu::drive {
 
 class esp8266_mission_control : public mission_control
 {
 public:
-    static hal::result<esp8266_mission_control> create(hal::esp8266::at& p_esp8266,
+  static hal::result<esp8266_mission_control> create(
+    hal::esp8266::at& p_esp8266,
     hal::serial& p_console,
     const std::string_view p_ssid,
     const std::string_view p_password,
     const hal::esp8266::at::socket_config& p_config,
     const std::string_view p_ip,
-    hal::timeout auto& p_timeout, 
+    hal::timeout auto& p_timeout,
     std::span<hal::byte> p_buffer,
     std::string_view p_get_request)
   {
-    esp8266_mission_control esp_mission_control = esp8266_mission_control(p_esp8266, p_console,
-    p_ssid, p_password, p_config, p_ip, p_buffer, p_get_request);
+    esp8266_mission_control esp_mission_control =
+      esp8266_mission_control(p_esp8266,
+                              p_console,
+                              p_ssid,
+                              p_password,
+                              p_config,
+                              p_ip,
+                              p_buffer,
+                              p_get_request);
     HAL_CHECK(esp_mission_control.establish_connection(p_timeout));
 
     return esp_mission_control;
   }
 
 private:
-
   esp8266_mission_control(hal::esp8266::at& p_esp8266,
-    hal::serial& p_console,
-    const std::string_view p_ssid,
-    const std::string_view p_password,
-    const hal::esp8266::at::socket_config& p_config,
-    const std::string_view p_ip,
-    std::span<hal::byte> p_buffer,
-    std::string_view p_get_request) : m_esp8266(&p_esp8266), m_console(&p_console), 
-      m_ssid(p_ssid), m_password(p_password), m_config(p_config), m_ip(p_ip),
-      m_buffer(p_buffer), m_get_request(p_get_request), m_fill_payload(hal::stream_fill(m_buffer)),
-      m_http_header_parser(new_http_header_parser())
-      {
-      }
+                          hal::serial& p_console,
+                          const std::string_view p_ssid,
+                          const std::string_view p_password,
+                          const hal::esp8266::at::socket_config& p_config,
+                          const std::string_view p_ip,
+                          std::span<hal::byte> p_buffer,
+                          std::string_view p_get_request)
+    : m_esp8266(&p_esp8266)
+    , m_console(&p_console)
+    , m_ssid(p_ssid)
+    , m_password(p_password)
+    , m_config(p_config)
+    , m_ip(p_ip)
+    , m_buffer(p_buffer)
+    , m_get_request(p_get_request)
+    , m_fill_payload(hal::stream_fill(m_buffer))
+    , m_http_header_parser(new_http_header_parser())
+  {
+    m_buffer_len = 0;
+  }
 
   hal::result<mc_commands> impl_get_command(
     hal::function_ref<hal::timeout_function> p_timeout) override
   {
     using namespace std::literals;
 
+    // auto dumfuck = HAL_CHECK(m_esp8266->is_connected_to_server(p_timeout));
     if (m_write_error) {
       hal::print(*m_console, "Reconnecting...\n");
       // Wait 1s before attempting to reconnect
 
       auto result = establish_connection(p_timeout);
       if (!result) {
+        hal::print(*m_console, "Failure!!!\n");
         return m_commands;
       }
+
+      hal::print(*m_console, "CONNECTION RE-ESTABLISHED!!\n");
+      m_read_complete = true;
+      m_buffer_len = 0;
+      m_content_length = 0;
+      m_http_header_parser = new_http_header_parser();
       m_write_error = false;
+      m_header_finished = false;
     }
     if (m_read_complete) {
 
       // Send out HTTP GET request
-      
-      auto status = m_esp8266->server_write(hal::as_bytes(m_get_request), p_timeout);
-      
+
+      auto status =
+        m_esp8266->server_write(hal::as_bytes(m_get_request), p_timeout);
+
       if (!status) {
         hal::print(*m_console, "\nFailed to write to server!\n");
         hal::print(*m_console, m_get_request);
@@ -79,53 +103,69 @@ private:
         return m_commands;
       }
 
+      m_missed_read = 0;
       m_read_complete = false;
       m_header_finished = false;
     }
-
     auto received = HAL_CHECK(m_esp8266->server_read(m_buffer)).data;
     auto remainder = received | m_http_header_parser.find_header_start |
                      m_http_header_parser.find_content_length |
                      m_http_header_parser.parse_content_length |
                      m_http_header_parser.find_end_of_header;
-    std::uint32_t content_length;
+
+    m_missed_read++;
+    if (m_missed_read > 10) {
+      hal::print(*m_console, "READ MISS!!!\n");
+      m_write_error = true;
+      m_missed_read = 0;
+      return m_commands;
+    }
     if (!m_header_finished &&
         hal::finished(m_http_header_parser.find_end_of_header)) {
-      content_length = m_http_header_parser.parse_content_length.value();
+      m_content_length = m_http_header_parser.parse_content_length.value();
       m_header_finished = true;
+      std::fill(m_command_buffer.begin(), m_command_buffer.end(), 0);
+      remainder = remainder.subspan(1);
     }
 
     if (m_header_finished) {
-      for(int i=0; i < content_length; i++) {
-        m_buffer[i] = remainder[i];
+      // hal::print<128>(*m_console, " read miss = %u\n", m_missed_read);
+
+      auto tmp = m_content_length - m_buffer_len;
+      auto byte_to_read = std::min((size_t)tmp, remainder.size());
+
+      for (int i = 0; i < byte_to_read; i++) {
+        m_command_buffer[m_buffer_len + i] = remainder[i];
       }
-      m_commands = HAL_CHECK(parse_commands());
-          hal::print<200>(*m_console,
-                      "HB: %d\t, IO %d\t, WO: %d\t, DM: %c\t, Speed: %d\n, Angle: %d\n",
-                      m_commands.heartbeat_count,
-                      m_commands.is_operational,
-                      m_commands.wheel_orientation,
-                      m_commands.mode,
-                      m_commands.speed,
-                      m_commands.angle
-                      );
-      m_read_complete = true;
-      m_http_header_parser = new_http_header_parser();
+      m_buffer_len += byte_to_read;
+      // hal::print<1024>(*m_console,
+      //                  "M header has finished, remainder size: %d, buffer "
+      //                  "data: %.*s, buffer len %d, content length %d\n",
+      //                  remainder.size(),
+      //                  m_buffer_len + 1,
+      //                  m_command_buffer.data(),
+      //                  m_buffer_len,
+      //                  m_content_length);
+
+      if (m_buffer_len >= m_content_length) {
+        // hal::print(*m_console, "content length has been met \n");
+        m_read_complete = true;
+        m_missed_read = 0;
+        m_buffer_len = 0;
+        parse_commands();
+        m_http_header_parser = new_http_header_parser();
+      }
     }
     return m_commands;
   }
 
-  hal::result<mc_commands> parse_commands() {
+  void parse_commands() {
 
-    auto result = to_string_view(m_buffer);
-
-    auto start = result.find('{');
-    auto end = result.find('}');
-    auto response = result.substr(start, end - start + 1);
+    auto result = to_string_view(m_command_buffer);
     static constexpr int expected_number_of_arguments = 6;
     mc_commands commands;
-    response = response.substr(response.find('{'));
-    int actual_arguments = sscanf(response.data(),
+
+    int actual_arguments = sscanf(result.data(),
                                   kResponseBodyFormat,
                                   &commands.heartbeat_count,
                                   &commands.is_operational,
@@ -138,20 +178,19 @@ private:
                       "Received %d arguments, expected %d\n",
                       actual_arguments,
                       expected_number_of_arguments);
-      
-      return m_commands;
     }
-    hal::print<200>(*m_console,
-                      "HB: %d\t, IO %d\t, WO: %d\t, DM: %c\t, Speed: %d\n, Angle: %d\n",
-                      commands.heartbeat_count,
-                      commands.is_operational,
-                      commands.wheel_orientation,
-                      commands.mode,
-                      commands.speed,
-                      commands.angle
-                      );
-    return commands;
+    // hal::print<200>(*m_console,
+    //                   "HB: %d\t, IO %d\t, WO: %d\t, DM: %c\t, Speed: %d\n, Angle: %d\n",
+    //                   commands.heartbeat_count,
+    //                   commands.is_operational,
+    //                   commands.wheel_orientation,
+    //                   commands.mode,
+    //                   commands.speed,
+    //                   commands.angle
+    //                   );
+    m_commands = commands;
   }
+
 
   std::string_view to_string_view(std::span<const hal::byte> p_span)
   {
@@ -264,11 +303,15 @@ private:
   const hal::esp8266::at::socket_config& m_config;
   std::string_view m_ip;
   std::span<hal::byte> m_buffer;
+  std::array<hal::byte, 128> m_command_buffer;
   std::string_view m_get_request;
   http_header_parser_t m_http_header_parser;
+  size_t m_buffer_len;
   bool m_write_error = false;
   bool m_header_finished = false;
   bool m_read_complete = true;
   hal::stream_fill m_fill_payload;
+  size_t m_content_length;
+  std::uint32_t m_missed_read = 0;
 };
-} 
+}  // namespace sjsu::arm

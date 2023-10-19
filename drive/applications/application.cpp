@@ -24,6 +24,7 @@ hal::status application(application_framework& p_framework)
   auto& mission_control = *(p_framework.mc);
   auto& terminal = *p_framework.terminal;
   auto& clock = *p_framework.clock;
+  auto loop_count = 0;
 
   sjsu::drive::tri_wheel_router tri_wheel{back_leg, right_leg, left_leg};
   sjsu::drive::mission_control::mc_commands commands;
@@ -37,16 +38,23 @@ hal::status application(application_framework& p_framework)
   HAL_CHECK(hal::write(terminal, "Starting control loop..."));
 
   while (true) {
+    if(loop_count==10) {
+      auto timeout = hal::create_timeout(clock, 1s);
+      commands = mission_control.get_command(timeout).value();
+      loop_count=0;
+    } 
+    loop_count++;
     motor_speeds = HAL_CHECK(tri_wheel.get_motor_feedback());
-    auto timeout = hal::create_timeout(clock, 10s);
-
-    commands = mission_control.get_command(timeout).value();
+    
     commands = sjsu::drive::validate_commands(commands);
+
     commands = mode_switcher.switch_steer_mode(
-      commands, arguments, motor_speeds, terminal);
+    commands, arguments, motor_speeds, terminal);
     commands.speed = lerp.lerp(commands.speed);
+    
     arguments = sjsu::drive::select_mode(commands);
     HAL_CHECK(tri_wheel.move(arguments, clock));
+    hal::delay(clock, 8ms);
   }
 
   return hal::success();

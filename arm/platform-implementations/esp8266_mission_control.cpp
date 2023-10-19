@@ -119,15 +119,6 @@ private:
       m_write_error = true;
       return m_commands;
     }
-    // auto dumfuck2 = HAL_CHECK(m_esp8266->is_connected_to_server(p_timeout));
-    // if(dumfuck2){
-    //   m_write_error = true;
-    //   return m_commands;
-    // }
-
-    // hal::print<1024>(*m_console, "IS CONNECTED TO SERVER: %d\n", dumfuck2);
-    // auto app_connection =
-    // HAL_CHECK(m_esp8266->is_connected_to_app(p_timeout));
 
     if (!m_header_finished &&
         hal::finished(m_http_header_parser.find_end_of_header)) {

@@ -26,13 +26,13 @@ public:
                    hal::steady_clock& p_clock)
   {
     HAL_CHECK(m_left.steer->position(-p_tri_wheel_arguments.left.angle));
-    HAL_CHECK(m_left.propulsion->power(-p_tri_wheel_arguments.left.speed/100));
+    HAL_CHECK(m_left.propulsion->power(p_tri_wheel_arguments.left.speed/100));
 
     HAL_CHECK(m_right.steer->position(-p_tri_wheel_arguments.right.angle));
     HAL_CHECK(m_right.propulsion->power(-p_tri_wheel_arguments.right.speed/100));
 
     HAL_CHECK(m_back.steer->position(-p_tri_wheel_arguments.back.angle));
-    HAL_CHECK(m_back.propulsion->power(-p_tri_wheel_arguments.back.speed/100));
+    HAL_CHECK(m_back.propulsion->power(p_tri_wheel_arguments.back.speed/100));
 
     return hal::success();
   }

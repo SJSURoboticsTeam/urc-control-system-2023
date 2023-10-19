@@ -25,6 +25,7 @@ hal::status application(sjsu::arm::application_framework& p_framework)
   auto& left_wrist_servo = *p_framework.left_wrist_servo;
   auto& right_wrist_servo = *p_framework.right_wrist_servo;
   auto& mission_control = *(p_framework.mc);
+  auto loop_count = 0;
   // auto& end_effector = *p_framework.end_effector;
 
   // mission control init should go here, if anything is needed
@@ -44,15 +45,18 @@ hal::status application(sjsu::arm::application_framework& p_framework)
   hal::delay(clock, 1000ms);
 
   while (true) {
-    
-    auto timeout = hal::create_timeout(clock, 5s);
-    commands = mission_control.get_command(timeout).value();
+    if(loop_count==10) {
+      auto timeout = hal::create_timeout(clock, 60ms);
+      commands = mission_control.get_command(timeout).value();
+      loop_count=0;
+    }
+    loop_count++;
     commands = validate_commands(commands);
     // commands = speed_control.lerp(commands);
-    HAL_CHECK(hal::write(terminal, "\n\n"));
+    // HAL_CHECK(hal::write(terminal, "\n\n"));
     commands.print(&terminal);
     arm.move(commands);
-    hal::delay(clock, 10ms);
+    hal::delay(clock, 8ms);
   }
 
   return hal::success();

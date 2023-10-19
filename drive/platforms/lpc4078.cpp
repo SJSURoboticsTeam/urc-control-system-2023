@@ -134,9 +134,9 @@ hal::result<application_framework> initialize_platform()
     };
 
   HAL_CHECK(home(homing_structs, counter, &uart0));
-  hal::print<100>(uart0, "right offset: %f", right_home.servo->get_offset());
-  hal::print<100>(uart0, "left offset: %f", left_home.servo->get_offset());
-  hal::print<100>(uart0, "back offset: %f", back_home.servo->get_offset());
+  // hal::print<100>(uart0, "right offset: %f", right_home.servo->get_offset());
+  // hal::print<100>(uart0, "left offset: %f", left_home.servo->get_offset());
+  // hal::print<100>(uart0, "back offset: %f", back_home.servo->get_offset());
   static leg left_leg{.steer = &left_leg_drc_offset_servo, 
               .propulsion = &left_leg_drc_motor,
               .steer_speed_sensor = &left_leg_drc_steer_speed_sensor,
