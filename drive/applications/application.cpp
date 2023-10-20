@@ -41,12 +41,16 @@ hal::status application(application_framework& p_framework)
     auto timeout = hal::create_timeout(clock, 10s);
 
     commands = mission_control.get_command(timeout).value();
+    
     commands = sjsu::drive::validate_commands(commands);
+
     commands = mode_switcher.switch_steer_mode(
-      commands, arguments, motor_speeds, terminal);
+    commands, arguments, motor_speeds, terminal);
     commands.speed = lerp.lerp(commands.speed);
+    
     arguments = sjsu::drive::select_mode(commands);
     HAL_CHECK(tri_wheel.move(arguments, clock));
+    hal::delay(clock, 10ms);
   }
 
   return hal::success();

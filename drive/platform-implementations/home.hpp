@@ -59,7 +59,7 @@ inline hal::status home(std::span<homing*> p_homing_structs,
                 } 
                 auto new_offset = p_homing_structs[i]->servo->get_offset() + 1.0_deg;
                 p_homing_structs[i]->servo->set_offset(new_offset);
-                HAL_CHECK(p_homing_structs[i]->servo->position(hal::degrees(new_offset)));
+                HAL_CHECK(p_homing_structs[i]->servo->position(0.0_deg));
             }
             hal::delay(p_counter, 100ms);
         }

@@ -119,16 +119,6 @@ private:
       m_write_error = true;
       return m_commands;
     }
-    // auto dumfuck2 = HAL_CHECK(m_esp8266->is_connected_to_server(p_timeout));
-    // if(dumfuck2){
-    //   m_write_error = true;
-    //   return m_commands;
-    // }
-
-    // hal::print<1024>(*m_console, "IS CONNECTED TO SERVER: %d\n", dumfuck2);
-    // auto app_connection =
-    // HAL_CHECK(m_esp8266->is_connected_to_app(p_timeout));
-
     if (!m_header_finished &&
         hal::finished(m_http_header_parser.find_end_of_header)) {
       m_content_length = m_http_header_parser.parse_content_length.value();
@@ -167,9 +157,9 @@ private:
     return m_commands;
   }
 
-  hal::result<mc_commands> parse_commands() {
+  void parse_commands() {
 
-    auto result = to_string_view(m_buffer);
+    auto result = to_string_view(m_command_buffer);
     static constexpr int expected_number_of_arguments = 6;
     mc_commands commands;
 
@@ -186,8 +176,6 @@ private:
                       "Received %d arguments, expected %d\n",
                       actual_arguments,
                       expected_number_of_arguments);
-      
-      return m_commands;
     }
     hal::print<200>(*m_console,
                       "HB: %d\t, IO %d\t, WO: %d\t, DM: %c\t, Speed: %d\n, Angle: %d\n",
@@ -198,7 +186,7 @@ private:
                       commands.speed,
                       commands.angle
                       );
-    return commands;
+    m_commands = commands;
   }
 
 
