@@ -114,9 +114,10 @@ private:
                      m_http_header_parser.find_end_of_header;
 
     m_missed_read++;
-    if (m_missed_read > 15) {
+    if (m_missed_read > 10) {
       hal::print(*m_console, "READ MISS!!!\n");
       m_write_error = true;
+      m_missed_read = 0;
       return m_commands;
     }
     if (!m_header_finished &&
@@ -128,7 +129,7 @@ private:
     }
 
     if (m_header_finished) {
-      hal::print<128>(*m_console, " read miss = %u\n", m_missed_read);
+      // hal::print<128>(*m_console, " read miss = %u\n", m_missed_read);
 
       auto tmp = m_content_length - m_buffer_len;
       auto byte_to_read = std::min((size_t)tmp, remainder.size());
@@ -137,18 +138,19 @@ private:
         m_command_buffer[m_buffer_len + i] = remainder[i];
       }
       m_buffer_len += byte_to_read;
-      hal::print<1024>(*m_console,
-                       "M header has finished, remainder size: %d, buffer "
-                       "data: %.*s, buffer len %d, content length %d\n",
-                       remainder.size(),
-                       m_buffer_len + 1,
-                       m_command_buffer.data(),
-                       m_buffer_len,
-                       m_content_length);
+      // hal::print<1024>(*m_console,
+      //                  "M header has finished, remainder size: %d, buffer "
+      //                  "data: %.*s, buffer len %d, content length %d\n",
+      //                  remainder.size(),
+      //                  m_buffer_len + 1,
+      //                  m_command_buffer.data(),
+      //                  m_buffer_len,
+      //                  m_content_length);
 
       if (m_buffer_len >= m_content_length) {
-        hal::print(*m_console, "content length has been met \n");
+        // hal::print(*m_console, "content length has been met \n");
         m_read_complete = true;
+        m_missed_read = 0;
         m_buffer_len = 0;
         parse_commands();
         m_http_header_parser = new_http_header_parser();
@@ -177,15 +179,15 @@ private:
                       actual_arguments,
                       expected_number_of_arguments);
     }
-    hal::print<200>(*m_console,
-                      "HB: %d\t, IO %d\t, WO: %d\t, DM: %c\t, Speed: %d\n, Angle: %d\n",
-                      commands.heartbeat_count,
-                      commands.is_operational,
-                      commands.wheel_orientation,
-                      commands.mode,
-                      commands.speed,
-                      commands.angle
-                      );
+    // hal::print<200>(*m_console,
+    //                   "HB: %d\t, IO %d\t, WO: %d\t, DM: %c\t, Speed: %d\n, Angle: %d\n",
+    //                   commands.heartbeat_count,
+    //                   commands.is_operational,
+    //                   commands.wheel_orientation,
+    //                   commands.mode,
+    //                   commands.speed,
+    //                   commands.angle
+    //                   );
     m_commands = commands;
   }
 

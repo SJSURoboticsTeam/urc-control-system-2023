@@ -7,13 +7,14 @@
 
 namespace sjsu::drive {
 
-static constexpr float left_leg_drive_offset = 41;   // 41
-static constexpr float right_leg_drive_offset = 200; // 200
-static constexpr float back_leg_drive_offset = 122;  // 122
+static constexpr float left_leg_drive_offset = 37;   // 41
+static constexpr float right_leg_drive_offset = 199.5; // 200
+static constexpr float back_leg_drive_offset = 117;  // 122
+
 static constexpr float left_leg_spin_offset = 242;
 static constexpr float right_leg_spin_offset = 0;
 static constexpr float back_leg_spin_offset = 0;
-static constexpr float left_leg_translate_offset = 0;
+
 
 inline tri_wheel_router_arguments spin_steering(mission_control::mc_commands commands)
 {
