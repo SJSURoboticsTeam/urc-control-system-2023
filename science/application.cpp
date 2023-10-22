@@ -3,6 +3,7 @@
 #include <libhal/steady_clock.hpp>
 
 #include "application.hpp"
+namespace sjsu::science {
 
 hal::status application(application_framework& p_framework)
 {
@@ -24,3 +25,4 @@ hal::status application(application_framework& p_framework)
     hal::delay(clock, 500ms);
   }
 }
+}  // namespace sjsu::science
