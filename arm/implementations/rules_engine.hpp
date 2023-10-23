@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../applications/mission_control.hpp"
+#include "../platform-implementations/mission_control.hpp"
 namespace sjsu::arm {
 // static constexpr int kMaxSpeed = 20;
 // static constexpr int kMinShoulderAngle = 0;
@@ -17,9 +17,9 @@ inline mission_control::mc_commands validate_commands(mission_control::mc_comman
     commands.speed = 1;
   }
 
-  if (!commands.is_operational) {
-    commands.speed = 1;
-  }
+  // if (!commands.is_operational) {
+  //   commands.speed = 1;
+  // }
   return commands;
 }
 }  // namespace arm

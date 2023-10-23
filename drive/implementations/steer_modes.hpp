@@ -7,13 +7,14 @@
 
 namespace sjsu::drive {
 
-static constexpr float left_leg_drive_offset = 41;
-static constexpr float right_leg_drive_offset = 200;
-static constexpr float back_leg_drive_offset = 122;
+static constexpr float left_leg_drive_offset = 37;   // 41
+static constexpr float right_leg_drive_offset = 199.5; // 200
+static constexpr float back_leg_drive_offset = 117;  // 122
+
 static constexpr float left_leg_spin_offset = 242;
 static constexpr float right_leg_spin_offset = 0;
 static constexpr float back_leg_spin_offset = 0;
-static constexpr float left_leg_translate_offset = 0;
+
 
 inline tri_wheel_router_arguments spin_steering(mission_control::mc_commands commands)
 {
@@ -93,7 +94,7 @@ inline float get_back_wheel_hub_speed(float outter_wheel_speed,
 
 inline tri_wheel_router_arguments drive_steering(mission_control::mc_commands commands)
 {
-  float outter_wheel_angle = 0, back_wheel_angle = 0;
+  float outter_wheel_angle = 0.0, back_wheel_angle = 0.0;
   tri_wheel_router_arguments steer_arguments;
 
   if (commands.angle > 0) {
@@ -111,9 +112,9 @@ inline tri_wheel_router_arguments drive_steering(mission_control::mc_commands co
     steer_arguments.right.angle = 0;
   } else {
     outter_wheel_angle = -outter_wheel_angle;
-    back_wheel_angle = float(-.0474 + -1.93 * abs(int(outter_wheel_angle)) +
-                             -.0813 * pow(abs(int(outter_wheel_angle)), 2) +
-                             .000555 * pow(abs(int(outter_wheel_angle)), 3));
+    back_wheel_angle = float(-.0474 + -1.93 * abs(static_cast<int>(outter_wheel_angle)) +
+                             -.0813 * pow(abs(static_cast<int>(outter_wheel_angle)), 2) +
+                             .000555 * pow(abs(static_cast<int>(outter_wheel_angle)), 3));
     back_wheel_angle =
       (outter_wheel_angle > 0) ? -back_wheel_angle : back_wheel_angle;
     steer_arguments.back.angle = back_wheel_angle;

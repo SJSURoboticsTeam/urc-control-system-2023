@@ -7,42 +7,52 @@
 #include <libhal/steady_clock.hpp>
 #include <libhal/timeout.hpp>
 
-namespace sjsu::drive{
+namespace sjsu::arm {
 
-static constexpr char kResponseBodyFormat[] =
-  "{\"HB\":%d,\"IO\":%d,\"WO\":%d,\"DM\":\"%c\",\"CMD\":[%d,%d]}\n";
-
-static constexpr char kGETRequestFormat[] =
-  "drive?heartbeat_count=%d&is_operational=%d&wheel_orientation=%d&drive_mode=%"
-  "c&speed=%d&angle=%d";
-
+const char kResponseBodyFormat[] =
+  "{\"heartbeat_count\":%d,\"is_operational\":%d,\"speed\":%d,\"angles\":[%d,%"
+  "d,%d,%d,%d,%d]}\n";
+const char kGETRequestFormat[] =
+  "arm?heartbeat_count=%d&is_operational=%d&speed=%d&rotunda_angle=%d&shoulder_"
+  "angle=%d&elbow_angle=%d&wrist_pitch_angle=%d&wrist_roll_angle=%d&rr9_angle=%"
+  "d";
 
 class mission_control
 {
-  public:
+public:
   struct mc_commands
   {
-    char mode = 'D';
-    int speed = 0;
-    int angle = 0;
-    int wheel_orientation = 0;
-    int is_operational = 0;
     int heartbeat_count = 0;
+    int is_operational = 0;
+    int speed = 1;
+    int rotunda_angle = 0;
+    int shoulder_angle = 0;
+    int elbow_angle = 0;
+    int wrist_pitch_angle = 0;
+    int wrist_roll_angle = 0;
+    int rr9_angle = 0;
+
     hal::status print(hal::serial* terminal)
     {
       hal::print<128>(*terminal,
                       "HB: %d\n"
                       "IS_OP: %d\n"
                       "Speed: %d\n"
-                      "Angle: %d\n"
-                      "Mode: %c\n"
-                      "Wheel Orientation: %d\n",
+                      "Rotunda: %d\n"
+                      "Shoulder: %d\n"
+                      "Elbow: %d\n"
+                      " WRP: %d\n"
+                      " WRR: %d\n"
+                      " RR9: %d\n",
                       heartbeat_count,
                       is_operational,
                       speed,
-                      angle,
-                      mode,
-                      wheel_orientation);
+                      rotunda_angle,
+                      shoulder_angle,
+                      elbow_angle,
+                      wrist_pitch_angle,
+                      wrist_roll_angle,
+                      rr9_angle);
       return hal::success();
     }
   };
@@ -68,7 +78,8 @@ class mission_control
    * commands have been received, then this should return the default
    * initialized command.
    */
-  hal::result<mc_commands> get_command(hal::function_ref<hal::timeout_function> p_timeout)
+  hal::result<mc_commands> get_command(
+    hal::function_ref<hal::timeout_function> p_timeout)
   {
     return impl_get_command(p_timeout);
   }
@@ -80,4 +91,4 @@ private:
     hal::function_ref<hal::timeout_function> p_timeout) = 0;
 };
 
-}
+}  // namespace sjsu::arm

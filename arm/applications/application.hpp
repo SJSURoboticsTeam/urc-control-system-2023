@@ -4,7 +4,8 @@
 #include <libhal/servo.hpp>
 #include <libhal/steady_clock.hpp>
 #include <libhal/timeout.hpp>
-#include "mission_control.hpp"
+
+#include "../platform-implementations/mission_control.hpp"
 
 namespace sjsu::arm {
 struct application_framework

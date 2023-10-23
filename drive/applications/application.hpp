@@ -15,12 +15,13 @@ namespace sjsu::drive {
 struct leg {
   hal::servo* steer;
   hal::motor* propulsion;
-  speed_sensor* spd_sensor; 
+  speed_sensor* steer_speed_sensor;
+  speed_sensor* propulsion_speed_sensor;
 };
 
 struct application_framework
 {
-  std::span<leg> legs;
+  std::span<leg*> legs;
 
   mission_control* mc;
 
