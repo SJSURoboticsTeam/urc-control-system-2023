@@ -149,7 +149,7 @@ hal::result<application_framework> initialize_platform()
               .propulsion_speed_sensor = &right_leg_drc_hub_speed_sensor,
               };
 
-  static leg back_leg{.steer = &back_leg_drc_offset_servo, 
+  stat`c leg back_leg{.steer = &back_leg_drc_offset_servo, 
               .propulsion = &back_leg_drc_motor,
               .steer_speed_sensor = &back_leg_drc_steer_speed_sensor,
               .propulsion_speed_sensor = &back_leg_drc_hub_speed_sensor

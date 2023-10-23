@@ -25,15 +25,14 @@
 #include <libhal-lpc40/output_pin.hpp>
 #include <libhal-lpc40/pwm.hpp>
 // #include <libhal-lpc40/system_controller.hpp> //not sure why we need this?
-#include <libhal-lpc40/uart.hpp>
 #include <libhal-lpc40/clock.hpp>
+#include <libhal-lpc40/uart.hpp>
 
 #include <libhal-util/units.hpp>
 
 #include "application.hpp"
-namespace sjsu::science
-{
-  hal::status initialize_processor()
+namespace sjsu::science {
+hal::status initialize_processor()
 {
   hal::cortex_m::initialize_data_section();
   hal::cortex_m::initialize_floating_point_unit();
@@ -55,49 +54,51 @@ hal::result<application_framework> initialize_platform()
 
   // Serial
   static std::array<hal::byte, 1024> recieve_buffer0{};
-  static auto uart0 = HAL_CHECK((hal::lpc40::uart::get(0, recieve_buffer0, hal::serial::settings{
-    .baud_rate = 38400,
-  })));
-  HAL_CHECK(hal::write(uart0, "created serial\n"));
-  //Don't think we need can for the science applications thus far
-  // hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
-  // auto& can = HAL_CHECK((hal::lpc40::can::get<2>(can_settings)));
+  static auto uart0 = HAL_CHECK((hal::lpc40::uart::get(0,
+                                                       recieve_buffer0,
+                                                       hal::serial::settings{
+                                                         .baud_rate = 38400,
+                                                       })));
+  // Don't think we need can for the science applications thus far
+  //  hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
+  //  auto& can = HAL_CHECK((hal::lpc40::can::get<2>(can_settings)));
 
-  auto& in_pin0 = HAL_CHECK((hal::lpc40::input_pin::get<1, 15>()));
-  auto& in_pin1 = HAL_CHECK((hal::lpc40::input_pin::get<1, 23>()));
-  auto& in_pin2 = HAL_CHECK((hal::lpc40::input_pin::get<1, 22>()));
+  static auto in_pin0 =
+    HAL_CHECK(hal::lpc40::input_pin::get(1, 15, hal::input_pin::settings{}));
+  static auto in_pin1 =
+    HAL_CHECK(hal::lpc40::input_pin::get(1, 23, hal::input_pin::settings{}));
+  static auto in_pin2 =
+    HAL_CHECK(hal::lpc40::input_pin::get(1, 22, hal::input_pin::settings{}));
 
-  auto& pwm_1_6 = HAL_CHECK((hal::lpc40::pwm::get<1, 6>()));
-  auto& pwm_1_5 = HAL_CHECK((hal::lpc40::pwm::get<1, 5>()));
+  static auto pwm_1_6 = HAL_CHECK((hal::lpc40::pwm::get(1, 6)));
+  static auto pwm_1_5 = HAL_CHECK((hal::lpc40::pwm::get(1, 5)));
 
-  auto& adc_4 = HAL_CHECK(hal::lpc40::adc::get<4>());
-  auto& adc_5 = HAL_CHECK(hal::lpc40::adc::get<5>());
+  static auto adc_4 = HAL_CHECK(hal::lpc40::adc::get(4));
+  static auto adc_5 = HAL_CHECK(hal::lpc40::adc::get(5));
 
-  auto& uart1 =
-    HAL_CHECK((hal::lpc40::uart::get<1, 8192>(hal::serial::settings{
-      .baud_rate = 115200,
-    })));
+  std::array<hal::byte, 1024> receive_buffer{};
+  static auto uart1 = HAL_CHECK(hal::lpc40::uart::get(0,
+                                                      receive_buffer,
+                                                      {
+                                                        .baud_rate = 115200.0f,
+                                                      }));
 
-  auto& i2c = HAL_CHECK((hal::lpc40::i2c::get<2>(hal::i2c::settings{
-    .clock_rate = 100.0_kHz,
-  })));
+  static auto i2c = HAL_CHECK(hal::lpc40::i2c::get(2));
 
-  return application_framework{ .terminal = &uart0,
-                                // .can = &can,
-                                .in_pin0 = &in_pin0,
-                                .in_pin1 = &in_pin1,
-                                .in_pin2 = &in_pin2,
-                                .pwm_1_6 = &pwm_1_6,
-                                .pwm_1_5 = &pwm_1_5,
-                                .adc_4 = &adc_4,
-                                .adc_5 = &adc_5,
-                                .esp = &uart1,
-                                .i2c = &i2c,
-                                .steady_clock = &counter,
-                                .reset = []() {
-                                  hal::cortex_m::system_control::reset();
-                                } };
-}
-
-} // namespace sjsu::science
-
+  return application_framework{
+    .terminal = &uart0,
+    // .can = &can,
+    .in_pin0 = &in_pin0,
+    .in_pin1 = &in_pin1,
+    .in_pin2 = &in_pin2,
+    .pwm_1_6 = &pwm_1_6,
+    .pwm_1_5 = &pwm_1_5,
+    .adc_4 = &adc_4,
+    .adc_5 = &adc_5,
+    .esp = &uart1,
+    .i2c = &i2c,
+    .steady_clock = &counter,
+    .reset = []() { hal::cortex_m::reset(); },
+  };
+};
+}  // namespace sjsu::science
