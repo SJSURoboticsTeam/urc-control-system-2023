@@ -36,12 +36,13 @@ jobs:
 
       - name: 📡 Add `libhal-trunk` conan remote
         run: conan remote add libhal-trunk https://libhal.jfrog.io/artifactory/api/conan/trunk-conan
-      
-      - name: Setup default profile
-        run: conan profile detect --force
+
 
       - name: Setting up conan profile
+        run: conan profile detect --force
         run: conan config install -sf profiles/${{matrix.profile_name}}/ -tf profiles https://github.com/libhal/conan-config.git
+        run: conan config install -sf conan/profiles/ -tf profiles https://github.com/libhal/libhal-armcortex.git
+        run: conan config install -sf conan/profiles/ -tf profiles https://github.com/libhal/libhal-lpc40.git
 
       - name: Build drive
         working-directory: drive
