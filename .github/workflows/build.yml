@@ -40,7 +40,11 @@ jobs:
       - name: 📡 Add `libhal-trunk` conan remote
         run: conan remote add libhal-trunk https://libhal.jfrog.io/artifactory/api/conan/trunk-conan
 
-      - name: Build Code
-        working-directory: code
-        run: conan build . -b missing
+      - name: Build drive
+        working-directory: drive
+        run: conan build . -pr lpc4078 -s build_type=MinSizeRel -b missing
+
+      - name: Build arm
+        working-directory: arm
+        run: conan build . -pr lpc4078 -s build_type=MinSizeRel -b missing
       
