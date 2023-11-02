@@ -39,7 +39,7 @@ hal::status application(application_framework& p_framework)
 
   while (true) {
     if(loop_count==10) {
-      auto timeout = hal::create_timeout(clock, 5s);
+      auto timeout = hal::create_timeout(clock, 1s);
       commands = mission_control.get_command(timeout).value();
       loop_count=0;
     } 
@@ -54,7 +54,7 @@ hal::status application(application_framework& p_framework)
     
     arguments = sjsu::drive::select_mode(commands);
     HAL_CHECK(tri_wheel.move(arguments, clock));
-    hal::delay(clock, 6ms);
+    hal::delay(clock, 8ms);
   }
 
   return hal::success();
