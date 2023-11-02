@@ -32,13 +32,16 @@ jobs:
           fetch-depth: 0
 
       - name: 📥 Install CMake & Conan
-        run: pip3 install cmake conan
-
-      - name: Setting up conan profile
-        run: conan config install -sf profiles/${{matrix.profile_name}}/ -tf profiles https://github.com/libhal/conan-config.git
+        run: python3 -m pip install "conan>=2.0.6" cmake
 
       - name: 📡 Add `libhal-trunk` conan remote
         run: conan remote add libhal-trunk https://libhal.jfrog.io/artifactory/api/conan/trunk-conan
+      
+      - name: Setup default profile
+        run: conan profile detect --force
+
+      - name: Setting up conan profile
+        run: conan config install -sf profiles/${{matrix.profile_name}}/ -tf profiles https://github.com/libhal/conan-config.git
 
       - name: Build drive
         working-directory: drive
