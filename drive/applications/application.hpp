@@ -19,6 +19,8 @@ struct leg {
   speed_sensor* propulsion_speed_sensor;
 };
 
+// for four legs, the order of legs in the span need's to be front-left, front-right, back-left, back-right
+// for three legs, the order of legs in the span need's to be left, right, back
 struct application_framework
 {
   std::span<leg*> legs;

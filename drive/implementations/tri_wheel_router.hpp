@@ -15,24 +15,18 @@ class tri_wheel_router
 {
 public:
 
-  tri_wheel_router(leg& p_back, leg& p_right, leg& p_left)
-    : m_left(p_left)
-    , m_back(p_back)
-    , m_right(p_right)
+  tri_wheel_router(std::span<leg&> p_legs)
+  : m_legs(p_legs)
   {
   }
 
   hal::status move(tri_wheel_router_arguments p_tri_wheel_arguments,
                    hal::steady_clock& p_clock)
   {
-    HAL_CHECK(m_left.steer->position(-p_tri_wheel_arguments.left.angle));
-    HAL_CHECK(m_left.propulsion->power(p_tri_wheel_arguments.left.speed/100));
-
-    HAL_CHECK(m_right.steer->position(-p_tri_wheel_arguments.right.angle));
-    HAL_CHECK(m_right.propulsion->power(-p_tri_wheel_arguments.right.speed/100));
-
-    HAL_CHECK(m_back.steer->position(-p_tri_wheel_arguments.back.angle));
-    HAL_CHECK(m_back.propulsion->power(p_tri_wheel_arguments.back.speed/100));
+    for(int i = 0; i < m_legs.size(); i++) {
+      HAL_CHECK(m_legs[i].steer->position(-p_tri_wheel_arguments.args[i].angle));
+      HAL_CHECK(m_left.propulsion->power(p_tri_wheel_arguments.args[i].speed/100));      
+    }
 
     return hal::success();
   }
@@ -43,12 +37,10 @@ public:
     using namespace hal::literals;
     motor_feedback motor_speeds;
     
-    motor_speeds.left_drive_speed = HAL_CHECK(m_left.propulsion_speed_sensor->read()).speed;
-    motor_speeds.left_steer_speed = HAL_CHECK(m_left.steer_speed_sensor->read()).speed;
-    motor_speeds.back_drive_speed = HAL_CHECK(m_back.propulsion_speed_sensor->read()).speed;
-    motor_speeds.back_steer_speed = HAL_CHECK(m_back.steer_speed_sensor->read()).speed;
-    motor_speeds.right_drive_speed = HAL_CHECK(m_right.propulsion_speed_sensor->read()).speed;
-    motor_speeds.right_steer_speed = HAL_CHECK(m_right.steer_speed_sensor->read()).speed;
+    for(int i = 0; i < m_legs.size(); i++) {
+          motor_speeds[i].drive = HAL_CHECK(m_legs[i].propulsion_speed_sensor->read()).speed;
+          motor_speeds[i].speed = HAL_CHECK(m_legs[i].steer_speed_sensor->read()).speed;
+    }
 
     return motor_speeds;
   }
@@ -56,9 +48,6 @@ public:
 private:
 
   // member variables
-
-  leg& m_left;
-  leg& m_back;
-  leg& m_right;
+  std::span<leg&> m_legs;
 };
 }  // namespace Drive

@@ -6,23 +6,28 @@
 #include "../platform-implementations/mission_control.hpp"
 
 namespace sjsu::drive {
-inline tri_wheel_router_arguments select_mode(mission_control::mc_commands commands)
+inline tri_wheel_router_arguments select_mode(mission_control::mc_commands commands, int leg_count)
 {
-  switch (commands.mode) {
-    case 'D':
-      return drive_steering(commands);
-      break;
-    case 'S':
-      return spin_steering(commands);
-      break;
-    case 'T':
-      return translate_steering(commands);
-      break;
-    case 'H':
-      // do nothing to get it into drive mode
-      break;
-    default:
-      break;
+  if(leg_count == 3) {
+    switch (commands.mode) {
+      case 'D':
+        return drive_steering(commands);
+        break;
+      case 'S':
+        return spin_steering(commands);
+        break;
+      case 'T':
+        return translate_steering(commands);
+        break;
+      case 'H':
+        // do nothing to get it into drive mode
+        break;
+      default:
+        break;
+    }
+  }
+  else if(leg_count == 4) {
+
   }
   return tri_wheel_router_arguments{};
 }

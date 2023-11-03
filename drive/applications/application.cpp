@@ -18,18 +18,17 @@ hal::status application(application_framework& p_framework)
   using namespace std::chrono_literals;
   using namespace hal::literals;
 
-  auto& left_leg = *p_framework.legs[0];
-  auto& right_leg = *p_framework.legs[1];
-  auto& back_leg = *p_framework.legs[2];
+  auto& legs = *p_framework.legs;
   auto& mission_control = *(p_framework.mc);
   auto& terminal = *p_framework.terminal;
   auto& clock = *p_framework.clock;
   auto loop_count = 0;
+  auto leg_count = legs.size();
 
-  sjsu::drive::tri_wheel_router tri_wheel{back_leg, right_leg, left_leg};
+  sjsu::drive::tri_wheel_router tri_wheel{legs};
   sjsu::drive::mission_control::mc_commands commands;
   sjsu::drive::motor_feedback motor_speeds;
-  sjsu::drive::tri_wheel_router_arguments arguments;
+  sjsu::drive::tri_wheel_router_arguments arguments{};
 
   sjsu::drive::mode_switch mode_switcher;
   sjsu::drive::command_lerper lerp;
@@ -52,7 +51,7 @@ hal::status application(application_framework& p_framework)
     commands, arguments, motor_speeds, terminal);
     commands.speed = lerp.lerp(commands.speed);
     
-    arguments = sjsu::drive::select_mode(commands);
+    arguments = sjsu::drive::select_mode(commands, leg_count);
     HAL_CHECK(tri_wheel.move(arguments, clock));
     hal::delay(clock, 8ms);
   }

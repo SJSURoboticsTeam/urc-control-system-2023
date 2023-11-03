@@ -19,9 +19,7 @@ struct drive_arguments
 
 struct tri_wheel_router_arguments
 {
-  drive_arguments left{};
-  drive_arguments right{};
-  drive_arguments back{};
+  std::array<drive_arguments*, 4> args;
 };
 
 }  // namespace Drive

@@ -15,19 +15,15 @@ public:
     motor_feedback current_motor_feedback,
     hal::serial& terminal)
   {
-    bool hubs_stopped((previous_arguments.left.speed >= -0.01f &&
-                       previous_arguments.left.speed <= 0.01f) &&
-                      (previous_arguments.right.speed >= -0.01f &&
-                       previous_arguments.right.speed <= 0.01f) &&
-                      (previous_arguments.back.speed >= -0.01f &&
-                       previous_arguments.back.speed <= 0.01f));
+    bool hubs_stopped = true;
+    for(int i = 0; i < previous_arguments.size(); i++) {
+      hubs_stopped &= (previous_arguments[i]->speed >= -0.01f) && (previous_arguments[i]->speed <= 0.01f);
+    }
 
-    bool steers_stopped((current_motor_feedback.left_steer_speed >= -0.01f &&
-                         current_motor_feedback.left_steer_speed <= 0.01f) &&
-                        (current_motor_feedback.right_steer_speed >= -0.01f &&
-                         current_motor_feedback.right_steer_speed <= 0.01f) &&
-                        (current_motor_feedback.back_steer_speed >= -0.01f &&
-                         current_motor_feedback.back_steer_speed <= 0.01f));
+    bool steers_stopped = true;
+    for(int i = 0; i < current_motor_feedback.size(); i++) {
+      steers_stopped &= (current_motor_feedback[i].speed >= -0.01f) && (current_motor_feedback[i].speed <= 0.01f);
+    }
 
     if (previous_mode_ != commands.mode) {
       in_the_middle_of_switching_modes_ = true;
