@@ -28,7 +28,7 @@ hal::status application(application_framework& p_framework)
 
   sjsu::drive::tri_wheel_router tri_wheel{back_leg, right_leg, left_leg};
   sjsu::drive::mission_control::mc_commands commands;
-  sjsu::drive::motor_feedback motor_speeds;
+  sjsu::drive::motor_feedback motor_speeds; 
   sjsu::drive::tri_wheel_router_arguments arguments;
 
   sjsu::drive::mode_switch mode_switcher;
@@ -40,19 +40,19 @@ hal::status application(application_framework& p_framework)
   while (true) {
     if(loop_count==10) {
       auto timeout = hal::create_timeout(clock, 5s);
-      commands = mission_control.get_command(timeout).value();
+      commands = mission_control.get_command(timeout).value(); //where we want to be
       loop_count=0;
     } 
     loop_count++;
-    motor_speeds = HAL_CHECK(tri_wheel.get_motor_feedback());
+    motor_speeds = HAL_CHECK(tri_wheel.get_motor_feedback()); //where we are
     
-    commands = sjsu::drive::validate_commands(commands);
+    commands = sjsu::drive::validate_commands(commands); //make sure commands correct
 
-    commands = mode_switcher.switch_steer_mode(
+    commands = mode_switcher.switch_steer_mode( 
     commands, arguments, motor_speeds, terminal);
-    commands.speed = lerp.lerp(commands.speed);
+    commands.speed = lerp.lerp(commands.speed); //raw angle and speed is sent to outermost wheel
     
-    arguments = sjsu::drive::select_mode(commands);
+    arguments = sjsu::drive::select_mode(commands); //calculate arguments from one command angle and speed
     HAL_CHECK(tri_wheel.move(arguments, clock));
     hal::delay(clock, 6ms);
   }

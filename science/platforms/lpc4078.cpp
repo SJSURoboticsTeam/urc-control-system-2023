@@ -30,7 +30,7 @@
 
 #include <libhal-util/units.hpp>
 
-#include "application.hpp"
+#include "applications/application.hpp"
 namespace sjsu::science {
 hal::status initialize_processor()
 {

@@ -70,7 +70,12 @@ hal::result<application_framework> initialize_platform()
   static auto left_leg_drc_motor = HAL_CHECK(hal::make_motor(left_leg_hub_drc, 100.0_rpm));
   static auto left_leg_drc_hub_speed_sensor = HAL_CHECK(make_speed_sensor(left_leg_hub_drc));
   
+  // static auto left_leg_drc_print_servo = HAL_CHECK(print_servo::create(uart0,left_leg_drc_servo))
+  // static auto left_leg_drc_print_offset_servo = HAL_CHECK(offset_servo::create(left_leg_drc_print_servo, 0.0f));
   static auto left_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(left_leg_drc_servo, 0.0f));
+  static auto left_leg_drc_print_offset_servo = HAL_CHECK(print_servo::create(left_leg_drc_offset_servo, 0.0f));
+
+  // static left_leg_drc_offset_servo = 
 
   static auto left_home = homing{&left_leg_drc_offset_servo, &left_leg_mag, false};
   // static auto left_leg_drc_speed_sensor = HAL_CHECK(print_speed_sensor::make_speed_sensor(uart0));
@@ -89,6 +94,7 @@ hal::result<application_framework> initialize_platform()
   static auto right_leg_drc_hub_speed_sensor = HAL_CHECK(make_speed_sensor(right_leg_hub_drc));
 
   static auto right_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(right_leg_drc_servo, 0.0f));
+
   static auto right_home = homing{&right_leg_drc_offset_servo, &right_leg_mag, false};
   // static auto right_leg_drc_speed_sensor = HAL_CHECK(print_speed_sensor::make_speed_sensor(uart0));
   // static auto right_leg_drc_offset_servo  = HAL_CHECK(print_servo::create(uart0));
@@ -137,7 +143,7 @@ hal::result<application_framework> initialize_platform()
   // hal::print<100>(uart0, "right offset: %f", right_home.servo->get_offset());
   // hal::print<100>(uart0, "left offset: %f", left_home.servo->get_offset());
   // hal::print<100>(uart0, "back offset: %f", back_home.servo->get_offset());
-  static leg left_leg{.steer = &left_leg_drc_offset_servo, 
+  static leg left_leg{.steer = &left_leg_drc_print_offset_servo, 
               .propulsion = &left_leg_drc_motor,
               .steer_speed_sensor = &left_leg_drc_steer_speed_sensor,
               .propulsion_speed_sensor = &left_leg_drc_hub_speed_sensor,
@@ -149,7 +155,7 @@ hal::result<application_framework> initialize_platform()
               .propulsion_speed_sensor = &right_leg_drc_hub_speed_sensor,
               };
 
-  stat`c leg back_leg{.steer = &back_leg_drc_offset_servo, 
+  static leg back_leg{.steer = &back_leg_drc_offset_servo, 
               .propulsion = &back_leg_drc_motor,
               .steer_speed_sensor = &back_leg_drc_steer_speed_sensor,
               .propulsion_speed_sensor = &back_leg_drc_hub_speed_sensor

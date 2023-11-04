@@ -20,7 +20,7 @@
 #include <cstdio>
 #include <cstring>
 
-#include "application.hpp"
+#include "applications/application.hpp"
 
 int main()
 {

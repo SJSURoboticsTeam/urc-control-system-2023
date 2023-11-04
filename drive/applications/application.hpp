@@ -13,7 +13,7 @@
 namespace sjsu::drive {
 
 struct leg {
-  hal::servo* steer;
+  hal::servo* steer; //
   hal::motor* propulsion;
   speed_sensor* steer_speed_sensor;
   speed_sensor* propulsion_speed_sensor;
