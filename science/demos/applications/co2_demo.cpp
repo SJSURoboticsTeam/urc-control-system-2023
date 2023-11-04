@@ -5,28 +5,29 @@
 #include <libhal-util/steady_clock.hpp>
 #include <libhal/units.hpp>
 
-#include "../../hardware_map.hpp"
-#include "../../science/implementations/co2_sensor.hpp"
+#include "../../platform-implementations/co2_sensor_sc40.cpp"
+#include "../hardware_map.hpp"
 
 using namespace hal::literals;
 using namespace std::chrono_literals;
+namespace sjsu::science {
 
-hal::status application(sjsu::hardware_map& p_map)
+hal::status application(application_framework& p_framework)
 {
   // configure drivers
-  auto& i2c2 = *p_map.i2c;
-  auto& clock = *p_map.steady_clock;
-  auto& terminal = *p_map.terminal;
+  auto& i2c2 = *p_framework.i2c;
+  auto& clock = *p_framework.steady_clock;
+  auto& terminal = *p_framework.terminal;
 
-  auto co2_sensor =
-    HAL_CHECK(science::co2_sensor::create(i2c2, clock));
+  auto co2_sensor = HAL_CHECK(science::co2_sensor::create(i2c2, clock));
 
   while (true) {
-    HAL_CHECK(hal::delay(clock, 500ms));
+    hal::delay(clock, 500ms);
     auto co2_level = HAL_CHECK(co2_sensor.read_co2());
     hal::print<64>(terminal, "C02: %d\n", co2_level);
-    HAL_CHECK(hal::delay(clock, 1000ms));
+    hal::delay(clock, 1ms);
   }
 
   return hal::success();
 }
+}  // namespace sjsu::science

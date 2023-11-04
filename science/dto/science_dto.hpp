@@ -1,7 +1,7 @@
 #pragma once
 #include <libhal-util/serial.hpp> //include for print and serial
 
-namespace science {
+namespace sjsu::science {
 
 // commands are parsed from mission control
 //this file is specific to last year's science project, so will be deleted or completely rewritten

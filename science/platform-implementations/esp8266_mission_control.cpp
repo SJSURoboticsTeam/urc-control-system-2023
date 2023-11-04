@@ -12,7 +12,7 @@
 #include <libhal-util/timeout.hpp>
 #include <libhal/timeout.hpp>
 
-namespace sjsu::drive {
+namespace sjsu::science {
 
 class esp8266_mission_control : public mission_control
 {

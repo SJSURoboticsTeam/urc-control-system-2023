@@ -4,7 +4,7 @@
 #include <libhal/adc.hpp>
 #include <cmath>
 
-namespace science{
+namespace sjsu::science{
 
 /// @brief A Generic ADC Driver. This is designed to be a higher level interface for analog devices.
 class generic_adc_sensor {

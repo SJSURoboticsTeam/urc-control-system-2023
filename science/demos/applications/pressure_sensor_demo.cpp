@@ -5,30 +5,29 @@
 #include <libhal-util/steady_clock.hpp>
 #include <libhal/units.hpp>
 
-#include "../../hardware_map.hpp"
 #include "../../platform-implementations/pressure_sensor_bme680.cpp"
+#include "../hardware_map.hpp"
 
 using namespace hal::literals;
 using namespace std::chrono_literals;
+namespace sjsu::science {
 
-hal::status application(sjsu::hardware_map& p_map)
+hal::status application(application_framework& p_framework)
 {
   // configure drivers
-  auto& i2c2 = *p_map.i2c;
-  auto& clock = *p_map.steady_clock;
-  auto& terminal = *p_map.terminal;
+  auto& i2c2 = *p_framework.i2c;
+  auto& clock = *p_framework.steady_clock;
+  auto& terminal = *p_framework.terminal;
 
-  auto pressure_sensor = HAL_CHECK(science::pressure_sensor_bme680::create(i2c2, clock, terminal));
+  auto pressure_sensor =
+    HAL_CHECK(science::pressure_sensor_bme680::create(i2c2, clock, terminal));
   hal::print<64>(terminal, "\nApplication related stuff initialized\n");
 
   HAL_CHECK(pressure_sensor.start());
 
   while (true) {
 
-    // HAL_CHECK(pressure_sensor.set_focus_mode()); 
-
-
-    HAL_CHECK(hal::delay(clock, 100ms));
+    hal::delay(clock, 1ms);
 
     HAL_CHECK(pressure_sensor.get_parsed_data());
     int16_t temp = HAL_CHECK(pressure_sensor.get_temperature());
@@ -38,9 +37,10 @@ hal::status application(sjsu::hardware_map& p_map)
     hal::print<64>(terminal, "Temperature %d\n", temp);
     hal::print<64>(terminal, "Pressure %d\n", pres);
 
-    HAL_CHECK(hal::delay(clock, 10ms));
-    //senor automatically returns to sleep mode so we need to change that
+    hal::delay(clock, 1ms);
+    // senor automatically returns to sleep mode so we need to change that
   }
 
   return hal::success();
 }
+}  // namespace sjsu::science

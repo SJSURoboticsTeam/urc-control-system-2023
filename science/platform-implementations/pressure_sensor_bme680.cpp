@@ -9,7 +9,7 @@
 using namespace hal::literals;
 using namespace std::chrono_literals;
            
-namespace science {
+namespace sjsu::science {
 class pressure_sensor_bme680
 {
 private:
@@ -88,11 +88,11 @@ public:
     //4-6th bit to select pressure oversampling
     //7-8th bit for forced mode, which is what we need
     HAL_CHECK(hal::write(m_i2c, addresses::address, forced_mode_add,hal::never_timeout())); //change from sleep mode to forced mode
-    HAL_CHECK(hal::delay(steady_clock, 1ms));
+    hal::delay(steady_clock, 1ms);
 
   
     HAL_CHECK(hal::write(m_i2c, addresses::address, filter_add,hal::never_timeout()));
-    HAL_CHECK(hal::delay(steady_clock, 1ms));
+    hal::delay(steady_clock, 1ms);
 
     HAL_CHECK(set_focus_mode(0));
 
@@ -133,7 +133,7 @@ public:
 
     HAL_CHECK(hal::write_then_read(m_i2c,addresses::address, start_add_1, coeff_arr1, hal::never_timeout()));
     
-    HAL_CHECK(hal::delay(steady_clock, 1ms));
+    hal::delay(steady_clock, 1ms);
 
     HAL_CHECK(hal::write_then_read(m_i2c,addresses::address, start_add_2, coeff_arr2, hal::never_timeout()));
 
@@ -193,7 +193,7 @@ public:
 
     HAL_CHECK(calculate_temperature(adc_temp));
     
-    HAL_CHECK(hal::delay(steady_clock, 1ms));
+    hal::delay(steady_clock, 1ms);
 
     HAL_CHECK(calculate_pressure(adc_pres));
 

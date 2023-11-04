@@ -12,20 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <libhal-armcortex/startup.hpp>
-#include <libhal-armcortex/system_control.hpp>
-#include <libhal/error.hpp>
-
-// Application function must be implemented by one of the compilation units
-// (.cpp) files.
-extern hal::status application();
+#include "hardware_map.hpp"
 
 int main()
 {
-  auto is_finished = application();
+  auto platform_status = sjsu::science::initialize_platform();
+
+  if (!platform_status) {
+    hal::halt();
+  }
+
+  auto hardware_map = platform_status.value();
+  auto is_finished = application(hardware_map);
 
   if (!is_finished) {
-    hal::cortex_m::reset();
+    hardware_map.reset();
   } else {
     hal::halt();
   }

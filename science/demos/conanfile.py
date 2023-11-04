@@ -1,5 +1,3 @@
-#!/usr/bin/python
-#
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,19 +22,18 @@ class demos(ConanFile):
     options = {"platform": ["ANY"]}
     default_options = {"platform": "unspecified"}
 
+    def build_requirements(self):
+        self.tool_requires("cmake/3.27.1")
+        self.tool_requires("libhal-cmake-util/2.2.0")
+
+    def requirements(self):
+        if str(self.options.platform).startswith("lpc40"):
+            self.requires("libhal-lpc40/[^2.1.4]")
+        self.requires("libhal-rmd/3.0.0")
+
     def layout(self):
         platform_directory = "build/" + str(self.options.platform)
         cmake_layout(self, build_folder=platform_directory)
-
-    def validate(self):
-        pass
-
-    def build_requirements(self):
-        self.tool_requires("cmake/3.27.1")
-        self.tool_requires("libhal-cmake-util/2.1.0")
-
-    def requirements(self):
-        self.requires("libhal-lpc40/2.1.4")
 
     def build(self):
         cmake = CMake(self)

@@ -14,7 +14,7 @@
 
 using namespace hal::literals;
 using namespace std::chrono_literals;
-namespace science {
+namespace sjsu::science {
 class co2_sensor
 {
 private:
@@ -69,7 +69,7 @@ public:
     // hal::write_then_read(m_i2c, addresses::address, burrito, buffer,
     // hal::never_timeout());
     HAL_CHECK(hal::write(m_i2c, addresses::address, read_address));
-    HAL_CHECK(hal::delay(steady_clock, 1ms));
+    hal::delay(steady_clock, 1ms);
 
     HAL_CHECK(
       hal::read(m_i2c, addresses::address, buffer, hal::never_timeout()));

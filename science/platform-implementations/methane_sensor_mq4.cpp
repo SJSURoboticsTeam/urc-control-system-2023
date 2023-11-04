@@ -6,7 +6,7 @@
 
 #include "adc_sensor.hpp"
 
-namespace science{
+namespace sjsu::science{
 
 /// @brief Implementation driver for MQ4 methane sensor
 class mq4_methane_sensor : generic_adc_sensor{
