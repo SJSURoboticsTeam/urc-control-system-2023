@@ -1,44 +1,36 @@
 #pragma once
 
-#include <libhal/output_pin.hpp>
+namespace sjsu::drive {
 
-namespace sjsu::drive
+class relay 
 {
+    public:
+    struct set_status_t 
+    {};
 
-class relay : public hal::output_pin {
-public:
-    static hal::result<relay> create(hal::output_pin& p_toggle) {
-        return relay(p_toggle);
-    }
+    struct status_t {
+        bool status = false;
+    };
 
-    void turn_on() {
-
-    }
-
-
-
-private:
-    level_t level;
-    
-
-    relay(hal::output_pin& p_toggle) : m_toggle(&p_toggle)
+    [[nodiscard]] hal::result<status_t> status()
     {
+        return driver_status(); 
     }
 
-    hal::output_pin* m_toggle = nullptr;
-    
-    status driver_configure(const settings& p_settings) override {
-        return hal::success();
-    }
-    result<set_level_t> driver_level(bool p_high) override {
-
-    }
-    result<level_t> driver_level() override {
-
+    [[nodiscard]] hal::result<status_t> toggle(bool p_toggle)
+    {
+        return driver_toggle(p_toggle); 
     }
 
+    virtual ~relay() = default;
 
+    private:
+    virtual hal::result<status_t> driver_status() = 0;
+    virtual hal::result<set_status_t> driver_toggle(bool p_toggle) = 0;
+};
 }
 
 
-}
+// static hal::result<relay> create(hal::output_pin& p_toggle) {
+    //     return relay(p_toggle);
+    // }
