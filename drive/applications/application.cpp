@@ -41,7 +41,7 @@ hal::status application(application_framework& p_framework)
     if(loop_count==10) {
       auto timeout = hal::create_timeout(clock, 1s);
       commands = mission_control.get_command(timeout).value();
-      loop_count=0;
+      loop_count = 0;
     }
     loop_count++;
     motor_speeds = HAL_CHECK(tri_wheel.get_motor_feedback());
