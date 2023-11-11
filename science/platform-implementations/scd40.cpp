@@ -1,23 +1,21 @@
 #pragma once
 
-#include <libhal-util/i2c.hpp>
-#include <libhal-util/serial.hpp>
 #include "scd40.hpp"
 
-class scd40 {
-    create(hal::i2c& p_i2c, hal::steady_clock& clock){
+    hal::result<scd40> scd40::create(hal::i2c& p_i2c, hal::steady_clock& clock){
         scd40 scd40 = scd40(p_i2c, clock);
-        HAL_CHECK(scd40.start())
+        HAL_CHECK(scd40.start());
+        return scd40;
 
     }
 
-    start(){
+    hal::status scd40::start(){
         std::array<hal::byte, 2> start_address =  { start_first_half, start_second_half };
         HAL_CHECK(hal::write(m_i2c, device_address, start_address, hal::never_timeout()));
         return hal::success();
     }
 
-    std::array<hal::byte,9> read() {
+    std::array<hal::byte,9> scd40::read() {
         std::array<const hal::byte, 2> read_address = {read_first_half, read_second_half };
         std::array<hal::byte, 9> buffer;
 
@@ -29,9 +27,8 @@ class scd40 {
         return buffer;
     }
 
-    get_CO2(){}
+    hal::result<double> scd40::get_CO2(){}
 
-    get_RH(){}
+    hal::result<double> scd40::get_RH(){}
 
-    get_temp(){}
-}
+    hal::result<double> scd40::get_temp(){}
