@@ -26,6 +26,7 @@ class scd40 {
 
         HAL_CHECK(
         hal::read(m_i2c, addresses::address, buffer, hal::never_timeout()));
+        return buffer;
     }
 
     get_CO2(){}
