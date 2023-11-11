@@ -32,4 +32,4 @@ public:
     hal::result<double> get_temp();
 };
 
-}
+} // namespace science

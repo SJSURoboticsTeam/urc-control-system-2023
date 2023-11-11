@@ -2,8 +2,9 @@
 
 #include "scd40.hpp"
 
+using scd40 = science::scd40;
 hal::result<scd40> scd40::create(hal::i2c& p_i2c, hal::steady_clock& clock){
-    scd40 scd40 = scd40(p_i2c, clock);
+    scd40 scd40 = science::scd40(p_i2c, clock);
     HAL_CHECK(scd40.start());
     return scd40;
 
@@ -22,8 +23,7 @@ std::array<hal::byte,9> scd40::read() {
     HAL_CHECK(hal::write(m_i2c, device_address, read_address));
     HAL_CHECK(hal::delay(steady_clock, 1ms));
 
-    HAL_CHECK(
-    hal::read(m_i2c, addresses::address, buffer, hal::never_timeout()));
+    HAL_CHECK(hal::read(m_i2c, addresses::address, buffer, hal::never_timeout()));
     return buffer;
 }
 
