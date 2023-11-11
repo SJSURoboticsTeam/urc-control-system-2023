@@ -20,6 +20,8 @@ private:
         read_first_half = 0xec,
         read_second_half = 0x05
     };
+    hal::i2c& p_i2c;
+    hal::steady_clock& clock;
 
 public:
     static hal::result<scd40> create(hal::i2c& p_i2c,hal::steady_clock& p_clock);
