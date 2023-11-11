@@ -17,7 +17,7 @@ class relay
         return driver_status(); 
     }
 
-    [[nodiscard]] hal::result<status_t> toggle(bool p_toggle)
+    [[nodiscard]] hal::result<set_status_t> toggle(bool p_toggle)
     {
         return driver_toggle(p_toggle); 
     }

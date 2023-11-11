@@ -9,6 +9,8 @@
 #include <libhal-lpc40/input_pin.hpp>
 #include <libhal-lpc40/uart.hpp>
 #include <libhal-lpc40/clock.hpp>
+#include <libhal-lpc40/pwm.hpp>
+#include <libhal-lpc40/output_pin.hpp>
 
 #include <libhal-util/units.hpp>
 #include <libhal-rmd/drc.hpp>
@@ -26,6 +28,8 @@
 #include "../platform-implementations/print_motor.hpp"
 #include "../platform-implementations/print_servo.hpp"
 #include "../platform-implementations/print_speed_sensor.hpp"
+#include "../platform-implementations/pwm_relay.hpp"
+#include "../platform-implementations/output_pin_relay.hpp"
 
 
 namespace sjsu::drive {
@@ -53,6 +57,15 @@ hal::result<application_framework> initialize_platform()
   static auto uart0 = HAL_CHECK((hal::lpc40::uart::get(0, recieve_buffer0, hal::serial::settings{
     .baud_rate = 38400,
   })));
+
+  // Relay
+  pwm_relay::settings relay_pwm_settings{ .frequency = 20.0_kHz, .initial_duty_cycle = 1.0f, .tapered_duty_cycle = 0.4f };
+  static auto relay_pwm_pin = HAL_CHECK((hal::lpc40::pwm::get(2,5)));
+
+  static auto power_saving_relay = HAL_CHECK(pwm_relay::create(relay_pwm_settings, relay_pwm_pin, counter));
+  HAL_CHECK(power_saving_relay.toggle(true));
+
+
   // servos, we need to init all of the mc_x motors then call make_servo 
   // in order to pass servos into the application
   static hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
@@ -211,6 +224,7 @@ hal::result<application_framework> initialize_platform()
   return application_framework{.legs = legs,
 
                               .mc = &drive_mission_control,
+                              .motor_relay = &power_saving_relay,
                               
                               .terminal = &uart0,
                               .clock = &counter,

@@ -6,6 +6,7 @@
 #include <libhal/steady_clock.hpp>
 #include <libhal/timeout.hpp>
 #include <libhal/input_pin.hpp>
+#include "../platform-implementations/relay.hpp"
 #include "../platform-implementations/speed_sensor.hpp"
 #include "../platform-implementations/mission_control.hpp"
 #include "../platform-implementations/offset_servo.hpp"
@@ -24,6 +25,7 @@ struct application_framework
   std::span<leg*> legs;
 
   mission_control* mc;
+  relay* motor_relay;
 
   hal::serial* terminal;
   hal::steady_clock* clock;
