@@ -15,7 +15,7 @@ private:
     scd40(hal::i2c& p_i2c, hal::steady_clock& p_clock);
     hal::i2c& m_i2c;
     hal::steady_clock& m_clock;
-    enum addresses  {// deal with hal::byte later 
+    enum addresses:hal::byte {// deal with hal::byte later 
         device_address = 0x62,
         start_first_half = 0x21,
         start_second_half = 0xb1,
