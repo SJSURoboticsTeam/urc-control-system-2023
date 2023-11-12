@@ -36,4 +36,7 @@ hal::result<double> scd40::get_CO2(){
 
 hal::result<double> scd40::get_RH(){}
 
-hal::result<double> scd40::get_temp(){}
+hal::result<double> scd40::get_temp(){
+    std::array<hal::byte, 9> readResults = read();
+    return ((readResults[0] << 8) | readResults[1]) * 100.0 / (1 << 16);
+}
