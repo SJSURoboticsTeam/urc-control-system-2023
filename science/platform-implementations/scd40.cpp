@@ -29,9 +29,10 @@ std::array<hal::byte,9> scd40::read() {
 
     return buffer;
 }
-
+// returns in ppm
 hal::result<double> scd40::get_CO2(){
-
+    std::array<hal::byte, 9> readResults = read();
+    return ((readResults[0] << 8) | readResults[1]);
 }
 
 hal::result<double> scd40::get_temp(){
