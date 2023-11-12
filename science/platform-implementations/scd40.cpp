@@ -28,8 +28,11 @@ std::array<hal::byte,9> scd40::read() {
     HAL_CHECK(hal::read(m_i2c, addresses::address, buffer, hal::never_timeout()));
     return buffer;
 }
-
-hal::result<double> scd40::get_CO2(){}
+// returns in ppm
+hal::result<double> scd40::get_CO2(){
+    std::array<hal::byte, 9> readResults = read();
+    return ((readResults[0] << 8) | readResults[1]);
+}
 
 hal::result<double> scd40::get_RH(){}
 
