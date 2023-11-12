@@ -20,6 +20,7 @@ libhal_build_demos(
   DEMOS
   co2_demo
   pressure_sensor_demo
+  scd40_demo
     
   PACKAGES
   libhal-lpc40

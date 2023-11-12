@@ -13,6 +13,8 @@ class scd40
 private:
 
     scd40(hal::i2c& p_i2c, hal::steady_clock& p_clock);
+    hal::i2c& m_i2c;
+    hal::steady_clock& m_clock;
     enum addresses  {// deal with hal::byte later 
         device_address = 0x62,
         start_first_half = 0x21,
@@ -20,8 +22,6 @@ private:
         read_first_half = 0xec,
         read_second_half = 0x05
     };
-    hal::i2c& m_i2c;
-    hal::steady_clock& m_clock;
 
 public:
     static hal::result<scd40> create(hal::i2c& p_i2c,hal::steady_clock& p_clock);
