@@ -26,14 +26,21 @@ std::array<hal::byte,9> scd40::read() {
     HAL_CHECK(hal::delay(m_clock, 1ms));
 
     HAL_CHECK(hal::read(m_i2c, addresses::address, buffer, hal::never_timeout()));
+
     return buffer;
 }
 
-hal::result<double> scd40::get_CO2(){}
-
-hal::result<double> scd40::get_RH(){}
+hal::result<double> scd40::get_CO2(){
+    std::array<hal::byte, 9> buffer = read();
+    return buffer[0] << 8 | buffer[1];
+}
 
 hal::result<double> scd40::get_temp(){
-    std::array<hal::byte, 9> readResults = read();
-    return ((readResults[0] << 8) | readResults[1]) * 100.0 / (1 << 16);
+    std::array<hal::byte, 9> buffer = read();
+    return (-45 + 175.0*(buffer[3] << 8 | buffer[4])/ (1 << 16));
+}
+
+hal::result<double> scd40::get_RH(){
+    std::array<hal::byte, 9> buffer = read();
+    return 100.0 * (buffer[7] << 8 | buffer[8]) / (1 << 16);   
 }
