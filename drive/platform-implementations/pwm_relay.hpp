@@ -15,10 +15,10 @@ namespace sjsu::drive {
       float tapered_duty_cycle = 0.0f;
     };
 
-    static hal::result<pwm_relay> create(settings p_settings, hal::pwm& p_pwm, hal::steady_clock& p_clock);
+    static hal::result<pwm_relay> create(const settings& p_settings, hal::pwm& p_pwm, hal::steady_clock& p_clock);
 
     private:
-    pwm_relay(settings p_settings, hal::pwm& p_pwm, hal::steady_clock& p_clock);
+    pwm_relay(const settings& p_settings, hal::pwm& p_pwm, hal::steady_clock& p_clock);
 
     hal::result<status_t> driver_status() override;
 
@@ -26,7 +26,7 @@ namespace sjsu::drive {
 
     hal::pwm* m_pwm;
     hal::steady_clock* m_clock;
-    settings m_settings;
+    const settings& m_settings;
     status_t m_status;
   };
   

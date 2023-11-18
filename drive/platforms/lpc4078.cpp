@@ -59,7 +59,7 @@ hal::result<application_framework> initialize_platform()
   })));
 
   // Relay
-  pwm_relay::settings relay_pwm_settings{ .frequency = 20.0_kHz, .initial_duty_cycle = 1.0f, .tapered_duty_cycle = 0.4f };
+  static const pwm_relay::settings relay_pwm_settings{ .frequency = 20.0_kHz, .initial_duty_cycle = 1.0f, .tapered_duty_cycle = 0.4f };
   static auto relay_pwm_pin = HAL_CHECK((hal::lpc40::pwm::get(2,5)));
 
   static auto power_saving_relay = HAL_CHECK(pwm_relay::create(relay_pwm_settings, relay_pwm_pin, counter));

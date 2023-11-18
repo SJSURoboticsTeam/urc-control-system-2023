@@ -25,6 +25,7 @@ hal::status application(application_framework& p_framework)
   auto& terminal = *p_framework.terminal;
   auto& clock = *p_framework.clock;
   auto loop_count = 0;
+  auto& relay = *p_framework.motor_relay;
 
   sjsu::drive::tri_wheel_router tri_wheel{back_leg, right_leg, left_leg};
   sjsu::drive::mission_control::mc_commands commands;

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <libhal/error.hpp>
+
 namespace sjsu::drive {
 
 class relay 

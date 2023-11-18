@@ -6,6 +6,7 @@
 namespace sjsu::drive {
 
   class output_pin_relay : public relay {
+    public:
 
     static hal::result<output_pin_relay> create(hal::output_pin& p_pin);
 
