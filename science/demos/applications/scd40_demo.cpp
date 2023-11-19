@@ -5,7 +5,7 @@
 #include <libhal-util/steady_clock.hpp>
 #include <libhal/units.hpp>
 
-#include "../../platform-implementations/scd40.cpp"
+#include "../../platform-implementations/scd40.hpp"
 #include "../hardware_map.hpp"
 
 using namespace hal::literals;
@@ -19,7 +19,7 @@ hal::status application(application_framework& p_framework)
   auto& clock = *p_framework.steady_clock;
   auto& terminal = *p_framework.terminal;
 
-  auto scd40 = HAL_CHECK(science::scd40::create(i2c2, clock));
+  auto scd40_sensor = HAL_CHECK(scd40::create(i2c2, clock));
 
   // while (true) {
   //   hal::delay(clock, 500ms);
