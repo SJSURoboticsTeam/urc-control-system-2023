@@ -34,16 +34,17 @@ hal::result<std::array<hal::byte,9>> scd40_nm::read() {
 
 hal::result<double> scd40_nm::get_CO2(){
     read();
-    return buffer[0] << 8 | buffer[1];
+    return get_CO2_buffer();
 }
 
 hal::result<double> scd40_nm::get_temp(){
     read();
-    return (-45 + 175.0*(buffer[3] << 8 | buffer[4])/ (1 << 16));
+    return get_temp_buffer();
 }
 
 hal::result<double> scd40_nm::get_RH(){
-    return 100.0 * (buffer[7] << 8 | buffer[8]) / (1 << 16);   
+    read();
+    return get_RH_buffer();   
 }
 
 hal::result<double> scd40_nm::get_CO2_buffer(){
