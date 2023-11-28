@@ -28,7 +28,6 @@ class application(ConanFile):
 
     def requirements(self):
         # Application requirements
-        self.requires("libhal/[^2.0.1]")
         self.requires("libhal-util/[^3.0.0]")
         self.requires("libhal-rmd/[^3.0.0]")
         self.requires("libhal-soft/[^3.0.0]")

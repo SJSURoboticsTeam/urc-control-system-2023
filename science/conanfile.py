@@ -28,8 +28,9 @@ class application(ConanFile):
 
     def requirements(self):
         # Application requirements
-        self.requires("libhal-util/[^2.0.0]")
+        self.requires("libhal-util/[^3.0.0]")
 
+        self.requires("libhal/[^2.0.3]")
         # List of supported platforms
         if str(self.options.platform).startswith("lpc40"):
             self.requires("libhal-lpc40/[^2.0.0]")
