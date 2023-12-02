@@ -43,6 +43,7 @@ hal::status application(sjsu::arm::application_framework& p_framework)
 
   HAL_CHECK(hal::write(terminal, "Starting control loop..."));
   hal::delay(clock, 1000ms);
+  HAL_CHECK(hal::write(terminal, "FIRST COMMIT ..."));
 
   while (true) {
     if(loop_count==10) {
