@@ -21,23 +21,21 @@ hal::status application(application_framework& p_framework)
 
   auto scd40_sensor = HAL_CHECK(scd40::create(i2c2, clock));
 
-  // while (true) {
-  //   hal::delay(clock, 500ms);
-  //   auto co2_level = HAL_CHECK(scd40.read_co2());
-  //   hal::print<64>(terminal, "C02: %d\n", co2_level);
-  //   hal::delay(clock, 1ms);
-  // }
   while(true){
-        hal::delay(clock, 500ms);
-        auto co2_levels = HAL_CHECK(scd40_sensor.get_CO2());
-        auto temp = HAL_CHECK(scd40_sensor.get_temp());
-        auto RH_levels = HAL_CHECK(scd40_sensor.get_RH());
+        // periodic readings are only updated every 5000ms (temperature)
+        hal::delay(clock, 5000ms);
+        scd40_sensor.read();
+        auto co2_levels = HAL_CHECK(scd40_sensor.get_CO2_buffer());
+        auto temp = HAL_CHECK(scd40_sensor.get_temp_buffer());
+        auto RH_levels = HAL_CHECK(scd40_sensor.get_RH_buffer());
 
-        hal::print<64>(terminal, "CO2 Levels: %d\n", co2_levels);
-        hal::print<64>(terminal, "Temperature %d\n", temp);
-        hal::print<64>(terminal, "RH Levels: %d\n", RH_levels);
 
-        hal::delay(clock, 1ms);
+        hal::print<64>(terminal, "%-5.2f\t%-5.2f\t%-5.2f\n", co2_levels, temp, RH_levels);
+        scd40_sensor.printBuffer(terminal);
+        // hal::delay(clock, 500ms);
+        // hal::print<64>(terminal, "CO2 Levels: %f\n", co2_levels);
+        // hal::print<64>(terminal, "Temperature %f\n", temp);
+        // hal::print<64>(terminal, "RH Levels: %f\n", RH_levels);
 
     }
 
