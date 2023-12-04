@@ -56,5 +56,5 @@ hal::result<double> scd40_nm::get_temp_buffer(){
 }
 
 hal::result<double> scd40_nm::get_RH_buffer(){
-    return 100.0 * (buffer[7] << 8 | buffer[8]) / (1 << 16);   
+    return 100.0 * (buffer[6] << 8 | buffer[7]) / (1 << 16);   
 }
