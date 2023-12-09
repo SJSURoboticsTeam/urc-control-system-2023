@@ -31,7 +31,6 @@ hal::status application(application_framework& p_framework)
 
 
         hal::print<64>(terminal, "%-5.2f\t%-5.2f\t%-5.2f\n", co2_levels, temp, RH_levels);
-        scd40_sensor.printBuffer(terminal);
         // hal::delay(clock, 500ms);
         // hal::print<64>(terminal, "CO2 Levels: %f\n", co2_levels);
         // hal::print<64>(terminal, "Temperature %f\n", temp);
