@@ -15,7 +15,6 @@ private:
     scd40(hal::i2c& p_i2c, hal::steady_clock& p_clock);
     hal::i2c& m_i2c;
     hal::steady_clock& m_clock;
-    std::array<hal::byte, 9> buffer;
     enum addresses  {// deal with hal::byte later 
         device_address = 0x62,
         start_first_half = 0x21,
@@ -25,9 +24,17 @@ private:
     };
 
 public:
+    struct scd40_read_data
+    {
+        double co2;
+        double temp;
+        double rh;
+    };
+    
+
     static hal::result<scd40> create(hal::i2c& p_i2c,hal::steady_clock& p_clock);
     hal::status start();
-    hal::result<std::array<hal::byte,9>> read();
+    hal::result<scd40_read_data> read();
     
     //TODO: revise output type
     

@@ -21,40 +21,19 @@ hal::status scd40_nm::start(){
     return hal::success();
 }
 
-hal::result<std::array<hal::byte,9>> scd40_nm::read() {
+hal::result<scd40_nm::scd40_read_data> scd40_nm::read() {
     std::array<hal::byte, 2> read_address = {read_first_half, read_second_half };
+    std::array<hal::byte, 9> buffer;
 
     HAL_CHECK(hal::write(m_i2c,addresses::device_address, read_address));
     hal::delay(m_clock, 1ms);
-
     HAL_CHECK(hal::read(m_i2c, addresses::device_address, buffer, hal::never_timeout()));
+    
+    scd40_nm::scd40_read_data rd;
+    rd.co2 = buffer[0] << 8 | buffer[1];
+    rd.temp = (-45 + 175.0*(buffer[3] << 8 | buffer[4])/ (1 << 16));
+    rd.rh = 100.0 * (buffer[6] << 8 | buffer[7]) / (1 << 16);
 
-    return buffer;
+    return rd;
 }
 
-hal::result<double> scd40_nm::get_CO2(){
-    read();
-    return get_CO2_buffer();
-}
-
-hal::result<double> scd40_nm::get_temp(){
-    read();
-    return get_temp_buffer();
-}
-
-hal::result<double> scd40_nm::get_RH(){
-    read();
-    return get_RH_buffer();   
-}
-
-hal::result<double> scd40_nm::get_CO2_buffer(){
-    return buffer[0] << 8 | buffer[1];
-}
-
-hal::result<double> scd40_nm::get_temp_buffer(){
-    return (-45 + 175.0*(buffer[3] << 8 | buffer[4])/ (1 << 16));
-}
-
-hal::result<double> scd40_nm::get_RH_buffer(){
-    return 100.0 * (buffer[6] << 8 | buffer[7]) / (1 << 16);   
-}
