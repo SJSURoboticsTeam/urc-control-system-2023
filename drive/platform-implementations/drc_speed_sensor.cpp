@@ -1,7 +1,7 @@
 #pragma once 
 
-#include "speed_sensor.hpp"
-#include "drc_speed_sensor.hpp"
+#include "../src/speed_sensor.hpp"
+#include "../src/drc_speed_sensor.hpp"
 #include <libhal-rmd/drc.hpp>
 
 namespace sjsu::drive {

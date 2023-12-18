@@ -5,7 +5,7 @@
 #include <libhal-util/steady_clock.hpp>
 #include <libhal/input_pin.hpp>
 #include <libhal-util/units.hpp>
-#include "offset_servo.hpp"
+#include "../src/offset_servo.hpp"
 
 namespace sjsu::drive
 {

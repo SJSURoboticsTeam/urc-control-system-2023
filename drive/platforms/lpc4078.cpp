@@ -17,10 +17,10 @@
 #include "../platform-implementations/drc_speed_sensor.cpp"
 
 #include "../platform-implementations/esp8266_mission_control.cpp"
-#include "../platform-implementations/mission_control.hpp"
+#include "../src/mission_control.hpp"
 #include "../applications/application.hpp"
 #include "../platform-implementations/home.hpp"
-#include "../platform-implementations/offset_servo.hpp"
+#include "../src/offset_servo.hpp"
 #include "../platform-implementations/helper.hpp"
 #include "../platform-implementations/print_mission_control.hpp"
 #include "../platform-implementations/print_motor.hpp"

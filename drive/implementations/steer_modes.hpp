@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <cmath>
 
-#include "../platform-implementations/mission_control.hpp"
+#include "../src/mission_control.hpp"
 #include "../dto/drive.hpp"
 
 namespace sjsu::drive {

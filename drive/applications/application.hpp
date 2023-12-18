@@ -6,9 +6,9 @@
 #include <libhal/steady_clock.hpp>
 #include <libhal/timeout.hpp>
 #include <libhal/input_pin.hpp>
-#include "../platform-implementations/speed_sensor.hpp"
-#include "../platform-implementations/mission_control.hpp"
-#include "../platform-implementations/offset_servo.hpp"
+#include "../src/speed_sensor.hpp"
+#include "../src/mission_control.hpp"
+#include "../src/offset_servo.hpp"
 
 namespace sjsu::drive {
 

@@ -3,7 +3,7 @@
 #include "../dto/drive.hpp"
 #include "mode_switcher.hpp"
 #include "steer_modes.hpp"
-#include "../platform-implementations/mission_control.hpp"
+#include "../src/mission_control.hpp"
 
 namespace sjsu::drive {
 inline tri_wheel_router_arguments select_mode(mission_control::mc_commands commands)

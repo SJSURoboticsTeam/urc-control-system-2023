@@ -1,6 +1,6 @@
 #pragma once
 
-#include "speed_sensor.hpp"
+#include "../src/speed_sensor.hpp"
 #include <libhal-rmd/drc.hpp>
 #include <libhal-util/units.hpp>
 #include <libhal-util/serial.hpp>

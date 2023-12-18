@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../platform-implementations/mission_control.hpp"
+#include "../src/mission_control.hpp"
 
 namespace sjsu::drive {
 inline mission_control::mc_commands validate_commands(mission_control::mc_commands commands)
