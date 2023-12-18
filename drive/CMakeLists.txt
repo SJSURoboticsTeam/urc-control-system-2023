@@ -21,7 +21,9 @@ add_executable(${PROJECT_NAME}
     main.cpp
     applications/application.cpp
     platforms/${platform}.cpp
-    src/drc_speed_sensor.hpp)
+    platform-implementations/drc_speed_sensor.cpp
+    platform-implementations/esp8266_mission_control.cpp
+    platform-implementations/offset_servo.cpp)
 target_include_directories(${PROJECT_NAME} PUBLIC .)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 target_link_options(${PROJECT_NAME} PRIVATE
