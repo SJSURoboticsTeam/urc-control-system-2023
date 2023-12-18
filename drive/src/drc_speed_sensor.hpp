@@ -7,9 +7,7 @@ namespace sjsu::drive {
 
 class drc_speed_sensor;
 
-hal::result<drc_speed_sensor> make_speed_sensor(hal::rmd::drc& p_drc) {
-    return drc_speed_sensor(p_drc);
-}
+hal::result<drc_speed_sensor> make_speed_sensor(hal::rmd::drc& p_drc);
 
 class drc_speed_sensor : public speed_sensor {
 private:

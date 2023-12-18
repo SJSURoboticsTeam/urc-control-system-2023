@@ -3,6 +3,10 @@
 
 namespace sjsu::drive {
 
+    hal::result<drc_speed_sensor> make_speed_sensor(hal::rmd::drc& p_drc) {
+        return drc_speed_sensor(p_drc);
+    }
+
     drc_speed_sensor::drc_speed_sensor(hal::rmd::drc& p_drc) 
     : m_drc(&p_drc)
     {

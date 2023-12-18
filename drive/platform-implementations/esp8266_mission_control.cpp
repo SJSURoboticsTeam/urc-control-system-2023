@@ -1,4 +1,3 @@
-#pragma once
 
 #include "../src/mission_control.hpp"
 #include <array>
