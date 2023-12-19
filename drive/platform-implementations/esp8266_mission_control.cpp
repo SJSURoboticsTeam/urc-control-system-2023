@@ -130,7 +130,7 @@ namespace sjsu::drive {
     return m_commands;
   }
 
-     void esp8266_mission_control::parse_commands() {
+  void esp8266_mission_control::parse_commands() {
 
     auto result = to_string_view(m_command_buffer);
     static constexpr int expected_number_of_arguments = 6;
@@ -150,15 +150,7 @@ namespace sjsu::drive {
                       actual_arguments,
                       expected_number_of_arguments);
     }
-    // hal::print<200>(*m_console,
-    //                   "HB: %d\t, IO %d\t, WO: %d\t, DM: %c\t, Speed: %d\n, Angle: %d\n",
-    //                   commands.heartbeat_count,
-    //                   commands.is_operational,
-    //                   commands.wheel_orientation,
-    //                   commands.mode,
-    //                   commands.speed,
-    //                   commands.angle
-    //                   );
+
     m_commands = commands;
   }
 

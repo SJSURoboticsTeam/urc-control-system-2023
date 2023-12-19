@@ -22,10 +22,6 @@
 #include "../platform-implementations/home.hpp"
 #include "../include/offset_servo.hpp"
 #include "../platform-implementations/helper.hpp"
-// #include "../platform-implementations/print_mission_control.hpp"
-#include "../platform-implementations/print_motor.hpp"
-#include "../platform-implementations/print_servo.hpp"
-#include "../platform-implementations/print_speed_sensor.hpp"
 
 
 namespace sjsu::drive {
@@ -133,7 +129,7 @@ hal::result<application_framework> initialize_platform()
         // &extra_home,
     };
 
-  HAL_CHECK(home(homing_structs, counter, &uart0));
+  HAL_CHECK(home(homing_structs, counter));
   // hal::print<100>(uart0, "right offset: %f", right_home.servo->get_offset());
   // hal::print<100>(uart0, "left offset: %f", left_home.servo->get_offset());
   // hal::print<100>(uart0, "back offset: %f", back_home.servo->get_offset());

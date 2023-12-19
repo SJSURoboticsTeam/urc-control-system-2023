@@ -1,5 +1,3 @@
-#pragma once
-
 #include <libhal-lpc40/input_pin.hpp>
 #include <libhal/servo.hpp>
 #include <libhal-util/serial.hpp>
@@ -9,20 +7,18 @@
 #include "../dto/drive.hpp"
 #include "../dto/motor_feedback.hpp"
 #include "../applications/application.hpp"
+#include "../include/tri_wheel_router.hpp"
 
 namespace sjsu::drive {
-class tri_wheel_router
-{
-public:
 
-  tri_wheel_router(leg& p_back, leg& p_right, leg& p_left)
+    tri_wheel_router::tri_wheel_router(leg& p_back, leg& p_right, leg& p_left)
     : m_left(p_left)
     , m_back(p_back)
     , m_right(p_right)
   {
   }
 
-  hal::status move(tri_wheel_router_arguments p_tri_wheel_arguments,
+  hal::status tri_wheel_router::move(tri_wheel_router_arguments p_tri_wheel_arguments,
                    hal::steady_clock& p_clock)
   {
     HAL_CHECK(m_left.steer->position(-p_tri_wheel_arguments.left.angle));
@@ -37,7 +33,7 @@ public:
     return hal::success();
   }
 
-  hal::result<motor_feedback> get_motor_feedback()
+  hal::result<motor_feedback> tri_wheel_router::get_motor_feedback()
   {
     using namespace std::chrono_literals;
     using namespace hal::literals;
@@ -53,12 +49,4 @@ public:
     return motor_speeds;
   }
 
-private:
-
-  // member variables
-
-  leg& m_left;
-  leg& m_back;
-  leg& m_right;
-};
-}  // namespace Drive
+}

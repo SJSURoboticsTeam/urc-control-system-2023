@@ -1,22 +1,22 @@
 #pragma once
 
 #include "../dto/drive.hpp"
-#include "mode_switcher.hpp"
+#include "../include/mode_switcher.hpp"
 #include "steer_modes.hpp"
 #include "../include/mission_control.hpp"
 
 namespace sjsu::drive {
-inline tri_wheel_router_arguments select_mode(mission_control::mc_commands commands)
+inline tri_wheel_router_arguments select_mode(mission_control::mc_commands p_commands)
 {
-  switch (commands.mode) {
+  switch (p_commands.mode) {
     case 'D':
-      return drive_steering(commands);
+      return drive_steering(p_commands);
       break;
     case 'S':
-      return spin_steering(commands);
+      return spin_steering(p_commands);
       break;
     case 'T':
-      return translate_steering(commands);
+      return translate_steering(p_commands);
       break;
     case 'H':
       // do nothing to get it into drive mode

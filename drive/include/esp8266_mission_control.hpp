@@ -28,6 +28,24 @@ public:
         std::span<hal::byte> buffer;
         std::string_view get_request;
     };
+
+    struct http_header_parser_t
+    {
+        hal::stream_find find_header_start;
+        hal::stream_find find_content_length;
+        hal::stream_parse<std::uint32_t> parse_content_length;
+        hal::stream_find find_end_of_header;
+    };
+
+        enum class connection_state
+    {
+        check_ap_connection,
+        connecting_to_ap,
+        set_ip_address,
+        check_server_connection,
+        connecting_to_server,
+        connection_established,
+    };
         
     [[nodiscard]] static hal::result<esp8266_mission_control> create(create_t p_create, hal::timeout auto& p_timeout)
   {
@@ -62,46 +80,27 @@ private:
 
     std::string_view to_string_view(std::span<const hal::byte> p_span);
 
-    enum class connection_state
-    {
-        check_ap_connection,
-        connecting_to_ap,
-        set_ip_address,
-        check_server_connection,
-        connecting_to_server,
-        connection_established,
-    };
-
     hal::status establish_connection(hal::function_ref<hal::timeout_function> p_timeout);
-
-
-    struct http_header_parser_t
-    {
-        hal::stream_find find_header_start;
-        hal::stream_find find_content_length;
-        hal::stream_parse<std::uint32_t> parse_content_length;
-        hal::stream_find find_end_of_header;
-    };
 
     http_header_parser_t new_http_header_parser();
 
     mc_commands m_commands{};
+    http_header_parser_t m_http_header_parser;
+    hal::stream_fill m_fill_payload;
+    const hal::esp8266::at::socket_config& m_config;
     hal::esp8266::at* m_esp8266;
     hal::serial* m_console;
     std::string_view m_ssid;
     std::string_view m_password;
-    const hal::esp8266::at::socket_config& m_config;
+    std::string_view m_get_request;
     std::string_view m_ip;
     std::span<hal::byte> m_buffer;
     std::array<hal::byte, 128> m_command_buffer;
-    std::string_view m_get_request;
-    http_header_parser_t m_http_header_parser;
     size_t m_buffer_len;
+    size_t m_content_length;
     bool m_write_error = false;
     bool m_header_finished = false;
     bool m_read_complete = true;
-    hal::stream_fill m_fill_payload;
-    size_t m_content_length;
     std::uint32_t m_missed_read = 0;
 };
 
