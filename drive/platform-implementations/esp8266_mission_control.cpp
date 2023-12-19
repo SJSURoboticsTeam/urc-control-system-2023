@@ -26,6 +26,7 @@ namespace sjsu::drive {
       .find_end_of_header = hal::stream_find(hal::as_bytes("\r\n\r\n"sv)),
     };
   }
+  
 
   esp8266_mission_control::esp8266_mission_control(hal::esp8266::at& p_esp8266,
                           hal::serial& p_console,
@@ -49,7 +50,7 @@ namespace sjsu::drive {
   {
   }
 
-  hal::status esp8266_mission_control::establish_connection(hal::timeout auto& p_timeout)
+  hal::status esp8266_mission_control::establish_connection(hal::function_ref<hal::timeout_function> p_timeout)
   {
     connection_state state = connection_state::check_ap_connection;
 
@@ -246,29 +247,4 @@ namespace sjsu::drive {
     return m_commands;
   }
 
-    hal::result<esp8266_mission_control> esp8266_mission_control::create(
-    hal::esp8266::at& p_esp8266,
-    hal::serial& p_console,
-    const std::string_view p_ssid,
-    const std::string_view p_password,
-    const hal::esp8266::at::socket_config& p_config,
-    const std::string_view p_ip,
-    hal::timeout auto& p_timeout,
-    std::span<hal::byte> p_buffer,
-    std::string_view p_get_request)
-  {
-    esp8266_mission_control esp_mission_control =
-      esp8266_mission_control(p_esp8266,
-                              p_console,
-                              p_ssid,
-                              p_password,
-                              p_config,
-                              p_ip,
-                              p_buffer,
-                              p_get_request);
-    HAL_CHECK(esp_mission_control.establish_connection(p_timeout));
-
-    return esp_mission_control;
-  }
-
-}  // namespace sjsu::arm
+}  // namespace sjsu::drive

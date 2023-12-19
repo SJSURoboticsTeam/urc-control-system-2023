@@ -16,12 +16,13 @@
 
 #include "../include/drc_speed_sensor.hpp"
 
+#include "../include/mission_control.hpp"
 #include "../include/esp8266_mission_control.hpp"
 #include "../applications/application.hpp"
 #include "../platform-implementations/home.hpp"
 #include "../include/offset_servo.hpp"
 #include "../platform-implementations/helper.hpp"
-#include "../platform-implementations/print_mission_control.hpp"
+// #include "../platform-implementations/print_mission_control.hpp"
 #include "../platform-implementations/print_motor.hpp"
 #include "../platform-implementations/print_servo.hpp"
 #include "../platform-implementations/print_speed_sensor.hpp"
@@ -196,14 +197,19 @@ hal::result<application_framework> initialize_platform()
   auto timeout = hal::create_timeout(counter, 10s);
   static auto esp8266 = HAL_CHECK(hal::esp8266::at::create(uart1, timeout));
   auto mc_timeout = hal::create_timeout(counter, 10s);
-  static auto esp_mission_control = esp8266_mission_control::create(esp8266, 
-                                  uart0, ssid, password, socket_config, 
-                                  ip, mc_timeout, buffer, get_request);
+  esp8266_mission_control::create_t create_object{.p_esp8266 = esp8266, 
+                                  .p_console = uart0,
+                                  .p_ssid = ssid,
+                                  .p_password = password,
+                                  .p_config = socket_config, 
+                                  .p_ip = ip,
+                                  .p_buffer = buffer, 
+                                  .p_get_request = get_request};
+  static auto esp_mission_control = esp8266_mission_control::create(create_object, mc_timeout);
+
   while(esp_mission_control.has_error()) {
     mc_timeout = hal::create_timeout(counter, 30s);
-    esp_mission_control = esp8266_mission_control::create(esp8266, 
-                                    uart0, ssid, password, socket_config, 
-                                    ip, mc_timeout, buffer, get_request);
+    esp_mission_control = esp8266_mission_control::create(create_object, mc_timeout);
   }
   static auto drive_mission_control = esp_mission_control.value();
 
