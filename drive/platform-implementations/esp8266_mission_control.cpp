@@ -247,15 +247,15 @@ namespace sjsu::drive {
   }
 
     hal::result<esp8266_mission_control> esp8266_mission_control::create(
-        hal::esp8266::at& p_esp8266,
-        hal::serial& p_console,
-        const std::string_view p_ssid,
-        const std::string_view p_password,
-        const hal::esp8266::at::socket_config& p_config,
-        const std::string_view p_ip,
-        hal::timeout auto& p_timeout,
-        std::span<hal::byte> p_buffer,
-        std::string_view p_get_request)
+    hal::esp8266::at& p_esp8266,
+    hal::serial& p_console,
+    const std::string_view p_ssid,
+    const std::string_view p_password,
+    const hal::esp8266::at::socket_config& p_config,
+    const std::string_view p_ip,
+    hal::timeout auto& p_timeout,
+    std::span<hal::byte> p_buffer,
+    std::string_view p_get_request)
   {
     esp8266_mission_control esp_mission_control =
       esp8266_mission_control(p_esp8266,
