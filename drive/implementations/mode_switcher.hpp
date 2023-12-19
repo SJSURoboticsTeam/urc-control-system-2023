@@ -2,7 +2,7 @@
 
 #include "../dto/drive.hpp"
 #include "../dto/motor_feedback.hpp"
-#include "../src/mission_control.hpp"
+#include "../include/mission_control.hpp"
 
 namespace sjsu::drive {
 class mode_switch

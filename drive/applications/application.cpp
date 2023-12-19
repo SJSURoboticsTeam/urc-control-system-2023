@@ -8,7 +8,7 @@
 #include "../implementations/mode_switcher.hpp"
 #include "../implementations/tri_wheel_router.hpp"
 
-#include "../src/mission_control.hpp"
+#include "../include/mission_control.hpp"
 #include "application.hpp"
 
 namespace sjsu::drive {

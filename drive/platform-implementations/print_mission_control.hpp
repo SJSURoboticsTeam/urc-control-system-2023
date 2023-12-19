@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../src/mission_control.hpp"
+#include "../include/mission_control.hpp"
 
 #include <libhal-util/serial.hpp>
 #include <libhal/motor.hpp>

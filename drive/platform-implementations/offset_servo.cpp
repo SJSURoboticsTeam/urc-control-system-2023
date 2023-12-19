@@ -1,4 +1,4 @@
-#include "../src/offset_servo.hpp"
+#include "../include/offset_servo.hpp"
 #include <libhal/servo.hpp>
 #include <libhal-util/units.hpp>
 

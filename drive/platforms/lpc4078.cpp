@@ -14,13 +14,12 @@
 #include <libhal-rmd/drc.hpp>
 #include <libhal-lpc40/input_pin.hpp>
 
-#include "../platform-implementations/drc_speed_sensor.cpp"
+#include "../include/drc_speed_sensor.hpp"
 
-#include "../platform-implementations/esp8266_mission_control.cpp"
-#include "../src/mission_control.hpp"
+#include "../include/esp8266_mission_control.hpp"
 #include "../applications/application.hpp"
 #include "../platform-implementations/home.hpp"
-#include "../src/offset_servo.hpp"
+#include "../include/offset_servo.hpp"
 #include "../platform-implementations/helper.hpp"
 #include "../platform-implementations/print_mission_control.hpp"
 #include "../platform-implementations/print_motor.hpp"
@@ -197,12 +196,12 @@ hal::result<application_framework> initialize_platform()
   auto timeout = hal::create_timeout(counter, 10s);
   static auto esp8266 = HAL_CHECK(hal::esp8266::at::create(uart1, timeout));
   auto mc_timeout = hal::create_timeout(counter, 10s);
-  static auto esp_mission_control = sjsu::drive::esp8266_mission_control::create(esp8266, 
+  static auto esp_mission_control = esp8266_mission_control::create(esp8266, 
                                   uart0, ssid, password, socket_config, 
                                   ip, mc_timeout, buffer, get_request);
   while(esp_mission_control.has_error()) {
     mc_timeout = hal::create_timeout(counter, 30s);
-    esp_mission_control = sjsu::drive::esp8266_mission_control::create(esp8266, 
+    esp_mission_control = esp8266_mission_control::create(esp8266, 
                                     uart0, ssid, password, socket_config, 
                                     ip, mc_timeout, buffer, get_request);
   }
