@@ -14,21 +14,8 @@
 
 namespace sjsu::drive {
 
-  esp8266_mission_control::http_header_parser_t esp8266_mission_control::new_http_header_parser()
-  {
-    using namespace std::literals;
 
-    return esp8266_mission_control::http_header_parser_t{
-      .find_header_start = hal::stream_find(hal::as_bytes("HTTP/1.1 "sv)),
-      .find_content_length =
-        hal::stream_find(hal::as_bytes("Content-Length: "sv)),
-      .parse_content_length = hal::stream_parse<std::uint32_t>(),
-      .find_end_of_header = hal::stream_find(hal::as_bytes("\r\n\r\n"sv)),
-    };
-  }
-  
-
-  esp8266_mission_control::esp8266_mission_control(hal::esp8266::at& p_esp8266,
+    esp8266_mission_control::esp8266_mission_control(hal::esp8266::at& p_esp8266,
                           hal::serial& p_console,
                           const std::string_view p_ssid,
                           const std::string_view p_password,
@@ -50,111 +37,7 @@ namespace sjsu::drive {
   {
   }
 
-  hal::status esp8266_mission_control::establish_connection(hal::function_ref<hal::timeout_function> p_timeout)
-  {
-    connection_state state = connection_state::check_ap_connection;
-
-    while (state != connection_state::connection_established) {
-      switch (state) {
-        case connection_state::check_ap_connection:
-          hal::print(*m_console, "Checking if AP \"");
-          hal::print(*m_console, m_ssid);
-          hal::print(*m_console, "\" is connected... ");
-          if (HAL_CHECK(m_esp8266->is_connected_to_ap(p_timeout))) {
-            state = connection_state::check_server_connection;
-            hal::print(*m_console, "Connected!\n");
-          } else {
-            state = connection_state::connecting_to_ap;
-            hal::print(*m_console, "NOT Connected!\n");
-          }
-          break;
-        case connection_state::connecting_to_ap:
-          hal::print(*m_console, "Connecting to AP: \"");
-          hal::print(*m_console, m_ssid);
-          hal::print(*m_console, "\" ...\n");
-          HAL_CHECK(m_esp8266->connect_to_ap(m_ssid, m_password, p_timeout));
-          state = connection_state::set_ip_address;
-          break;
-        case connection_state::set_ip_address:
-          if (!m_ip.empty()) {
-            hal::print(*m_console, "Setting IP Address to: ");
-            hal::print(*m_console, m_ip);
-            hal::print(*m_console, " ...\n");
-            HAL_CHECK(m_esp8266->set_ip_address(m_ip, p_timeout));
-          }
-          state = connection_state::check_server_connection;
-          break;
-        case connection_state::check_server_connection:
-          hal::print(*m_console, "Checking if server \"");
-          hal::print(*m_console, m_config.domain);
-          hal::print(*m_console, "\" is connected... \n");
-          if (HAL_CHECK(m_esp8266->is_connected_to_server(p_timeout))) {
-            state = connection_state::connection_established;
-            hal::print(*m_console, "Connected!\n");
-          } else {
-            state = connection_state::connecting_to_server;
-            hal::print(*m_console, "NOT Connected!\n");
-          }
-          break;
-        case connection_state::connecting_to_server:
-          hal::print(*m_console, "Connecting to server: \"");
-          hal::print(*m_console, m_config.domain);
-          hal::print(*m_console, "\" ...\n");
-          HAL_CHECK(m_esp8266->connect_to_server(m_config, p_timeout));
-          hal::print(*m_console, "connected\n");
-          state = connection_state::check_server_connection;
-          break;
-        case connection_state::connection_established:
-          // Do nothing, allow next iteration to break while loop
-          hal::print(*m_console, "Succesfully Connected.");
-          break;
-        default:
-          state = connection_state::connecting_to_ap;
-      }
-    }
-
-    return hal::success();
-  }
-
-  std::string_view esp8266_mission_control::to_string_view(std::span<const hal::byte> p_span)
-  {
-    return std::string_view(reinterpret_cast<const char*>(p_span.data()),
-                            p_span.size());
-  }
-
-    void esp8266_mission_control::parse_commands() {
-
-    auto result = to_string_view(m_command_buffer);
-    static constexpr int expected_number_of_arguments = 6;
-    mc_commands commands;
-
-    int actual_arguments = sscanf(result.data(),
-                                  kResponseBodyFormat,
-                                  &commands.heartbeat_count,
-                                  &commands.is_operational,
-                                  &commands.wheel_orientation,
-                                  &commands.mode,
-                                  &commands.speed,
-                                  &commands.angle);
-    if (actual_arguments != expected_number_of_arguments) {
-      hal::print<200>(*m_console,
-                      "Received %d arguments, expected %d\n",
-                      actual_arguments,
-                      expected_number_of_arguments);
-    }
-    // hal::print<200>(*m_console,
-    //                   "HB: %d\t, IO %d\t, WO: %d\t, DM: %c\t, Speed: %d\n, Angle: %d\n",
-    //                   commands.heartbeat_count,
-    //                   commands.is_operational,
-    //                   commands.wheel_orientation,
-    //                   commands.mode,
-    //                   commands.speed,
-    //                   commands.angle
-    //                   );
-    m_commands = commands;
-  }
-
-  hal::result<mission_control::mc_commands> esp8266_mission_control::impl_get_command(
+    hal::result<mission_control::mc_commands> esp8266_mission_control::impl_get_command(
     hal::function_ref<hal::timeout_function> p_timeout)
   {
     using namespace std::literals;
@@ -245,6 +128,124 @@ namespace sjsu::drive {
       }
     }
     return m_commands;
+  }
+
+     void esp8266_mission_control::parse_commands() {
+
+    auto result = to_string_view(m_command_buffer);
+    static constexpr int expected_number_of_arguments = 6;
+    mc_commands commands;
+
+    int actual_arguments = sscanf(result.data(),
+                                  kResponseBodyFormat,
+                                  &commands.heartbeat_count,
+                                  &commands.is_operational,
+                                  &commands.wheel_orientation,
+                                  &commands.mode,
+                                  &commands.speed,
+                                  &commands.angle);
+    if (actual_arguments != expected_number_of_arguments) {
+      hal::print<200>(*m_console,
+                      "Received %d arguments, expected %d\n",
+                      actual_arguments,
+                      expected_number_of_arguments);
+    }
+    // hal::print<200>(*m_console,
+    //                   "HB: %d\t, IO %d\t, WO: %d\t, DM: %c\t, Speed: %d\n, Angle: %d\n",
+    //                   commands.heartbeat_count,
+    //                   commands.is_operational,
+    //                   commands.wheel_orientation,
+    //                   commands.mode,
+    //                   commands.speed,
+    //                   commands.angle
+    //                   );
+    m_commands = commands;
+  }
+
+  esp8266_mission_control::http_header_parser_t esp8266_mission_control::new_http_header_parser()
+  {
+    using namespace std::literals;
+
+    return esp8266_mission_control::http_header_parser_t{
+      .find_header_start = hal::stream_find(hal::as_bytes("HTTP/1.1 "sv)),
+      .find_content_length =
+        hal::stream_find(hal::as_bytes("Content-Length: "sv)),
+      .parse_content_length = hal::stream_parse<std::uint32_t>(),
+      .find_end_of_header = hal::stream_find(hal::as_bytes("\r\n\r\n"sv)),
+    };
+  }
+
+
+  std::string_view esp8266_mission_control::to_string_view(std::span<const hal::byte> p_span)
+  {
+    return std::string_view(reinterpret_cast<const char*>(p_span.data()),
+                            p_span.size());
+  }
+
+  hal::status esp8266_mission_control::establish_connection(hal::function_ref<hal::timeout_function> p_timeout)
+  {
+    connection_state state = connection_state::check_ap_connection;
+
+    while (state != connection_state::connection_established) {
+      switch (state) {
+        case connection_state::check_ap_connection:
+          hal::print(*m_console, "Checking if AP \"");
+          hal::print(*m_console, m_ssid);
+          hal::print(*m_console, "\" is connected... ");
+          if (HAL_CHECK(m_esp8266->is_connected_to_ap(p_timeout))) {
+            state = connection_state::check_server_connection;
+            hal::print(*m_console, "Connected!\n");
+          } else {
+            state = connection_state::connecting_to_ap;
+            hal::print(*m_console, "NOT Connected!\n");
+          }
+          break;
+        case connection_state::connecting_to_ap:
+          hal::print(*m_console, "Connecting to AP: \"");
+          hal::print(*m_console, m_ssid);
+          hal::print(*m_console, "\" ...\n");
+          HAL_CHECK(m_esp8266->connect_to_ap(m_ssid, m_password, p_timeout));
+          state = connection_state::set_ip_address;
+          break;
+        case connection_state::set_ip_address:
+          if (!m_ip.empty()) {
+            hal::print(*m_console, "Setting IP Address to: ");
+            hal::print(*m_console, m_ip);
+            hal::print(*m_console, " ...\n");
+            HAL_CHECK(m_esp8266->set_ip_address(m_ip, p_timeout));
+          }
+          state = connection_state::check_server_connection;
+          break;
+        case connection_state::check_server_connection:
+          hal::print(*m_console, "Checking if server \"");
+          hal::print(*m_console, m_config.domain);
+          hal::print(*m_console, "\" is connected... \n");
+          if (HAL_CHECK(m_esp8266->is_connected_to_server(p_timeout))) {
+            state = connection_state::connection_established;
+            hal::print(*m_console, "Connected!\n");
+          } else {
+            state = connection_state::connecting_to_server;
+            hal::print(*m_console, "NOT Connected!\n");
+          }
+          break;
+        case connection_state::connecting_to_server:
+          hal::print(*m_console, "Connecting to server: \"");
+          hal::print(*m_console, m_config.domain);
+          hal::print(*m_console, "\" ...\n");
+          HAL_CHECK(m_esp8266->connect_to_server(m_config, p_timeout));
+          hal::print(*m_console, "connected\n");
+          state = connection_state::check_server_connection;
+          break;
+        case connection_state::connection_established:
+          // Do nothing, allow next iteration to break while loop
+          hal::print(*m_console, "Succesfully Connected.");
+          break;
+        default:
+          state = connection_state::connecting_to_ap;
+      }
+    }
+
+    return hal::success();
   }
 
 }  // namespace sjsu::drive

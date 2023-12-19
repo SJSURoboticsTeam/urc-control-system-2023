@@ -19,26 +19,26 @@ class esp8266_mission_control : public mission_control
 public:
 
     struct create_t {
-        hal::esp8266::at& p_esp8266;
-        hal::serial& p_console;
-        const std::string_view p_ssid;
-        const std::string_view p_password;
-        const hal::esp8266::at::socket_config& p_config;
-        const std::string_view p_ip;
-        std::span<hal::byte> p_buffer;
-        std::string_view p_get_request;
+        hal::esp8266::at& esp8266;
+        hal::serial& console;
+        const std::string_view ssid;
+        const std::string_view password;
+        const hal::esp8266::at::socket_config& config;
+        const std::string_view ip;
+        std::span<hal::byte> buffer;
+        std::string_view get_request;
     };
         
-    [[nodiscard]] static hal::result<esp8266_mission_control> create(create_t create_p, hal::timeout auto& p_timeout)
+    [[nodiscard]] static hal::result<esp8266_mission_control> create(create_t p_create, hal::timeout auto& p_timeout)
   {
-    esp8266_mission_control esp_mission_control(create_p.p_esp8266,
-                              create_p.p_console,
-                              create_p.p_ssid,
-                              create_p.p_password,
-                              create_p.p_config,
-                              create_p.p_ip,
-                              create_p.p_buffer,
-                              create_p.p_get_request);
+    esp8266_mission_control esp_mission_control(p_create.esp8266,
+                              p_create.console,
+                              p_create.ssid,
+                              p_create.password,
+                              p_create.config,
+                              p_create.ip,
+                              p_create.buffer,
+                              p_create.get_request);
     HAL_CHECK(esp_mission_control.establish_connection(p_timeout));
 
     return esp_mission_control;

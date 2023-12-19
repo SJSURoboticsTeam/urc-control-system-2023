@@ -197,19 +197,19 @@ hal::result<application_framework> initialize_platform()
   auto timeout = hal::create_timeout(counter, 10s);
   static auto esp8266 = HAL_CHECK(hal::esp8266::at::create(uart1, timeout));
   auto mc_timeout = hal::create_timeout(counter, 10s);
-  esp8266_mission_control::create_t create_object{.p_esp8266 = esp8266, 
-                                  .p_console = uart0,
-                                  .p_ssid = ssid,
-                                  .p_password = password,
-                                  .p_config = socket_config, 
-                                  .p_ip = ip,
-                                  .p_buffer = buffer, 
-                                  .p_get_request = get_request};
-  static auto esp_mission_control = esp8266_mission_control::create(create_object, mc_timeout);
+  esp8266_mission_control::create_t create_mission_control{.esp8266 = esp8266, 
+                                  .console = uart0,
+                                  .ssid = ssid,
+                                  .password = password,
+                                  .config = socket_config, 
+                                  .ip = ip,
+                                  .buffer = buffer, 
+                                  .get_request = get_request};
+  static auto esp_mission_control = esp8266_mission_control::create(create_mission_control, mc_timeout);
 
   while(esp_mission_control.has_error()) {
     mc_timeout = hal::create_timeout(counter, 30s);
-    esp_mission_control = esp8266_mission_control::create(create_object, mc_timeout);
+    esp_mission_control = esp8266_mission_control::create(create_mission_control, mc_timeout);
   }
   static auto drive_mission_control = esp_mission_control.value();
 
