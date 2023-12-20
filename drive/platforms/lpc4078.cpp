@@ -14,18 +14,14 @@
 #include <libhal-rmd/drc.hpp>
 #include <libhal-lpc40/input_pin.hpp>
 
-#include "../platform-implementations/drc_speed_sensor.cpp"
+#include "../include/drc_speed_sensor.hpp"
 
-#include "../platform-implementations/esp8266_mission_control.cpp"
-#include "../platform-implementations/mission_control.hpp"
+#include "../include/mission_control.hpp"
+#include "../include/esp8266_mission_control.hpp"
 #include "../applications/application.hpp"
 #include "../platform-implementations/home.hpp"
-#include "../platform-implementations/offset_servo.hpp"
+#include "../include/offset_servo.hpp"
 #include "../platform-implementations/helper.hpp"
-#include "../platform-implementations/print_mission_control.hpp"
-#include "../platform-implementations/print_motor.hpp"
-#include "../platform-implementations/print_servo.hpp"
-#include "../platform-implementations/print_speed_sensor.hpp"
 
 
 namespace sjsu::drive {
@@ -133,7 +129,7 @@ hal::result<application_framework> initialize_platform()
         // &extra_home,
     };
 
-  HAL_CHECK(home(homing_structs, counter, &uart0));
+  HAL_CHECK(home(homing_structs, counter));
   // hal::print<100>(uart0, "right offset: %f", right_home.servo->get_offset());
   // hal::print<100>(uart0, "left offset: %f", left_home.servo->get_offset());
   // hal::print<100>(uart0, "back offset: %f", back_home.servo->get_offset());
@@ -197,14 +193,19 @@ hal::result<application_framework> initialize_platform()
   auto timeout = hal::create_timeout(counter, 10s);
   static auto esp8266 = HAL_CHECK(hal::esp8266::at::create(uart1, timeout));
   auto mc_timeout = hal::create_timeout(counter, 10s);
-  static auto esp_mission_control = sjsu::drive::esp8266_mission_control::create(esp8266, 
-                                  uart0, ssid, password, socket_config, 
-                                  ip, mc_timeout, buffer, get_request);
+  esp8266_mission_control::create_t create_mission_control{.esp8266 = esp8266, 
+                                  .console = uart0,
+                                  .ssid = ssid,
+                                  .password = password,
+                                  .config = socket_config, 
+                                  .ip = ip,
+                                  .buffer = buffer, 
+                                  .get_request = get_request};
+  static auto esp_mission_control = esp8266_mission_control::create(create_mission_control, mc_timeout);
+
   while(esp_mission_control.has_error()) {
     mc_timeout = hal::create_timeout(counter, 30s);
-    esp_mission_control = sjsu::drive::esp8266_mission_control::create(esp8266, 
-                                    uart0, ssid, password, socket_config, 
-                                    ip, mc_timeout, buffer, get_request);
+    esp_mission_control = esp8266_mission_control::create(create_mission_control, mc_timeout);
   }
   static auto drive_mission_control = esp_mission_control.value();
 

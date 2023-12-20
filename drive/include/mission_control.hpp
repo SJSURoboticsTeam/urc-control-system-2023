@@ -76,7 +76,7 @@ class mission_control
   virtual ~mission_control() = default;
 
 private:
-  virtual hal::result<mc_commands> impl_get_command(
+  virtual hal::result<mission_control::mc_commands> impl_get_command(
     hal::function_ref<hal::timeout_function> p_timeout) = 0;
 };
 

@@ -3,12 +3,12 @@
 #include "../dto/motor_feedback.hpp"
 
 #include "../implementations/rules_engine.hpp"
-#include "../implementations/command_lerper.hpp"
+#include "../include/command_lerper.hpp"
 #include "../implementations/mode_select.hpp"
-#include "../implementations/mode_switcher.hpp"
-#include "../implementations/tri_wheel_router.hpp"
+#include "../include/mode_switcher.hpp"
+#include "../include/tri_wheel_router.hpp"
 
-#include "../platform-implementations/mission_control.hpp"
+#include "../include/mission_control.hpp"
 #include "application.hpp"
 
 namespace sjsu::drive {
@@ -49,7 +49,7 @@ hal::status application(application_framework& p_framework)
     commands = sjsu::drive::validate_commands(commands);
 
     commands = mode_switcher.switch_steer_mode(
-    commands, arguments, motor_speeds, terminal);
+    commands, arguments, motor_speeds);
     commands.speed = lerp.lerp(commands.speed);
     
     arguments = sjsu::drive::select_mode(commands);

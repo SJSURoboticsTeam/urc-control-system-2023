@@ -5,7 +5,7 @@
 #include <libhal-util/steady_clock.hpp>
 #include <libhal/input_pin.hpp>
 #include <libhal-util/units.hpp>
-#include "offset_servo.hpp"
+#include "../include/offset_servo.hpp"
 
 namespace sjsu::drive
 {
@@ -17,8 +17,7 @@ struct homing {
 
 // this function will return offsets in the same order of servos passed in
 inline hal::status home(std::span<homing*> p_homing_structs,
-                        hal::steady_clock& p_counter,
-                        hal::serial* terminal) {
+                        hal::steady_clock& p_counter) {
 
     using namespace std::chrono_literals;
     using namespace hal::literals;
