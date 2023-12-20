@@ -54,13 +54,11 @@ public:
   }
 
 private:
-
   char previous_mode_ =
     'H';  // This is H for homing when the rover turns on, it makes sure that we
           // don't switch to drive mode and allow commands to be parsed through
   bool in_the_middle_of_switching_modes_ = true;
   bool skip_once_ = true;
-
 };
 
-}  // namespace Drive
+}  // namespace sjsu::drive

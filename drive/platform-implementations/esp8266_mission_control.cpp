@@ -159,7 +159,8 @@ private:
     return m_commands;
   }
 
-  void parse_commands() {
+  void parse_commands()
+  {
 
     auto result = to_string_view(m_command_buffer);
     static constexpr int expected_number_of_arguments = 6;
@@ -180,8 +181,8 @@ private:
                       expected_number_of_arguments);
     }
     // hal::print<200>(*m_console,
-    //                   "HB: %d\t, IO %d\t, WO: %d\t, DM: %c\t, Speed: %d\n, Angle: %d\n",
-    //                   commands.heartbeat_count,
+    //                   "HB: %d\t, IO %d\t, WO: %d\t, DM: %c\t, Speed: %d\n,
+    //                   Angle: %d\n", commands.heartbeat_count,
     //                   commands.is_operational,
     //                   commands.wheel_orientation,
     //                   commands.mode,
@@ -190,7 +191,6 @@ private:
     //                   );
     m_commands = commands;
   }
-
 
   std::string_view to_string_view(std::span<const hal::byte> p_span)
   {
@@ -314,4 +314,4 @@ private:
   size_t m_content_length;
   std::uint32_t m_missed_read = 0;
 };
-}  // namespace sjsu::arm
+}  // namespace sjsu::drive

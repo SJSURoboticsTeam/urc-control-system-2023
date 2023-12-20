@@ -3,7 +3,8 @@
 #include "../platform-implementations/mission_control.hpp"
 
 namespace sjsu::drive {
-inline mission_control::mc_commands validate_commands(mission_control::mc_commands commands)
+inline mission_control::mc_commands validate_commands(
+  mission_control::mc_commands commands)
 {
   static constexpr int kMaxSpeed = 100;
   static constexpr int kMaxAngle = 12;
@@ -22,4 +23,4 @@ inline mission_control::mc_commands validate_commands(mission_control::mc_comman
 
   return commands;
 }
-}  // namespace Drive
+}  // namespace sjsu::drive
