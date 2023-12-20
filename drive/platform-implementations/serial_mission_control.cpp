@@ -5,11 +5,14 @@
 #include "../include/serial_mission_control.hpp"
 
 namespace sjsu::drive {
-  
-serial_mission_control::serial_mission_control(hal::serial& p_console) : 
-m_console(p_console) {}
 
-void serial_mission_control::parse_commands(std::string_view p_commands_json) {
+serial_mission_control::serial_mission_control(hal::serial& p_console)
+  : m_console(p_console)
+{
+}
+
+void serial_mission_control::parse_commands(std::string_view p_commands_json)
+{
 
   static constexpr int expected_number_of_arguments = 6;
   mc_commands commands;
@@ -31,7 +34,8 @@ void serial_mission_control::parse_commands(std::string_view p_commands_json) {
   m_commands = commands;
 }
 
-hal::result<mission_control::mc_commands> serial_mission_control::impl_get_command(
+hal::result<mission_control::mc_commands>
+serial_mission_control::impl_get_command(
   hal::function_ref<hal::timeout_function> p_timeout)
 {
   std::array<hal::byte, 8192> buffer{};
@@ -42,7 +46,7 @@ hal::result<mission_control::mc_commands> serial_mission_control::impl_get_comma
     // hal::print<200>(
     //   m_console, "%.*s", static_cast<int>(response.size()), response.data());
     parse_commands(response);
-    }
-    return m_commands;
   }
-}  // namespace drive
+  return m_commands;
+}
+}  // namespace sjsu::drive

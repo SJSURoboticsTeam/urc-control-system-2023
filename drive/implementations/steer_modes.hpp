@@ -2,21 +2,21 @@
 #include <algorithm>
 #include <cmath>
 
-#include "../include/mission_control.hpp"
 #include "../dto/drive.hpp"
+#include "../include/mission_control.hpp"
 
 namespace sjsu::drive {
 
-static constexpr float left_leg_drive_offset = 37;   // 41
-static constexpr float right_leg_drive_offset = 199.5; // 200
-static constexpr float back_leg_drive_offset = 117;  // 122
+static constexpr float left_leg_drive_offset = 37;      // 41
+static constexpr float right_leg_drive_offset = 199.5;  // 200
+static constexpr float back_leg_drive_offset = 117;     // 122
 
 static constexpr float left_leg_spin_offset = 242;
 static constexpr float right_leg_spin_offset = 0;
 static constexpr float back_leg_spin_offset = 0;
 
-
-inline tri_wheel_router_arguments spin_steering(mission_control::mc_commands p_commands)
+inline tri_wheel_router_arguments spin_steering(
+  mission_control::mc_commands p_commands)
 {
   tri_wheel_router_arguments temp;
   temp.back.angle = back_leg_spin_offset;
@@ -29,7 +29,8 @@ inline tri_wheel_router_arguments spin_steering(mission_control::mc_commands p_c
   return temp;
 }
 
-inline tri_wheel_router_arguments translate_steering(mission_control::mc_commands p_commands)
+inline tri_wheel_router_arguments translate_steering(
+  mission_control::mc_commands p_commands)
 {
   tri_wheel_router_arguments steer_arguments;
 
@@ -50,9 +51,10 @@ inline tri_wheel_router_arguments translate_steering(mission_control::mc_command
 /// Ackerman steering equation to compute outter wheel angle
 inline float calculate_ackerman(float p_outter_wheel_angle)
 {
-  float inner_wheel_angle = float(-.583 + 1.97 * abs(int(p_outter_wheel_angle)) +
-                                  -.224 * pow(abs(int(p_outter_wheel_angle)), 2) +
-                                  .0278 * pow(abs(int(p_outter_wheel_angle)), 3));
+  float inner_wheel_angle =
+    float(-.583 + 1.97 * abs(int(p_outter_wheel_angle)) +
+          -.224 * pow(abs(int(p_outter_wheel_angle)), 2) +
+          .0278 * pow(abs(int(p_outter_wheel_angle)), 3));
   return (p_outter_wheel_angle > 0) ? inner_wheel_angle : -inner_wheel_angle;
 }
 
@@ -92,7 +94,8 @@ inline float get_back_wheel_hub_speed(float p_outter_wheel_speed,
   return (p_outter_wheel_speed * ratio);
 }
 
-inline tri_wheel_router_arguments drive_steering(mission_control::mc_commands p_commands)
+inline tri_wheel_router_arguments drive_steering(
+  mission_control::mc_commands p_commands)
 {
   float outter_wheel_angle = 0.0, back_wheel_angle = 0.0;
   tri_wheel_router_arguments steer_arguments;
@@ -112,9 +115,10 @@ inline tri_wheel_router_arguments drive_steering(mission_control::mc_commands p_
     steer_arguments.right.angle = 0;
   } else {
     outter_wheel_angle = -outter_wheel_angle;
-    back_wheel_angle = float(-.0474 + -1.93 * abs(static_cast<int>(outter_wheel_angle)) +
-                             -.0813 * pow(abs(static_cast<int>(outter_wheel_angle)), 2) +
-                             .000555 * pow(abs(static_cast<int>(outter_wheel_angle)), 3));
+    back_wheel_angle =
+      float(-.0474 + -1.93 * abs(static_cast<int>(outter_wheel_angle)) +
+            -.0813 * pow(abs(static_cast<int>(outter_wheel_angle)), 2) +
+            .000555 * pow(abs(static_cast<int>(outter_wheel_angle)), 3));
     back_wheel_angle =
       (outter_wheel_angle > 0) ? -back_wheel_angle : back_wheel_angle;
     steer_arguments.back.angle = back_wheel_angle;
@@ -147,4 +151,4 @@ inline tri_wheel_router_arguments drive_steering(mission_control::mc_commands p_
   return steer_arguments;
 }
 
-}  // namespace Drive
+}  // namespace sjsu::drive

@@ -4,21 +4,22 @@
 
 namespace sjsu::drive {
 
-class speed_sensor 
+class speed_sensor
 {
-    public:
-    struct read_t {
-        hal::rpm speed = 0;
-    };
+public:
+  struct read_t
+  {
+    hal::rpm speed = 0;
+  };
 
-    [[nodiscard]] hal::result<read_t> read() 
-    {
-        return driver_read();
-    }
+  [[nodiscard]] hal::result<read_t> read()
+  {
+    return driver_read();
+  }
 
-    virtual ~speed_sensor() = default;
+  virtual ~speed_sensor() = default;
 
-    private:
-    virtual hal::result<read_t> driver_read() = 0;
+private:
+  virtual hal::result<read_t> driver_read() = 0;
 };
-}
+}  // namespace sjsu::drive
