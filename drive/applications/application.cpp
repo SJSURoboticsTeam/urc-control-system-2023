@@ -2,13 +2,13 @@
 
 #include "../dto/motor_feedback.hpp"
 
-#include "../implementations/rules_engine.hpp"
-#include "../implementations/command_lerper.hpp"
 #include "../implementations/mode_select.hpp"
-#include "../implementations/mode_switcher.hpp"
-#include "../implementations/tri_wheel_router.hpp"
+#include "../implementations/rules_engine.hpp"
+#include "../include/command_lerper.hpp"
+#include "../include/mode_switcher.hpp"
+#include "../include/tri_wheel_router.hpp"
 
-#include "../platform-implementations/mission_control.hpp"
+#include "../include/mission_control.hpp"
 #include "application.hpp"
 
 namespace sjsu::drive {
@@ -26,7 +26,7 @@ hal::status application(application_framework& p_framework)
   auto& clock = *p_framework.clock;
   auto loop_count = 0;
 
-  sjsu::drive::tri_wheel_router tri_wheel{back_leg, right_leg, left_leg};
+  sjsu::drive::tri_wheel_router tri_wheel{ back_leg, right_leg, left_leg };
   sjsu::drive::mission_control::mc_commands commands;
   sjsu::drive::motor_feedback motor_speeds;
   sjsu::drive::tri_wheel_router_arguments arguments;
@@ -38,20 +38,20 @@ hal::status application(application_framework& p_framework)
   HAL_CHECK(hal::write(terminal, "Starting control loop..."));
 
   while (true) {
-    if(loop_count==10) {
+    if (loop_count == 10) {
       auto timeout = hal::create_timeout(clock, 1s);
       commands = mission_control.get_command(timeout).value();
-      loop_count=0;
+      loop_count = 0;
     }
     loop_count++;
     motor_speeds = HAL_CHECK(tri_wheel.get_motor_feedback());
-    
+
     commands = sjsu::drive::validate_commands(commands);
 
-    commands = mode_switcher.switch_steer_mode(
-    commands, arguments, motor_speeds, terminal);
+    commands =
+      mode_switcher.switch_steer_mode(commands, arguments, motor_speeds);
     commands.speed = lerp.lerp(commands.speed);
-    
+
     arguments = sjsu::drive::select_mode(commands);
     HAL_CHECK(tri_wheel.move(arguments, clock));
     hal::delay(clock, 8ms);
@@ -60,4 +60,4 @@ hal::status application(application_framework& p_framework)
   return hal::success();
 }
 
-}
+}  // namespace sjsu::drive

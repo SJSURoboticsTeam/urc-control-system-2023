@@ -1,18 +1,18 @@
 #pragma once
+#include "../include/mission_control.hpp"
+#include "../include/offset_servo.hpp"
+#include "../include/speed_sensor.hpp"
+#include <libhal/input_pin.hpp>
 #include <libhal/motor.hpp>
 #include <libhal/serial.hpp>
 #include <libhal/servo.hpp>
-#include <libhal/motor.hpp>
 #include <libhal/steady_clock.hpp>
 #include <libhal/timeout.hpp>
-#include <libhal/input_pin.hpp>
-#include "../platform-implementations/speed_sensor.hpp"
-#include "../platform-implementations/mission_control.hpp"
-#include "../platform-implementations/offset_servo.hpp"
 
 namespace sjsu::drive {
 
-struct leg {
+struct leg
+{
   hal::servo* steer;
   hal::motor* propulsion;
   speed_sensor* steer_speed_sensor;
@@ -36,4 +36,4 @@ hal::status initialize_processor();
 hal::result<application_framework> initialize_platform();
 hal::status application(application_framework& p_framework);
 
-}
+}  // namespace sjsu::drive
