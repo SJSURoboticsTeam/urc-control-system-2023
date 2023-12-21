@@ -16,6 +16,7 @@ find_package(libhal-util REQUIRED CONFIG)
 find_package(libhal-rmd REQUIRED CONFIG)
 find_package(libhal-soft REQUIRED CONFIG)
 find_package(libhal-esp8266 REQUIRED CONFIG)
+find_package(libhal-mpu REQUIRED CONFIG)
 
 add_executable(${PROJECT_NAME}
     main.cpp
@@ -31,5 +32,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     libhal::rmd
     libhal::soft
     libhal::esp8266
+    libhal::mpu
     )
 libhal_post_build(${PROJECT_NAME})

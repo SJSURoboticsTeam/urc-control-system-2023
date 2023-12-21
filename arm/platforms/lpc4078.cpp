@@ -6,17 +6,23 @@
 #include <libhal-lpc40/constants.hpp>
 #include <libhal-lpc40/input_pin.hpp>
 #include <libhal-lpc40/uart.hpp>
+#include <libhal-lpc40/i2c.hpp>
+
 #include <libhal-rmd/mc_x.hpp>
-// #include <libhal-rmd/mc_x_servo.hpp>
+#include <libhal-mpu/mpu6050.hpp>
+
 #include <libhal-util/units.hpp>
 // #include <libhal-pca/pca9685.hpp>
 #include "../applications/application.hpp"
 #include "../platform-implementations/helper.hpp"
 #include "../platform-implementations/esp8266_mission_control.cpp"
+#include "../platform-implementations/offset_servo.hpp"
 
 #include <libhal-lpc40/clock.hpp>
 #include <libhal-lpc40/pwm.hpp>
 #include <libhal-soft/rc_servo.hpp>
+#include <libhal-soft/inert_drivers/inert_accelerometer.hpp>
+
 
 namespace sjsu::arm {
 
@@ -36,6 +42,14 @@ hal::result<application_framework> initialize_platform()
   // setting clock
   HAL_CHECK(hal::lpc40::clock::maximum(12.0_MHz));
   auto& clock = hal::lpc40::clock::get();
+  static auto i2c1 = HAL_CHECK((hal::lpc40::i2c::get(1,
+                                                    hal::i2c::settings{
+                                                      .clock_rate = 100.0_kHz,
+                                                    })));
+  static auto i2c2 = HAL_CHECK((hal::lpc40::i2c::get(2,
+                                                    hal::i2c::settings{
+                                                      .clock_rate = 100.0_kHz,
+                                                    })));
   auto cpu_frequency = clock.get_frequency(hal::lpc40::peripheral::cpu);
   static hal::cortex_m::dwt_counter counter(cpu_frequency);
 
@@ -79,6 +93,12 @@ hal::result<application_framework> initialize_platform()
   static auto right_wrist_mc_x_servo =
     HAL_CHECK(hal::make_servo(right_wrist_mc_x, 2.0_rpm));
 
+  static auto rotunda_mc_x_offset_servo = HAL_CHECK(offset_servo::create(rotunda_mc_x_servo, 0.0f));
+  static auto elbow_mc_x_offset_servo = HAL_CHECK(offset_servo::create(elbow_mc_x_servo, 0.0f));
+  static auto shoulder_mc_x_offset_servo = HAL_CHECK(offset_servo::create(shoulder_mc_x_servo, 0.0f));
+  static auto left_wrist_mc_x_offset_servo = HAL_CHECK(offset_servo::create(left_wrist_mc_x_servo, 0.0f));
+  static auto right_wrist_mc_x_offset_servo = HAL_CHECK(offset_servo::create(right_wrist_mc_x_servo, 0.0f));
+
   // static auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c, 0b100'0000));
   // static auto& pwm0 = pca9685.get_pwm_channel<0>();
   // auto servo_settings = hal::rc_servo::settings{
@@ -92,6 +112,16 @@ hal::result<application_framework> initialize_platform()
 
     // mission control object
 // mission control object
+
+// MPU INIT
+
+  static auto elbow_mpu = HAL_CHECK(hal::mpu::mpu6050::create(i2c1, hal::mpu::mpu6050::address_ground));
+  static auto shoulder_mpu = HAL_CHECK(hal::mpu::mpu6050::create(i2c1, hal::mpu::mpu6050::address_voltage_high));
+  static auto rotunda_mpu = HAL_CHECK(hal::mpu::mpu6050::create(i2c2, hal::mpu::mpu6050::address_voltage_high));
+
+  auto zero = HAL_CHECK(rotunda_mpu.read());
+  static auto wrist_mpu = HAL_CHECK(hal::soft::inert_accelerometer::create(zero));
+
   static std::array<hal::byte, 8192> recieve_buffer1{};
 
   static auto uart1 =
@@ -134,11 +164,17 @@ hal::result<application_framework> initialize_platform()
   static auto arm_mission_control = esp_mission_control.value();
 
   return application_framework{
-    .rotunda_servo = &rotunda_mc_x_servo,
-    .shoulder_servo = &shoulder_mc_x_servo,
-    .elbow_servo = &elbow_mc_x_servo,
-    .left_wrist_servo = &left_wrist_mc_x_servo,
-    .right_wrist_servo = &right_wrist_mc_x_servo,
+    .rotunda_servo = &rotunda_mc_x_offset_servo,
+    .shoulder_servo = &shoulder_mc_x_offset_servo,
+    .elbow_servo = &elbow_mc_x_offset_servo,
+    .left_wrist_servo = &left_wrist_mc_x_offset_servo,
+    .right_wrist_servo = &right_wrist_mc_x_offset_servo,
+
+    .rotunda_accelerometer = &rotunda_mpu,
+    .shoulder_accelerometer = &shoulder_mpu,
+    .elbow_accelerometer = &elbow_mpu,
+    .wrist_accelerometer = &wrist_mpu,
+
     // .end_effector = &end_effector_servo,
     .terminal = &uart0,
     .mc = &arm_mission_control,
