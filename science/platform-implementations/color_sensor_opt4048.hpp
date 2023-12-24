@@ -4,7 +4,7 @@
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
 
-namespace science {
+namespace sjsu::science {
 // functions we ened to make
 class opt4048
 {
@@ -54,27 +54,27 @@ public:
 
     struct adc_codes
     {
-        int32_t ch0 = 0;
-        int32_t ch1 = 0;
-        int32_t ch2 = 0;
-        int32_t ch3 = 0;
+        uint32_t ch0 = 0;
+        uint32_t ch1 = 0;
+        uint32_t ch2 = 0;
+        uint32_t ch3 = 0;
     };
 
   struct xyz_values
   {
-    float x = 0;
-    float y = 0;
-    float z = 0;
-    float lux = 0;
+    double x = 0;
+    double y = 0;
+    double z = 0;
+    double lux = 0;
   };
 
   struct rgb_values
   {
-    int r = 0;
-    int g = 0;
-    int b = 0;
+    double r = 0;
+    double g = 0;
+    double b = 0;
   };
-  float XYZ_to_RGB[3][3] = { {  3.2404542, -1.5371385, -0.4985314 },
+  double XYZ_to_RGB[3][3] = { {  3.2404542, -1.5371385, -0.4985314 },
 												{ -0.9692660,  1.8760108,  0.0415560 },
 												{  0.0556434, -0.2040259,  1.0572252 }};
   int device_address = 0x44;  // not sure check this
@@ -103,6 +103,8 @@ public:
   hal::result<adc_codes> get_adc_codes();
 
   hal::result<xyz_values> adc_codes_to_xyz(adc_codes adc);
+  
+  hal::result<double> sRGBCompandingFunction(double val);
 
   hal::result<rgb_values> xyz_to_rgb(xyz_values xyz);
 
@@ -112,7 +114,6 @@ public:
   // set to conversion mode
     // M^-1 for sRGB @ D65 from www.brucelindbloom.com
 	
-  float sRGBCompandingFunction(float val);
 
   hal::i2c& m_i2c;
   hal::steady_clock& m_clock;
