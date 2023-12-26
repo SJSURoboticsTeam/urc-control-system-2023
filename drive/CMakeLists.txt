@@ -5,6 +5,7 @@ project(drive VERSION 0.0.1 LANGUAGES CXX)
 
 set(platform_library $ENV{LIBHAL_PLATFORM_LIBRARY})
 set(platform $ENV{LIBHAL_PLATFORM})
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 if("${platform_library}" STREQUAL "")
     message(FATAL_ERROR
@@ -20,6 +21,13 @@ find_package(libhal-esp8266 REQUIRED CONFIG)
 add_executable(${PROJECT_NAME}
     main.cpp
     applications/application.cpp
+    platform-implementations/drc_speed_sensor.cpp
+    platform-implementations/esp8266_mission_control.cpp
+    platform-implementations/serial_mission_control.cpp
+    platform-implementations/offset_servo.cpp
+    implementations/command_lerper.cpp
+    implementations/mode_switcher.cpp
+    implementations/tri_wheel_router.cpp
     platforms/${platform}.cpp)
 target_include_directories(${PROJECT_NAME} PUBLIC .)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
