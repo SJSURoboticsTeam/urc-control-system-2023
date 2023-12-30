@@ -24,10 +24,10 @@ hal::status application(application_framework& p_framework)
   while(true){
         // periodic readings are only updated every 5000ms (temperature)
         hal::delay(clock, 5000ms);
-        scd40_sensor.read();
-        auto co2_levels = HAL_CHECK(scd40_sensor.get_CO2_buffer());
-        auto temp = HAL_CHECK(scd40_sensor.get_temp_buffer());
-        auto RH_levels = HAL_CHECK(scd40_sensor.get_RH_buffer());
+        auto rd = HAL_CHECK(scd40_sensor.read());
+        auto co2_levels = rd.co2;
+        auto temp = rd.temp;
+        auto RH_levels = rd.rh;
 
 
         hal::print<64>(terminal, "%-5.2f\t%-5.2f\t%-5.2f\n", co2_levels, temp, RH_levels);
