@@ -37,3 +37,9 @@ hal::result<scd40_nm::scd40_read_data> scd40_nm::read() {
     return rd;
 }
 
+hal::status scd40_nm::stop() {
+    std::array<hal::byte, 2> stop_address =  { stop_periodic_measurement_first_half, stop_periodic_measurement_second_half };
+    HAL_CHECK(hal::write(m_i2c, addresses::device_address, stop_address, hal::never_timeout()));
+    return hal::success();
+}
+

@@ -22,7 +22,9 @@ private:
         start_periodic_measurement_first_half = 0x21,
         start_periodic_measurement_second_half = 0xb1,
         read_measurement_first_half = 0xec,
-        read_measurement_second_half = 0x05
+        read_measurement_second_half = 0x05,
+        stop_periodic_measurement_first_half = 0x3f,
+        stop_periodic_measurement_second_half = 0x86
     };
 
 public:
