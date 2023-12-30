@@ -24,7 +24,17 @@ private:
         read_measurement_first_half = 0xec,
         read_measurement_second_half = 0x05,
         stop_periodic_measurement_first_half = 0x3f,
-        stop_periodic_measurement_second_half = 0x86
+        stop_periodic_measurement_second_half = 0x86,
+        set_temperature_offset_first_half = 0x24,
+        set_temperature_offset_second_half = 0x1d,
+        get_temperature_offset_first_half = 0x23,
+        get_temperature_offset_second_half = 0x18,
+        set_sensor_altitude_first_half = 0x24,
+        set_sensor_altitude_second_half = 0x27,
+        get_sensor_altitude_first_half = 0x23,
+        get_sensor_altitude_second_half = 0x22,
+        set_ambient_pressure_first_half = 0xe0,
+        set_ambient_pressure_second_half = 0x00
     };
 
 public:
