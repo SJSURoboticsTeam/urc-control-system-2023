@@ -16,13 +16,13 @@ hal::result<scd40_nm> scd40_nm::create(hal::i2c& p_i2c, hal::steady_clock& clock
 }
 
 hal::status scd40_nm::start(){
-    std::array<hal::byte, 2> start_address =  { start_first_half, start_second_half };
+    std::array<hal::byte, 2> start_address =  { start_periodic_measurement_first_half, start_periodic_measurement_second_half };
     HAL_CHECK(hal::write(m_i2c, addresses::device_address, start_address, hal::never_timeout()));
     return hal::success();
 }
 
 hal::result<scd40_nm::scd40_read_data> scd40_nm::read() {
-    std::array<hal::byte, 2> read_address = {read_first_half, read_second_half };
+    std::array<hal::byte, 2> read_address = {read_measurement_first_half, read_measurement_second_half };
     std::array<hal::byte, 9> buffer;
 
     HAL_CHECK(hal::write(m_i2c,addresses::device_address, read_address));

@@ -17,12 +17,12 @@ private:
     hal::steady_clock& m_clock;
     
     //TODO: revise output type
-    enum addresses  {// deal with hal::byte later 
+    enum addresses {// deal with hal::byte later 
         device_address = 0x62,
-        start_first_half = 0x21,
-        start_second_half = 0xb1,
-        read_first_half = 0xec,
-        read_second_half = 0x05
+        start_periodic_measurement_first_half = 0x21,
+        start_periodic_measurement_second_half = 0xb1,
+        read_measurement_first_half = 0xec,
+        read_measurement_second_half = 0x05
     };
 
 public:
@@ -32,11 +32,11 @@ public:
         double temp;
         double rh;
     };
-    
 
     static hal::result<scd40> create(hal::i2c& p_i2c,hal::steady_clock& p_clock);
     hal::status start();
     hal::result<scd40_read_data> read();
+    hal::status stop();
 };
 
 } // namespace science
