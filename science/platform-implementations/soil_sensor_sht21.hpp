@@ -37,6 +37,7 @@ namespace hal::sht {
 
       /**
        * @brief Set the resolution of the relative humidity and temperature sensor.
+       * (Untested)
        * 
        * @param p_resolution 
        * @return hal::status 
@@ -45,6 +46,7 @@ namespace hal::sht {
 
       /**
        * @brief Returns true when VDD on the sensor is less than 2.25 V
+       * (Untested)
        * 
        * @return hal::result<bool> 
        */
@@ -52,6 +54,7 @@ namespace hal::sht {
 
       /**
        * @brief Enable or disable the on-chip heater.
+       * (Untested)
        * 
        * @param p_enabled Defaults to true (enable)
        * @return hal::status 
