@@ -20,9 +20,11 @@ libhal_build_demos(
   DEMOS
   co2_demo
   pressure_sensor_demo
+  soil_sensor_demo
   
   SOURCES
   ../platform-implementations/pressure_sensor_bme680.cpp
+  ../platform-implementations/soil_sensor_sht21.cpp
 
   PACKAGES
   libhal-lpc40
