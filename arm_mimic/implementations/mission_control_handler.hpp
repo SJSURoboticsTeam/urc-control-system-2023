@@ -3,7 +3,7 @@
 #include <libhal-util/serial.hpp>
 #include <cstdio>
 
-namespace arm_mimic{
+namespace tla {
 
    hal::status send_data_to_mc(hal::serial &uart, std::array<float, 6> raw_data, bool is_network = false)
     {

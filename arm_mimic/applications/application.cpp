@@ -9,7 +9,10 @@
 #include <libhal-lpc40/uart.hpp>
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
+
 #include "../implementations/tla2528.hpp"
+#include "../implementations/degree_manipulation.hpp"
+#include "../implementations/mission_control_handler.hpp"
 
 #include "application.hpp"
 namespace sjsu::arm_mimic {
@@ -23,23 +26,35 @@ hal::status application(application_framework& p_framework)
     auto& i2c2 = *p_framework.i2c2;
     auto TLA2528 = tla::tla2528(i2c2, steady_clock);
 
-    while(true) {
-        hal::print<64>(uart0, "Testing!!\n");
+    const uint8_t N = 6;
+    std::array<float, N> scrambled_results = {};
+    std::array<float, N> results = {};
+    float true_degree;
+    float max_volt = 4096;
+    float max_deg = 360;
 
-    }
-    hal::print<64>(uart0, "making TLA2528\n");
-
-    // hal::byte channel = 0;
-    hal::print<64>(uart0, "before while loop\n");
     while(true){
         // auto results = HAL_CHECK(TLA2528.read_one(channel));
         // hal::print<64>(uart0, "voltage: %d\n", results);
 
         auto buffer_of_results = HAL_CHECK(TLA2528.read_all());
-        for(int i = 0; i < 8; i++) {
-            hal::print<64>(uart0, "voltage %d: %d ", i, buffer_of_results[i]);
+        for(int i = 0; i < N; i++) {
+            true_degree = tla::voltage_to_degree(buffer_of_results[i], max_volt,max_deg);
+            scrambled_results[i] = true_degree;
+            // hal::print<64>(uart0, "voltage %d: %d ", i, (int)true_degree); 
         }
-        hal::print<64>(uart0, "\n");
+        // hal::print<64>(uart0, "\n");
+
+        results[0] = 0;                     // ROTUNDA
+        results[1] = scrambled_results[2] - 261;  // SHOULDER
+        results[2] = -(scrambled_results[1] - 151);  // ELBOW
+        // results[3] = scrambled_results[0];  // WRIST PITCH
+        // results[4] = scrambled_results[5];  // WRIST ROLL
+        results[3] = 0;
+        results[4] = 0;
+        results[5] = 0;
+
+        HAL_CHECK(tla::send_data_to_mc(*p_framework.terminal, results));
     }
 }
 }

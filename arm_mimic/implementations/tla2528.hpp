@@ -41,6 +41,8 @@ public:
 
     uint16_t data = (data_buffer[0] << 4) | (data_buffer[1] >> 4);
 
+    // return voltage_to_degree(data, 4096, 360);
+
     return data;
     // std::pair<float, float> p_input_range;
     // std::pair<float, float> p_output_range;
