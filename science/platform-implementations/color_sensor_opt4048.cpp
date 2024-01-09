@@ -33,11 +33,16 @@ hal::status opt4048::adjust_settings(){
     // 1ms conversion time for now: 0010
     // 0xC=1100
     //settings are predetermined
-    hal::byte write1 = 0b00110000;
-    hal::byte write2 = 0b10110011; // guessing almost all of these. read about the latch, and the interrupts
-    std::array<hal::byte, 3> to_send_array= {register_addresses::settings,write1,write2};
-    HAL_CHECK(hal::write(m_i2c, opt4048::device_address, to_send_array, hal::never_timeout()));
-    print_byte_array(m_terminal, to_send_array); //should output: 0x0A, 0x30, 0xB3
+    hal::byte write1 = 0x30;
+    hal::byte write2 = 0xB3;
+    hal::byte write3 = 0x80;
+    hal::byte write4 = 0x11; // guessing almost all of these. read about the latch, and the interrupts
+    std::array<hal::byte, 3> configA= {register_addresses::settings,write1,write2};
+    HAL_CHECK(hal::write(m_i2c, opt4048::device_address, configA, hal::never_timeout()));
+    // hal::delay(m_clock, 50ms);
+    std::array<hal::byte, 3> configB= {register_addresses::threshold_channel_select,write3,write4};
+    HAL_CHECK(hal::write(m_i2c, opt4048::device_address, configB, hal::never_timeout()));
+    print_byte_array(m_terminal, configA); //should output: 0x0A, 0x30, 0xB3
     return hal::success();
 }
 
@@ -149,7 +154,7 @@ hal::status opt4048::get_msb_exp(hal::byte register_A, std::span<uint16_t> data)
 hal::result<opt4048::xyz_values> opt4048::adc_codes_to_xyz(adc_codes adc) {
     //from datasheet
     xyz_values values;
-    double ADC_to_XYZ[4][4] = { { 0.000234892992, -0.0000189652390,  0.0000120811684,       0 },
+    float ADC_to_XYZ[4][4] = { { 0.000234892992, -0.0000189652390,  0.0000120811684,       0 },
 							   { 0.0000407467441,  0.000198958202, -0.0000158848115,  0.00215 },
 							   { 0.0000928619404, -0.0000169739553,  0.000674021520,       0 },
 							   {             0,              0,              0,       0 }
@@ -160,7 +165,7 @@ hal::result<opt4048::xyz_values> opt4048::adc_codes_to_xyz(adc_codes adc) {
 	values.y = adc.ch0 * ADC_to_XYZ[0][1] + adc.ch1 * ADC_to_XYZ[1][1] + adc.ch2 * ADC_to_XYZ[2][1] + adc.ch3 * ADC_to_XYZ[3][1];
 	values.z = adc.ch0 * ADC_to_XYZ[0][2] + adc.ch1 * ADC_to_XYZ[1][2] + adc.ch2 * ADC_to_XYZ[2][2] + adc.ch3 * ADC_to_XYZ[3][2];
 	values.lux = adc.ch0 * ADC_to_XYZ[0][3] + adc.ch1 * ADC_to_XYZ[1][3] + adc.ch2 * ADC_to_XYZ[2][3] + adc.ch3 * ADC_to_XYZ[3][3];
-    print<30>(m_terminal, "ADC CODES: %d \t", adc.ch0);
+    print<30>(m_terminal, "ADC CODES: %d \t", adc.ch0); 
     print<30>(m_terminal, "%d \t", adc.ch1);
     print<30>(m_terminal, "%d \t", adc.ch2);
     print<30>(m_terminal, "%d \n", adc.ch3);
@@ -170,7 +175,7 @@ hal::result<opt4048::xyz_values> opt4048::adc_codes_to_xyz(adc_codes adc) {
     print<30>(m_terminal, "%f \n", values.lux);
     return values;
 }
-hal::result<double> opt4048::sRGBCompandingFunction(double val)  // helper function retrospy github and www.brucelindbloom.com
+hal::result<float> opt4048::sRGBCompandingFunction(float val)  // helper function retrospy github and www.brucelindbloom.com
   {
     if (val <= 0.0031308)
       return val *= 12.92;
@@ -181,32 +186,64 @@ hal::result<double> opt4048::sRGBCompandingFunction(double val)  // helper funct
 //from retrospy github and www.brucelindbloom.com
 hal::result<opt4048::rgb_values> opt4048::xyz_to_rgb(xyz_values xyz) {
     //  XYZ of D65 Illuminant from retrospy github and www.brucelindbloom.com
+    float x = xyz.x / 100; // X from 0 to 95.047
+    float y = xyz.y / 100; // Y from 0 to 100.000
+    float z = xyz.z / 100; // Z from 0 to 108.883
 
-    xyz_values D65_Illuminant = { 95.0500,100.0000,108.9000,NAN};
+    float r = x * 3.2406 + y * -1.5372 + z * -0.4986;
+    float g = x * -0.9689 + y * 1.8758 + z * 0.0415;
+    float b = x * 0.0557 + y * -0.2040 + z * 1.0570;
+
+    if (r > 0.0031308) {
+    r = 1.055 * (std::pow(r, 0.41666667)) - 0.055;
+    } else {
+    r = 12.92 * r;
+    }
+
+    if (g > 0.0031308) {
+    g = 1.055 * (std::pow(g, 0.41666667)) - 0.055;
+    } else {
+    g = 12.92 * g;
+    }
+
+    if (b > 0.0031308) {
+    b = 1.055 * (std::pow(b, 0.41666667)) - 0.055;
+    } else {
+    b = 12.92 * b;
+    }
+
+    r *= 255;
+    g *= 255;
+    b *= 255;
     rgb_values rgb;
+    rgb.r = r;
+    rgb.g = g;
+    rgb.b = b;
+    // xyz_values D65_Illuminant = { 95.0500,100.0000,108.9000,NAN};
+    // rgb_values rgb;
 
-	// XYZ of D65 Illuminant
-	xyz.x /= D65_Illuminant.x;
-	xyz.y /= D65_Illuminant.y;
-	xyz.z /= D65_Illuminant.y;
-    double rgbR = HAL_CHECK(sRGBCompandingFunction(xyz.x * XYZ_to_RGB[0][0] + xyz.y * XYZ_to_RGB[0][1] + xyz.z * XYZ_to_RGB[0][2]));
-    double rgbG = HAL_CHECK(sRGBCompandingFunction(xyz.x * XYZ_to_RGB[1][0] + xyz.y * XYZ_to_RGB[1][1] + xyz.z * XYZ_to_RGB[1][2]));
-    double rgbB = HAL_CHECK(sRGBCompandingFunction(xyz.x * XYZ_to_RGB[2][0] + xyz.y * XYZ_to_RGB[2][1] + xyz.z * XYZ_to_RGB[2][2]));
-	rgb.r = std::min(1.0, std::max(0.0, rgbR)) * 255;
-	rgb.g = std::min(1.0, std::max(0.0, rgbG)) * 255;
-	rgb.b = std::min(1.0, std::max(0.0, rgbB)) * 255;
+	// // XYZ of D65 Illuminant
+	// xyz.x /= D65_Illuminant.x;
+	// xyz.y /= D65_Illuminant.y;
+	// xyz.z /= D65_Illuminant.y;
+    // float rgbR = HAL_CHECK(sRGBCompandingFunction(xyz.x * XYZ_to_RGB[0][0] + xyz.y * XYZ_to_RGB[0][1] + xyz.z * XYZ_to_RGB[0][2]));
+    // float rgbG = HAL_CHECK(sRGBCompandingFunction(xyz.x * XYZ_to_RGB[1][0] + xyz.y * XYZ_to_RGB[1][1] + xyz.z * XYZ_to_RGB[1][2]));
+    // float rgbB = HAL_CHECK(sRGBCompandingFunction(xyz.x * XYZ_to_RGB[2][0] + xyz.y * XYZ_to_RGB[2][1] + xyz.z * XYZ_to_RGB[2][2]));
+	// rgb.r = std::min(1.0f, std::max(0.0f, rgbR)) * 255;
+	// rgb.g = std::min(1.0f, std::max(0.0f, rgbG)) * 255;
+	// rgb.b = std::min(1.0f, std::max(0.0f, rgbB)) * 255;
 
 	return rgb;
 }
 
 hal::result<opt4048::rgb_values> opt4048::get_data(){// will do all the conversions and return required data
     auto adc = HAL_CHECK(get_adc_codes());
-    hal::print(m_terminal, "got adc codes\n");
+    // hal::print(m_terminal, "got adc codes\n");
     auto xyz = HAL_CHECK(adc_codes_to_xyz(adc));
-    hal::print(m_terminal, "got xyz codes\n");
+    // hal::print(m_terminal, "got xyz codes\n");
 
     auto rgb = HAL_CHECK(xyz_to_rgb(xyz));
-    hal::print(m_terminal, "got rgb codes\n");
+    // hal::print(m_terminal, "got rgb codes\n");
 
     return rgb;
 }  

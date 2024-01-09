@@ -62,19 +62,19 @@ public:
 
   struct xyz_values
   {
-    double x = 0;
-    double y = 0;
-    double z = 0;
-    double lux = 0;
+    float x = 0;
+    float y = 0;
+    float z = 0;
+    float lux = 0;
   };
 
   struct rgb_values
   {
-    double r = 0;
-    double g = 0;
-    double b = 0;
+    float r = 0;
+    float g = 0;
+    float b = 0;
   };
-  double XYZ_to_RGB[3][3] = { {  3.2404542, -1.5371385, -0.4985314 },
+  float XYZ_to_RGB[3][3] = { {  3.2404542, -1.5371385, -0.4985314 },
 												{ -0.9692660,  1.8760108,  0.0415560 },
 												{  0.0556434, -0.2040259,  1.0572252 }};
   int device_address = 0x44;  // not sure check this
@@ -104,7 +104,7 @@ public:
 
   hal::result<xyz_values> adc_codes_to_xyz(adc_codes adc);
   
-  hal::result<double> sRGBCompandingFunction(double val);
+  hal::result<float> sRGBCompandingFunction(float val);
 
   hal::result<rgb_values> xyz_to_rgb(xyz_values xyz);
 

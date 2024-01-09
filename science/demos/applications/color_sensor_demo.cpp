@@ -46,7 +46,7 @@ hal::status application(application_framework& p_framework)
     hal::print(terminal, "\nnew measurement\n");
     auto readings = HAL_CHECK(color_sensor.get_data());
     hal::print<40>(terminal, "R: %f\t G: %f\t B: %f\n", readings.r, readings.g, readings.b);
-    hal::delay(clock, 5000ms);
+    hal::delay(clock, 50ms);
   }
 
   return hal::success();
