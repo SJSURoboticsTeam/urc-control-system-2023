@@ -2,7 +2,7 @@
 #include <libhal/motor.hpp>
 #include <libhal/serial.hpp>
 #include <libhal/servo.hpp>
-#include <libhal-util/steady_clock.hpp>
+#include <libhal/steady_clock.hpp>
 #include <libhal/timeout.hpp>
 
 #include "../platform-implementations/mission_control.hpp"
@@ -17,7 +17,7 @@ struct application_framework
   hal::servo* right_wrist_servo;
   hal::servo* end_effector;
   hal::serial* terminal;
-  mission_control* mc;
+  // mission_control* mc;
   hal::steady_clock* clock;
   hal::callback<void()> reset;
 };

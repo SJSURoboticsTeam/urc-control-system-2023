@@ -23,8 +23,16 @@ libhal_build_demos(
   PACKAGES
   libhal-lpc40
   libhal-util
+  libhal-rmd
+  libhal-soft
+  libhal-esp8266
+  libhal-pca
 
   LINK_LIBRARIES
   libhal::lpc40
   libhal::util
+  libhal::rmd
+  libhal::soft
+  libhal::esp8266
+  libhal::pca
 )
