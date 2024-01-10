@@ -57,7 +57,7 @@ hal::status application(sjsu::arm::application_framework& p_framework)
 
   while (true) {
     if(loop_count==10) {
-      auto timeout = hal::create_timeout(clock, 60ms);
+      auto timeout = hal::create_timeout(clock, 100ms);
       commands = mission_control.get_command(timeout).value();
       loop_count=0;
     }
