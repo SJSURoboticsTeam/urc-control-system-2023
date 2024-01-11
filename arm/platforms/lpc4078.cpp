@@ -93,16 +93,28 @@ hal::result<application_framework> initialize_platform()
   static auto right_wrist_mc_x_servo =
     HAL_CHECK(hal::make_servo(right_wrist_mc_x, 2.0_rpm));
 
+  HAL_CHECK(rotunda_mc_x.feedback_request(hal::rmd::mc_x::read::status_2));
+  HAL_CHECK(shoulder_mc_x.feedback_request(hal::rmd::mc_x::read::status_2));
+  HAL_CHECK(elbow_mc_x.feedback_request(hal::rmd::mc_x::read::status_2));
+  HAL_CHECK(left_wrist_mc_x.feedback_request(hal::rmd::mc_x::read::status_2));
+  HAL_CHECK(right_wrist_mc_x.feedback_request(hal::rmd::mc_x::read::status_2));
+
+  auto rotunda_offset = rotunda_mc_x.feedback().angle();
+  auto shoulder_offset = shoulder_mc_x.feedback().angle();
+  auto elbow_offset = elbow_mc_x.feedback().angle();
+  auto left_wrist_offset = left_wrist_mc_x.feedback().angle();
+  auto right_wrist_offset = right_wrist_mc_x.feedback().angle();
+
   static auto rotunda_offset_servo =
-    HAL_CHECK(offset_servo::create(rotunda_mc_x_servo, 0.0f));
+    HAL_CHECK(offset_servo::create(rotunda_mc_x_servo, rotunda_offset));
   static auto elbow_offset_servo =
-    HAL_CHECK(offset_servo::create(elbow_mc_x_servo, 0.0f));
+    HAL_CHECK(offset_servo::create(elbow_mc_x_servo, shoulder_offset));
   static auto shoulder_offset_servo =
-    HAL_CHECK(offset_servo::create(shoulder_mc_x_servo, 0.0f));
+    HAL_CHECK(offset_servo::create(shoulder_mc_x_servo, elbow_offset));
   static auto left_wrist_offset_servo =
-    HAL_CHECK(offset_servo::create(left_wrist_mc_x_servo, 0.0f));
+    HAL_CHECK(offset_servo::create(left_wrist_mc_x_servo, left_wrist_offset));
   static auto right_wrist_offset_servo =
-    HAL_CHECK(offset_servo::create(right_wrist_mc_x_servo, 0.0f));
+    HAL_CHECK(offset_servo::create(right_wrist_mc_x_servo, right_wrist_offset));
 
   // static auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c,
   // 0b100'0000)); static auto& pwm0 = pca9685.get_pwm_channel<0>(); auto
