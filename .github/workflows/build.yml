@@ -13,42 +13,75 @@ on:
     - cron: '0 12 * * 0'
 
 jobs:
-  deploy:
+  build_ubuntu:
     strategy:
       fail-fast: false
-      matrix:
-        include: 
-          - os: ubuntu-22.04
-            profile_name: x86_64/linux
-          - os: macos-12
-            profile_name: x86_64/mac
-          - os: windows-2022
-            profile_name: x86_64/windows
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
         with:
           submodules: true
           fetch-depth: 0
 
+      - name: Install GCC, clang tidy, and build essentials
+        run: sudo apt update && sudo apt upgrade; sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test; sudo apt install -y build-essential g++-11 clang-tidy
+
       - name: 📥 Install CMake & Conan
-        run: python3 -m pip install "conan>=2.0.6" cmake
+        run: python3 -m pip install "conan>=2.0.13" cmake
 
       - name: 📡 Add `libhal-trunk` conan remote
         run: conan remote add libhal-trunk https://libhal.jfrog.io/artifactory/api/conan/trunk-conan
 
-
       - name: Setting up conan profile
-        run: conan profile detect --force
-        run: conan config install -sf profiles/${{matrix.profile_name}}/ -tf profiles https://github.com/libhal/conan-config.git
-        run: conan config install -sf conan/profiles/ -tf profiles https://github.com/libhal/libhal-armcortex.git
-        run: conan config install -sf conan/profiles/ -tf profiles https://github.com/libhal/libhal-lpc40.git
+        run: conan config install -sf profiles/baremetal https://github.com/libhal/conan-config.git; conan profile detect --force; conan config install -sf profiles/x86_64/linux/ -tf profiles https://github.com/libhal/conan-config.git;
+
+      - name: Get conan profiles
+        run: conan config install -sf conan/profiles/ -tf profiles https://github.com/libhal/libhal-armcortex.git; conan config install -sf conan/profiles/ -tf profiles https://github.com/libhal/libhal-lpc40.git 
 
       - name: Build drive
         working-directory: drive
-        run: conan build . -pr lpc4078 -s build_type=MinSizeRel -b missing
+        run: conan build . -pr lpc4078 -s build_type=MinSizeRel
 
       - name: Build arm
         working-directory: arm
-        run: conan build . -pr lpc4078 -s build_type=MinSizeRel -b missing
+        run: conan build . -pr lpc4078 -s build_type=MinSizeRel
+        
+  build_windows:
+    strategy:
+      fail-fast: false
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+          fetch-depth: 0
+      
+      - name: Installing choco
+        run: Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+      
+      - name: Installing python
+        run: choco install python
+      
+      - name: Installing gcc
+        run: choco install mingw
+      
+      - name: installing make
+        run: choco install make
+      
+      - name: Installing conan and cmake
+        run: python3 -m pip install -U "conan>=2.0.13" cmake
+
+      - name: setting up conan
+        run: conan remote add libhal-trunk https://libhal.jfrog.io/artifactory/api/conan/trunk-conan; conan config install -sf profiles/baremetal https://github.com/libhal/conan-config.git; conan profile detect --force; conan config install -sf profiles/x86_64/windows/ -tf profiles https://github.com/libhal/conan-config.git
+
+      - name: Importing lpc profiles
+        run: conan config install -sf conan/profiles/ -tf profiles https://github.com/libhal/libhal-armcortex.git; conan config install -sf conan/profiles/ -tf profiles https://github.com/libhal/libhal-lpc40.git
+      
+      - name: Build drive
+        working-directory: drive
+        run: conan build . -pr lpc4078 -s build_type=MinSizeRel
+
+      - name: Build arm
+        working-directory: arm
+        run: conan build . -pr lpc4078 -s build_type=MinSizeRel
       
