@@ -15,7 +15,7 @@ struct application_framework
   hal::servo* elbow_servo;
   hal::servo* left_wrist_servo;
   hal::servo* right_wrist_servo;
-  // hal::servo* end_effector;
+  hal::servo* end_effector;
   hal::serial* terminal;
   mission_control* mc;
   hal::steady_clock* clock;

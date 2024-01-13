@@ -14,6 +14,18 @@ using namespace std::chrono_literals;
 
 namespace sjsu::arm {
 hal::status application(sjsu::arm::application_framework& p_framework) {
+    auto& end_effector_my = *p_framework.end_effector;
+    auto& clock = *p_framework.clock;
+    auto& terminal = *p_framework.terminal;
+    while (true) {
+        hal::print(terminal, "going to 180 deg\n");
+        HAL_CHECK(end_effector_my.position(180.0_deg));
+        hal::delay(clock, 3000ms);
+        hal::print(terminal, "going to 0 deg\n");
+
+        HAL_CHECK(end_effector_my.position(0.0_deg));
+        hal::delay(clock, 3000ms);
+    }
 
     return hal::success();
 }

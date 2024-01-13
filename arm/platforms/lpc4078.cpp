@@ -7,9 +7,11 @@
 #include <libhal-lpc40/input_pin.hpp>
 #include <libhal-lpc40/uart.hpp>
 #include <libhal-rmd/mc_x.hpp>
+#include <libhal-lpc40/i2c.hpp>
+
 // #include <libhal-rmd/mc_x_servo.hpp>
 #include <libhal-util/units.hpp>
-// #include <libhal-pca/pca9685.hpp>
+#include <libhal-pca/pca9685.hpp>
 #include "../applications/application.hpp"
 #include "../platform-implementations/esp8266_mission_control.cpp"
 #include "../platform-implementations/helper.hpp"
@@ -78,17 +80,18 @@ hal::result<application_framework> initialize_platform()
     HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x145));
   static auto right_wrist_mc_x_servo =
     HAL_CHECK(hal::make_servo(right_wrist_mc_x, 2.0_rpm));
+  static auto i2c = HAL_CHECK(hal::lpc40::i2c::get(2)); //need to use pca here
 
-  // static auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c,
-  // 0b100'0000)); static auto& pwm0 = pca9685.get_pwm_channel<0>(); auto
-  // servo_settings = hal::rc_servo::settings{
-  //   .min_angle = 0.0_deg,
-  //   .max_angle = 180.0_deg,
-  //   .min_microseconds = 500,
-  //   .max_microseconds = 2500,
-  // };
-  // static auto& end_effector_servo =
-  //   HAL_CHECK(hal::rc_servo::create(pwm0, servo_settings))
+  static auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c,0b100'0000)); 
+  static auto pwm0 = pca9685.get_pwm_channel<0>(); 
+  auto servo_settings = hal::soft::rc_servo::settings{
+  .min_angle = 0.0_deg, //to be tested with end effector
+  .max_angle = 180.0_deg, 
+  .min_microseconds = 500,
+  .max_microseconds = 2500,
+};
+static auto end_effector_servo =
+  HAL_CHECK(hal::soft::rc_servo::create(pwm0, servo_settings));
 
   // mission control object
   // mission control object
@@ -156,7 +159,7 @@ hal::result<application_framework> initialize_platform()
     .elbow_servo = &elbow_mc_x_servo,
     .left_wrist_servo = &left_wrist_mc_x_servo,
     .right_wrist_servo = &right_wrist_mc_x_servo,
-    // .end_effector = &end_effector_servo,
+    .end_effector = &end_effector_servo,
     .terminal = &uart0,
     .mc = &arm_mission_control,
     .clock = &counter,

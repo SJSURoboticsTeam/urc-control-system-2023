@@ -12,12 +12,14 @@ public:
                hal::servo& p_shoulder,
                hal::servo& p_elbow,
                hal::servo& p_left_wrist,
-               hal::servo& p_right_wrist)
+               hal::servo& p_right_wrist,
+               hal::servo& p_end_effector)
     : m_rotunda(p_rotunda)
     , m_shoulder(p_shoulder)
     , m_elbow(p_elbow)
     , m_left_wrist(p_left_wrist)
     , m_right_wrist(p_right_wrist)
+    , m_end_effector(p_end_effector)
   {
   }
 
@@ -41,6 +43,8 @@ public:
                             static_cast<float>(p_arguments.wrist_pitch_angle);
     HAL_CHECK(m_right_wrist.position(static_cast<float>(right_wrist_angle)));
 
+    HAL_CHECK(m_end_effector.position(static_cast<float>(
+      p_arguments.rr9_angle)));
     return p_arguments;
   }
 
@@ -50,5 +54,6 @@ private:
   hal::servo& m_elbow;
   hal::servo& m_left_wrist;
   hal::servo& m_right_wrist;
+  hal::servo& m_end_effector;
 };
 }  // namespace sjsu::arm

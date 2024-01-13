@@ -25,7 +25,7 @@ hal::status application(sjsu::arm::application_framework& p_framework)
   auto& right_wrist_servo = *p_framework.right_wrist_servo;
   auto& mission_control = *(p_framework.mc);
   auto loop_count = 0;
-  // auto& end_effector = *p_framework.end_effector;
+  auto& end_effector = *p_framework.end_effector;
 
   // mission control init should go here, if anything is needed
 
@@ -35,7 +35,8 @@ hal::status application(sjsu::arm::application_framework& p_framework)
                    shoulder_servo,
                    elbow_servo,
                    left_wrist_servo,
-                   right_wrist_servo);
+                   right_wrist_servo,
+                   end_effector);
 
   sjsu::arm::mission_control::mc_commands commands;
   speed_control speed_control;

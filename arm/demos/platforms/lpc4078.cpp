@@ -83,10 +83,10 @@ hal::result<application_framework> initialize_platform()
   // static auto i2c = HAL_CHECK(hal::lpc40::i2c::get(2)); //need to use pca here
 
   // static auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c, 0b100'0000));
-  static auto pwm0 = HAL_CHECK((hal::lpc40::pwm::get(1, 6)));
+  static auto pwm0 = HAL_CHECK((hal::lpc40::pwm::get(1, 6))); 
   auto servo_settings = hal::soft::rc_servo::settings{
-    .min_angle = 0.0_deg,
-    .max_angle = 180.0_deg,
+    .min_angle = 0.0_deg, //to be tested with end effector
+    .max_angle = 180.0_deg, 
     .min_microseconds = 500,
     .max_microseconds = 2500,
   };
