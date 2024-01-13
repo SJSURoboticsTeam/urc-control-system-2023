@@ -45,6 +45,14 @@ jobs:
       - name: Build arm
         working-directory: arm
         run: conan build . -pr lpc4078 -s build_type=MinSizeRel
+
+      - name: Build arm-mimic
+        working-directory: arm_mimic
+        run: conan build . -pr lpc4078 -s build_type=MinSizeRel
+
+      - name: Build science
+        working-directory: science
+        run: conan build . -pr lpc4078 -s build_type=MinSizeRel
         
   build_windows:
     strategy:
@@ -85,3 +93,63 @@ jobs:
         working-directory: arm
         run: conan build . -pr lpc4078 -s build_type=MinSizeRel
       
+      - name: Build arm-mimic
+        working-directory: arm_mimic
+        run: conan build . -pr lpc4078 -s build_type=MinSizeRel
+
+      - name: Build science
+        working-directory: science
+        run: conan build . -pr lpc4078 -s build_type=MinSizeRel
+
+  build_mac_intel:
+    strategy:
+      fail-fast: false
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Install Homebrew
+        run: /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+      - name: Troubleshooting
+        run: rm '/usr/local/bin/2to3'
+
+      - name: Install latest version of Python 3.x and llvm
+        run: brew install python@3.11; brew install llvm
+
+      - name: Make clang-tidy available on the command line
+        run: sudo ln -s $(brew --prefix llvm)/bin/clang-tidy /usr/local/bin/
+
+      - name: 📥 Install CMake & Conan
+        run: python3 -m pip install "conan>=2.0.13" cmake
+
+      - name: 📡 Add `libhal-trunk` conan remote
+        run: conan remote add libhal-trunk https://libhal.jfrog.io/artifactory/api/conan/trunk-conan
+
+      - name: Setting up conan profile
+        run: conan config install -sf profiles/baremetal https://github.com/libhal/conan-config.git; conan profile detect --force; conan config install -sf profiles/x86_64/linux/ -tf profiles https://github.com/libhal/conan-config.git;
+
+      - name: Get conan profiles
+        run: conan config install -sf conan/profiles/ -tf profiles https://github.com/libhal/libhal-armcortex.git; conan config install -sf conan/profiles/ -tf profiles https://github.com/libhal/libhal-lpc40.git 
+
+      - name: Intel default configuration
+        run: conan config install -sf profiles/x86_64/mac/ -tf profiles https://github.com/libhal/conan-config.git
+
+      - name: Build drive
+        working-directory: drive
+        run: conan build . -pr lpc4078 -s build_type=MinSizeRel
+
+      - name: Build arm
+        working-directory: arm
+        run: conan build . -pr lpc4078 -s build_type=MinSizeRel
+
+      - name: Build arm-mimic
+        working-directory: arm_mimic
+        run: conan build . -pr lpc4078 -s build_type=MinSizeRel
+
+      - name: Build science
+        working-directory: science
+        run: conan build . -pr lpc4078 -s build_type=MinSizeRel
