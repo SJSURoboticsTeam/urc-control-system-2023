@@ -15,7 +15,8 @@ private:
     scd40(hal::i2c& p_i2c, hal::steady_clock& p_clock);
     hal::i2c& m_i2c;
     hal::steady_clock& m_clock;
-    hal::byte crc(std::array<hal::byte, 2> data);
+    hal::byte generate_crc(std::array<hal::byte, 2> data);
+    bool validate_crc(std::array<hal::byte, 3> data);
 
     
     //TODO: revise output type

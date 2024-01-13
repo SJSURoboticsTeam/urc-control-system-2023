@@ -89,8 +89,7 @@ hal::status scd40_nm::set_settings( struct settings setting) {
     return hal::success();
 }
 
-
-hal::byte crc(std::array<hal::byte, 2> data){
+hal::byte scd40_nm::generate_crc(std::array<hal::byte, 2> data){
     uint16_t current_byte;
     uint8_t crc_bit;
     uint8_t crc = 0xFF;
@@ -106,4 +105,22 @@ hal::byte crc(std::array<hal::byte, 2> data){
         }
     }
     return crc;
+}
+
+bool scd40_nm::validate_crc(std::array<hal::byte, 3> data) {
+    uint16_t current_byte;
+    uint8_t crc_bit;
+    uint8_t crc = 0xFF;
+    uint8_t CRC8_POLYNOMIAL = 0x31;
+
+    for (current_byte = 0; current_byte < 3 ; ++current_byte) {
+        crc ^= (data[current_byte]);
+        for (crc_bit = 8; crc_bit > 0; --crc_bit) {
+            if (crc & 0x80)
+                crc = (crc << 1) ^ CRC8_POLYNOMIAL;
+            else
+                crc = (crc << 1);
+        }
+    }
+    return crc == 0;
 }
