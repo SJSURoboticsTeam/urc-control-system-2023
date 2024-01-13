@@ -65,26 +65,29 @@ hal::result<scd40_nm::scd40_settings> scd40_nm::get_settings() {
 }
 
 hal::status scd40_nm::set_settings( struct settings setting) {
-    int temp = int(((setting.set_temp*(1<<16)) / 175)) ;
-    hal::byte temp_first_half = (temp) >> 8;
-    hal::byte temp_second_half = temp & 0xff;
-    int alt = int(setting.set_alt);
-    hal::byte alt_first_half = (alt) >> 8;
-    hal::byte alt_second_half = alt & 0xff;
-    int pressure = int(setting.set_pressure/100);
-    hal::byte pressure_first_half = (pressure) >> 8;
-    hal::byte pressure_second_half = pressure & 0xff;
-
-    std::array<hal::byte, 4> set_temp_address = {set_temperature_offset_first_half, set_temperature_offset_second_half, temp_first_half, temp_second_half};
-    std::array<hal::byte, 4> set_alt_address = {set_sensor_altitude_first_half, set_sensor_altitude_second_half, alt_first_half, alt_second_half};
-    std::array<hal::byte, 4> set_pressure_address = {set_ambient_pressure_first_half, set_ambient_pressure_second_half, pressure_first_half, pressure_second_half};
-    
-    HAL_CHECK(hal::write(m_i2c,addresses::device_address,set_temp_address));
-    hal::delay(m_clock, 1ms);
-    HAL_CHECK(hal::write(m_i2c,addresses::device_address,set_alt_address));
-    hal::delay(m_clock, 1ms);
-    HAL_CHECK(hal::write(m_i2c,addresses::device_address,set_pressure_address));
-    hal::delay(m_clock, 1ms);
+    if(setting.set_temp != 0){
+        int temp = int(((setting.set_temp*(1<<16)) / 175)) ;
+        hal::byte temp_first_half = (temp) >> 8;
+        hal::byte temp_second_half = temp & 0xff;
+        std::array<hal::byte, 4> set_temp_address = {set_temperature_offset_first_half, set_temperature_offset_second_half, temp_first_half, temp_second_half};
+        HAL_CHECK(hal::write(m_i2c,addresses::device_address,set_temp_address));
+        hal::delay(m_clock, 1ms);
+    }
+    if(setting.set_pressure != -1){
+        int pressure = int(setting.set_pressure/100);
+        hal::byte pressure_first_half = (pressure) >> 8;
+        hal::byte pressure_second_half = pressure & 0xff;
+        std::array<hal::byte, 4> set_pressure_address = {set_ambient_pressure_first_half, set_ambient_pressure_second_half, pressure_first_half, pressure_second_half};
+        HAL_CHECK(hal::write(m_i2c,addresses::device_address,set_pressure_address));
+        hal::delay(m_clock, 1ms);
+    } else if(setting.set_alt != 0){
+        int alt = int(setting.set_alt);
+        hal::byte alt_first_half = (alt) >> 8;
+        hal::byte alt_second_half = alt & 0xff;
+        std::array<hal::byte, 4> set_alt_address = {set_sensor_altitude_first_half, set_sensor_altitude_second_half, alt_first_half, alt_second_half};
+         HAL_CHECK(hal::write(m_i2c,addresses::device_address,set_alt_address));
+        hal::delay(m_clock, 1ms);
+    }
 
     return hal::success();
 }

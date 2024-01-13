@@ -50,9 +50,9 @@ public:
 
     struct settings
     {
-        double set_temp;
-        double set_alt;
-        double set_pressure;
+        double set_temp = 4;
+        double set_alt = 0;
+        double set_pressure = -1;
     };
 
     struct scd40_settings

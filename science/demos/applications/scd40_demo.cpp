@@ -22,14 +22,14 @@ hal::status application(application_framework& p_framework)
   auto scd40_sensor = HAL_CHECK(scd40::create(i2c2, clock));
 
   while(true){
+        //get settings test
         // scd40_sensor.stop();
         // auto get = HAL_CHECK(scd40_sensor.get_settings());
         // auto temp = get.temp_offset;
         // auto alt = get.altitude;
         // hal::print<64>(terminal, "%-5.2f\t%-5.2f\n", temp, alt);
-
+  
         // periodic readings are only updated every 5000ms (temperature)
-        
         hal::delay(clock, 5000ms);
         auto rd = HAL_CHECK(scd40_sensor.read());
         auto co2_levels = rd.co2;
@@ -38,8 +38,8 @@ hal::status application(application_framework& p_framework)
 
 
         // hal::print<64>(terminal, "%-5.2f\t%-5.2f\t%-5.2f\n", co2_levels, temp, RH_levels);
-
         // hal::delay(clock, 500ms);
+
         hal::print<64>(terminal, "CO2 Levels: %f\n", co2_levels);
         hal::print<64>(terminal, "Temperature %f\n", temp);
         hal::print<64>(terminal, "RH Levels: %f\n", RH_levels);
