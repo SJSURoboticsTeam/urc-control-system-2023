@@ -47,10 +47,25 @@ public:
         double rh;
     };
 
+    struct settings
+    {
+        double set_temp;
+        double set_alt;
+        double set_pressure;
+    };
+
+    struct scd40_settings
+    {
+        double temp_offset;
+        double altitude;
+    };
+
     static hal::result<scd40> create(hal::i2c& p_i2c,hal::steady_clock& p_clock);
     hal::status start();
     hal::result<scd40_read_data> read();
     hal::status stop();
+    hal::result<scd40_settings> get_settings();
+    hal::status set_settings( struct settings setting);
 };
 
 } // namespace science
