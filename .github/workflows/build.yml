@@ -32,15 +32,23 @@ jobs:
           fetch-depth: 0
 
       - name: 📥 Install CMake & Conan
-        run: pip3 install cmake conan
-
-      - name: Setting up conan profile
-        run: conan config install -sf profiles/${{matrix.profile_name}}/ -tf profiles https://github.com/libhal/conan-config.git
+        run: python3 -m pip install "conan>=2.0.6" cmake
 
       - name: 📡 Add `libhal-trunk` conan remote
         run: conan remote add libhal-trunk https://libhal.jfrog.io/artifactory/api/conan/trunk-conan
 
-      - name: Build Code
-        working-directory: code
-        run: conan build . -b missing
+
+      - name: Setting up conan profile
+        run: conan profile detect --force
+        run: conan config install -sf profiles/${{matrix.profile_name}}/ -tf profiles https://github.com/libhal/conan-config.git
+        run: conan config install -sf conan/profiles/ -tf profiles https://github.com/libhal/libhal-armcortex.git
+        run: conan config install -sf conan/profiles/ -tf profiles https://github.com/libhal/libhal-lpc40.git
+
+      - name: Build drive
+        working-directory: drive
+        run: conan build . -pr lpc4078 -s build_type=MinSizeRel -b missing
+
+      - name: Build arm
+        working-directory: arm
+        run: conan build . -pr lpc4078 -s build_type=MinSizeRel -b missing
       

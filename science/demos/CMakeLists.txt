@@ -21,13 +21,18 @@ libhal_build_demos(
   co2_demo
   pressure_sensor_demo
   scd40_demo
+  color_sensor_demo
 
   SOURCES
   ../platform-implementations/scd40.cpp
-    
+  ../platform-implementations/pressure_sensor_bme680.cpp
+  ../platform-implementations/color_sensor_opt4048.cpp
+
   PACKAGES
   libhal-lpc40
+  libhal-util
 
   LINK_LIBRARIES
   libhal::lpc40
+  libhal::util
 )

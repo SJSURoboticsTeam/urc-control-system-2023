@@ -4,9 +4,8 @@
 #include "../dto/feedback_dto.hpp"
 #include "../implementations/mission_control_handler.hpp"
 
-inline hal::status parse_mission_control_data(
-  std::string response,
-  hal::serial& terminal)
+inline hal::status parse_mission_control_data(std::string response,
+                                              hal::serial& terminal)
 {
   // static constexpr int expected_number_of_arguments = 9;
   // sjsu::arm::mission_control::mc_commands commands;
