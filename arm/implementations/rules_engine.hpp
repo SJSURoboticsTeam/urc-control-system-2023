@@ -10,7 +10,8 @@ namespace sjsu::arm {
 // static constexpr int kMinWristPitchAngle = -90;
 // static constexpr int kMaxWristPitchAngle = 90;
 
-inline mission_control::mc_commands validate_commands(mission_control::mc_commands commands)
+inline mission_control::mc_commands validate_commands(
+  mission_control::mc_commands commands)
 {
 
   if (commands.speed < 1 || commands.speed > 5) {
@@ -22,4 +23,4 @@ inline mission_control::mc_commands validate_commands(mission_control::mc_comman
   // }
   return commands;
 }
-}  // namespace arm
+}  // namespace sjsu::arm

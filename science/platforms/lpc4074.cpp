@@ -26,7 +26,6 @@
 hal::status initialize_processor()
 {
   hal::cortex_m::initialize_data_section();
-  hal::cortex_m::initialize_floating_point_unit();
 
   return hal::success();
 }
@@ -43,11 +42,11 @@ hal::result<application_framework> initialize_platform()
   static hal::cortex_m::dwt_counter counter(cpu_frequency);
 
   static std::array<hal::byte, 64> receive_buffer{};
-  static auto uart0 = HAL_CHECK((hal::lpc40::uart::get(0,
-                                                       receive_buffer,
-                                                       hal::serial::settings{
-                                                         .baud_rate = 115200,
-                                                       })));
+  static auto uart0 = HAL_CHECK(hal::lpc40::uart::get(0,
+                                                      receive_buffer,
+                                                      hal::serial::settings{
+                                                        .baud_rate = 115200,
+                                                      }));
 
   static auto led = HAL_CHECK(hal::lpc40::output_pin::get(1, 10));
 
