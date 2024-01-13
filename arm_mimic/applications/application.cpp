@@ -41,18 +41,21 @@ hal::status application(application_framework& p_framework)
         for(int i = 0; i < N; i++) {
             true_degree = tla::voltage_to_degree(buffer_of_results[i], max_volt,max_deg);
             scrambled_results[i] = true_degree;
-            // hal::print<64>(uart0, "voltage %d: %d ", i, (int)true_degree); 
         }
-        // hal::print<64>(uart0, "\n");
 
         results[0] = 0;                     // ROTUNDA
-        results[1] = scrambled_results[2] - 261;  // SHOULDER
-        results[2] = -(scrambled_results[1] - 151);  // ELBOW
+        results[1] = scrambled_results[2] - 269;  // SHOULDER
+        results[2] = -(scrambled_results[1] - 180);  // ELBOW
         // results[3] = scrambled_results[0];  // WRIST PITCH
         // results[4] = scrambled_results[5];  // WRIST ROLL
         results[3] = 0;
         results[4] = 0;
         results[5] = 0;
+
+        // for(int i = 0; i < N; i++) {
+        //     hal::print<64>(uart0, "volt %d: %d ", i, (int)results[i]);
+        // }
+        // hal::print<64>(uart0, "\n");
 
         HAL_CHECK(tla::send_data_to_mc(*p_framework.terminal, results));
     }
