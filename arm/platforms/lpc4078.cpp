@@ -191,10 +191,19 @@ hal::result<application_framework> initialize_platform()
 
   static auto elbow_mpu = HAL_CHECK(
     hal::mpu::mpu6050::create(i2c1, hal::mpu::mpu6050::address_ground));
+  HAL_CHECK(elbow_mpu.configure_full_scale(hal::mpu::mpu6050::max_acceleration::g2));
+  hal::print(uart0, "Elbow INIT\n");
+
   static auto shoulder_mpu = HAL_CHECK(
     hal::mpu::mpu6050::create(i2c1, hal::mpu::mpu6050::address_voltage_high));
+  HAL_CHECK(shoulder_mpu.configure_full_scale(hal::mpu::mpu6050::max_acceleration::g2));
+  hal::print(uart0, "Shoulder INIT\n");
+
   static auto rotunda_mpu = HAL_CHECK(
     hal::mpu::mpu6050::create(i2c2, hal::mpu::mpu6050::address_voltage_high));
+  HAL_CHECK(rotunda_mpu.configure_full_scale(hal::mpu::mpu6050::max_acceleration::g2));
+  hal::print(uart0, "Rotunda INIT\n");
+  
   auto zero_a = HAL_CHECK(rotunda_mpu.read());
   static auto wrist_mpu =
     HAL_CHECK(hal::soft::inert_accelerometer::create(zero_a));

@@ -24,28 +24,28 @@ inline hal::status home(hal::accelerometer& p_rotunda_accelerometer,
   auto elbow_read = HAL_CHECK(p_elbow_accelerometer.read());
   auto wrist_read = HAL_CHECK(p_wrist_accelerometer.read());
 
-  hal::degrees rotunda_base_xy =
-    atan2_d(rotunda_read.y, rotunda_read.x);  // elbow/shoulder 0
   hal::degrees rotunda_base_yz =
-    atan2_d(rotunda_read.z, rotunda_read.y);  // wr roll 0
+    atan2_d(rotunda_read.y, rotunda_read.z);  // elbow/shoulder 0
+  hal::degrees rotunda_base_yx =
+    atan2_d(rotunda_read.y, rotunda_read.x);  // wr roll 0
 
   hal::degrees shoulder_error =
-    90 + rotunda_base_xy -
-    atan2_d(shoulder_read.y, shoulder_read.x);  // shoulder error
+    90 + rotunda_base_yz -
+    atan2_d(shoulder_read.y, shoulder_read.z);  // shoulder error
   hal::degrees elbow_error =
-    rotunda_base_xy - atan2_d(elbow_read.y, elbow_read.x);  // shoulder error
+    rotunda_base_yz - atan2_d(elbow_read.y, elbow_read.z);  // elbow error
 
   hal::degrees wrist_roll_error =
-    rotunda_base_yz - atan2_d(wrist_read.z, wrist_read.y);
+    rotunda_base_yx - atan2_d(wrist_read.y, wrist_read.x);
   hal::degrees wrist_pitch_error =
-    rotunda_base_xy - atan2_d(wrist_read.y, wrist_read.x);
+    rotunda_base_yz - atan2_d(wrist_read.y, wrist_read.z);
 
-  p_shoulder_servo.set_offset(shoulder_error);
-  p_elbow_servo.set_offset(elbow_error);
+  p_shoulder_servo.set_offset(shoulder_error + p_shoulder_servo.get_offset());
+  p_elbow_servo.set_offset(elbow_error + p_elbow_servo.get_offset() + p_shoulder_servo.get_offset());
   p_left_wrist_servo.set_offset(static_cast<float>(wrist_roll_error) +
-                                static_cast<float>(wrist_pitch_error));
+                                static_cast<float>(wrist_pitch_error) + p_left_wrist_servo.get_offset());
   p_right_wrist_servo.set_offset(static_cast<float>(wrist_roll_error) -
-                                 static_cast<float>(wrist_pitch_error));
+                                 static_cast<float>(wrist_pitch_error) + p_right_wrist_servo.get_offset());
 
   return hal::success();
 }
