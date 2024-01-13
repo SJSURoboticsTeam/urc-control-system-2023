@@ -83,16 +83,18 @@ hal::result<application_framework> initialize_platform()
   // static auto i2c = HAL_CHECK(hal::lpc40::i2c::get(2)); //need to use pca here
 
   // static auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c, 0b100'0000));
-  static auto pwm0 = HAL_CHECK((hal::lpc40::pwm::get(1, 6))); 
+  static auto i2c = HAL_CHECK(hal::lpc40::i2c::get(2)); //need to use pca here
+
+  static auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c,0b100'0000)); 
+  static auto pwm0 = pca9685.get_pwm_channel<0>(); 
   auto servo_settings = hal::soft::rc_servo::settings{
-    .min_angle = 0.0_deg, //to be tested with end effector
-    .max_angle = 180.0_deg, 
-    .min_microseconds = 500,
-    .max_microseconds = 2500,
-  };
+  .min_angle = 0.0_deg, //to be tested with end effector
+  .max_angle = 180.0_deg, 
+  .min_microseconds = 500,
+  .max_microseconds = 2500,
+};
   static auto end_effector_servo =
     HAL_CHECK(hal::soft::rc_servo::create(pwm0, servo_settings));
-
     // mission control object
 // mission control object
   // static std::array<hal::byte, 8192> recieve_buffer1{};
@@ -143,6 +145,8 @@ hal::result<application_framework> initialize_platform()
     .left_wrist_servo = &left_wrist_mc_x_servo,
     .right_wrist_servo = &right_wrist_mc_x_servo,
     .end_effector = &end_effector_servo,
+    .pca = &pca9685,
+    .pwm = &pwm0,
     .terminal = &uart0,
     // .mc = &arm_mission_control,
     .clock = &counter,

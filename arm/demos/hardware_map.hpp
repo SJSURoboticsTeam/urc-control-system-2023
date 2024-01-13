@@ -4,6 +4,8 @@
 #include <libhal/servo.hpp>
 #include <libhal/steady_clock.hpp>
 #include <libhal/timeout.hpp>
+#include <libhal/pwm.hpp>
+#include <libhal-pca/pca9685.hpp>
 
 #include "../platform-implementations/mission_control.hpp"
 
@@ -16,6 +18,9 @@ struct application_framework
   hal::servo* left_wrist_servo;
   hal::servo* right_wrist_servo;
   hal::servo* end_effector;
+  hal::pca::pca9685* pca;
+
+  hal::pwm* pwm;
   hal::serial* terminal;
   // mission_control* mc;
   hal::steady_clock* clock;
