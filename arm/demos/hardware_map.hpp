@@ -12,15 +12,9 @@
 namespace sjsu::arm {
 struct application_framework
 {
-  hal::servo* rotunda_servo;
-  hal::servo* shoulder_servo;
-  hal::servo* elbow_servo;
-  hal::servo* left_wrist_servo;
-  hal::servo* right_wrist_servo;
-  hal::servo* end_effector;
-  hal::pca::pca9685* pca;
 
-  hal::pwm* pwm;
+  // hal::servo* end_effector;
+  // hal::pca::pca9685* pca;
   hal::serial* terminal;
   // mission_control* mc;
   hal::steady_clock* clock;
