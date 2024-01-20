@@ -50,15 +50,15 @@ public:
 
     struct settings
     {
-        double set_temp = 4;
-        double set_alt = 0;
-        double set_pressure = -1;
+        float set_temp = 4;
+        float set_alt = 0;
+        float set_pressure = -1;
     };
 
     struct scd40_settings
     {
-        double temp_offset;
-        double altitude;
+        float temp_offset;
+        float altitude;
     };
 
     static hal::result<scd40> create(hal::i2c& p_i2c,hal::steady_clock& p_clock);
@@ -66,7 +66,7 @@ public:
     hal::result<scd40_read_data> read();
     hal::status stop();
     hal::result<scd40_settings> get_settings();
-    hal::status set_settings( struct settings setting);
+    hal::status set_settings( settings setting);
 };
 
 } // namespace science
