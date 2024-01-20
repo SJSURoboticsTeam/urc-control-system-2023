@@ -48,7 +48,6 @@ hal::result<sjsu::arm::application_framework> initialize_platform()
 {
   using namespace std::chrono_literals;
   using namespace hal::literals;
-
   // Set the MCU to the maximum clock speed
   HAL_CHECK(hal::lpc40::clock::maximum(12.0_MHz));
 
@@ -62,6 +61,40 @@ hal::result<sjsu::arm::application_framework> initialize_platform()
                                                        hal::serial::settings{
                                                          .baud_rate = 38400,
                                                        })));
+
+
+  static auto i2c1 = HAL_CHECK((hal::lpc40::i2c::get(1,
+                                                     hal::i2c::settings{
+                                                       .clock_rate = 100.0_kHz,
+                                                     })));
+
+  static auto i2c2 = HAL_CHECK((hal::lpc40::i2c::get(2,
+                                                     hal::i2c::settings{
+                                                       .clock_rate = 100.0_kHz,
+                                                     })));
+
+  hal::print(uart0, "MPU INIT\n");
+  static auto elbow_mpu = HAL_CHECK(
+    hal::mpu::mpu6050::create(i2c1, hal::mpu::mpu6050::address_ground));
+  HAL_CHECK(
+    elbow_mpu.configure_full_scale(hal::mpu::mpu6050::max_acceleration::g2));
+  hal::print(uart0, "Elbow INIT\n");
+
+  static auto shoulder_mpu = HAL_CHECK(
+    hal::mpu::mpu6050::create(i2c1, hal::mpu::mpu6050::address_voltage_high));
+  HAL_CHECK(
+    shoulder_mpu.configure_full_scale(hal::mpu::mpu6050::max_acceleration::g2));
+  hal::print(uart0, "Shoulder INIT\n");
+
+  static auto rotunda_mpu = HAL_CHECK(
+    hal::mpu::mpu6050::create(i2c2, hal::mpu::mpu6050::address_voltage_high));
+  HAL_CHECK(
+    rotunda_mpu.configure_full_scale(hal::mpu::mpu6050::max_acceleration::g2));
+  hal::print(uart0, "Rot INIT\n");
+
+  auto zero_a = HAL_CHECK(rotunda_mpu.read());
+  static auto wrist_mpu =
+    HAL_CHECK(hal::soft::inert_accelerometer::create(zero_a));
 
   static hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
   static auto can = HAL_CHECK((hal::lpc40::can::get(2, can_settings)));
@@ -136,58 +169,19 @@ hal::result<sjsu::arm::application_framework> initialize_platform()
             right_wrist_offset_servo,
             uart0);
 
+  HAL_CHECK(home(rotunda_mpu,
+                 shoulder_mpu,
+                 elbow_mpu,
+                 wrist_mpu,
+                 rotunda_offset_servo,
+                 shoulder_offset_servo,
+                 elbow_offset_servo,
+                 left_wrist_offset_servo,
+                 right_wrist_offset_servo,
+                 uart0,
+                 counter));
+
   HAL_CHECK(shoulder_offset_servo.position(0));
-  hal::delay(counter, 10s);
-  // HAL_CHECK(home(rotunda_mpu,
-  //                shoulder_mpu,
-  //                elbow_mpu,
-  //                wrist_mpu,
-  //                rotunda_offset_servo,
-  //                shoulder_offset_servo,
-  //                elbow_offset_servo,
-  //                left_wrist_offset_servo,
-  //                right_wrist_offset_servo,
-  //                uart0,
-  //                counter));
-  hal::print(uart0, "AFTER: \n\n");
-  HAL_CHECK(shoulder_offset_servo.position(0));
-  hal::delay(counter, 10s);
-
-  // HAL_CHECK(shoulder_offset_servo.position(0));
-
-
-  static auto i2c1 = HAL_CHECK((hal::lpc40::i2c::get(1,
-                                                     hal::i2c::settings{
-                                                       .clock_rate = 100.0_kHz,
-                                                     })));
-
-  static auto i2c2 = HAL_CHECK((hal::lpc40::i2c::get(2,
-                                                     hal::i2c::settings{
-                                                       .clock_rate = 100.0_kHz,
-                                                     })));
-
-  hal::print(uart0, "MPU INIT\n");
-  static auto elbow_mpu = HAL_CHECK(
-    hal::mpu::mpu6050::create(i2c1, hal::mpu::mpu6050::address_ground));
-  HAL_CHECK(
-    elbow_mpu.configure_full_scale(hal::mpu::mpu6050::max_acceleration::g2));
-  hal::print(uart0, "Elbow INIT\n");
-
-  static auto shoulder_mpu = HAL_CHECK(
-    hal::mpu::mpu6050::create(i2c1, hal::mpu::mpu6050::address_voltage_high));
-  HAL_CHECK(
-    shoulder_mpu.configure_full_scale(hal::mpu::mpu6050::max_acceleration::g2));
-  hal::print(uart0, "Shoulder INIT\n");
-
-  static auto rotunda_mpu = HAL_CHECK(
-    hal::mpu::mpu6050::create(i2c2, hal::mpu::mpu6050::address_voltage_high));
-  HAL_CHECK(
-    rotunda_mpu.configure_full_scale(hal::mpu::mpu6050::max_acceleration::g2));
-  hal::print(uart0, "Rot INIT\n");
-
-  auto zero_a = HAL_CHECK(rotunda_mpu.read());
-  static auto wrist_mpu =
-    HAL_CHECK(hal::soft::inert_accelerometer::create(zero_a));
 
   return sjsu::arm::application_framework{
 
