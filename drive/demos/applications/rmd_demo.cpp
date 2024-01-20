@@ -7,21 +7,21 @@
 #include "../../platform-implementations/relay.hpp"
 #include "../application.hpp"
 
+namespace sjsu::drive {
 
 hal::status application(application_framework& p_framework) 
 {
     using namespace std::chrono_literals;
     using namespace hal::literals;
 
-    auto& can = *p_map.can;
-    auto& terminal = *p_map.terminal;
-    auto& clock = *p_map.steady_clock;
-    auto& relay = *p_map.motor_relay;
+    auto& can = *p_framework.can;
+    auto& terminal = *p_framework.terminal;
+    auto& clock = *p_framework.steady_clock;
+    auto& relay = *p_framework.motor_relay;
 
     auto router = HAL_CHECK(hal::can_router::create(can));
 
-    auto motor =
-        HAL_CHECK(hal::rmd::drc::create(router, clock, 15.0, 0x141));
+    auto motor = HAL_CHECK(hal::rmd::drc::create(router, clock, 15.0, 0x141));
 
     HAL_CHECK(hal::delay(clock, 1s));
 
@@ -34,4 +34,6 @@ hal::status application(application_framework& p_framework)
     }
 
     return hal::success();
+}
+
 }
