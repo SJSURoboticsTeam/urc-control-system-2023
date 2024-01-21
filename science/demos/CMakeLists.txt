@@ -21,6 +21,7 @@ libhal_build_demos(
   co2_demo
   pressure_sensor_demo
   color_sensor_demo
+  led_strip_demo
   
   SOURCES
   ../platform-implementations/pressure_sensor_bme680.cpp
