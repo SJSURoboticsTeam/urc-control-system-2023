@@ -9,6 +9,8 @@
 using namespace hal::literals;
 using namespace std::chrono_literals;
 
+namespace hal {
+
 /**
  * @brief Stores r, g, b, and brightness values.
  * 
@@ -49,9 +51,29 @@ namespace colors {
     const rgb_brightness BLACK = rgb_brightness(0x00, 0x00, 0x00, 0x00);
 }
 
-namespace hal {
-
 template<std::size_t n_leds>
+using light_strip = std::array<hal::rgb_brightness, n_leds>;
+using light_strip_view = std::span<hal::rgb_brightness>;
+
+namespace light_strip_util {
+    void set_all(hal::light_strip_view lights, const hal::byte r, const hal::byte g, const hal::byte b, const hal::byte brightness) {
+        rgb_brightness setting;
+        setting.r = r;
+        setting.g = g;
+        setting.b = b;
+        setting.brightness = brightness;
+        for(auto i = lights.begin(); i != lights.end(); i ++) {
+            *i = setting;
+        }
+    }
+
+    void set_all(hal::light_strip_view lights, const rgb_brightness value) {
+        for(auto i = lights.begin(); i != lights.end(); i ++) {
+            *i = value;
+        }
+    }
+};
+
 struct sk9822 {
     public:
         constexpr static auto period = 8ns;
@@ -66,39 +88,13 @@ struct sk9822 {
         sk9822(hal::output_pin& clock_pin, hal::output_pin& data_pin, hal::steady_clock& clock);
 
         /**
-         * @brief Get the i'th rgb_brightness value. Use this to set values of indivdual leds.
-         * 
-         * @param i 
-         * @return rgb_brightness& 
-         */
-        rgb_brightness& operator[] (const std::size_t i);
-
-        /**
-         * @brief Set all the leds to a given rgb_brightness value.
-         * 
-         * @param r 
-         * @param g 
-         * @param b 
-         * @param brightness 
-         */
-        void set_all(const hal::byte r, const hal::byte g, const hal::byte b, const hal::byte brightness);
-        
-        /**
-         * @brief Set all the leds to a given rgb_brightness value.
-         * 
-         * @param value 
-         */
-        void set_all(const rgb_brightness value);
-
-        /**
          * @brief Send the updated rgb_brightness values to the light strips.
          * Changes to led brightness are only reflected when this is called.
          * 
          * @return hal::status 
          */
-        hal::status update();
+        hal::status update(hal::light_strip_view lights);
     private:
-        std::array<rgb_brightness, n_leds> colors;
         hal::output_pin* clock_pin, *data_pin;
         hal::steady_clock* clock;
 
@@ -112,47 +108,20 @@ struct sk9822 {
 };
 };
 
-template<std::size_t N>
-hal::sk9822<N>::sk9822(hal::output_pin& p_clock_pin, hal::output_pin& p_data_pin, hal::steady_clock& p_clock) {
+hal::sk9822::sk9822(hal::output_pin& p_clock_pin, hal::output_pin& p_data_pin, hal::steady_clock& p_clock) {
     clock_pin = &p_clock_pin;
     data_pin = &p_data_pin;
     clock = &p_clock;
 }
 
-
-template<std::size_t N>
-rgb_brightness& hal::sk9822<N>::operator[] (const std::size_t i) {
-    return colors[i];
-}
-
-template<std::size_t N>
-void hal::sk9822<N>::set_all(const hal::byte r, const hal::byte g, const hal::byte b, const hal::byte brightness) {
-    rgb_brightness setting;
-    setting.r = r;
-    setting.g = g;
-    setting.b = b;
-    setting.brightness = brightness;
-    for(auto i = colors.begin(); i != colors.end(); i ++) {
-        *i = setting;
-    }
-}
-
-template<std::size_t N>
-void hal::sk9822<N>::set_all(const rgb_brightness value) {
-    for(auto i = colors.begin(); i != colors.end(); i ++) {
-        *i = value;
-    }
-}
-
-template<std::size_t N>
-hal::status hal::sk9822<N>::update() {
+hal::status hal::sk9822::update(hal::light_strip_view lights) {
     // Start Frame
     HAL_CHECK(send_byte(0x00));
     HAL_CHECK(send_byte(0x00));
     HAL_CHECK(send_byte(0x00));
     HAL_CHECK(send_byte(0x00));
 
-    for(auto i = colors.begin(); i != colors.end(); i ++) {
+    for(auto i = lights.begin(); i != lights.end(); i ++) {
         HAL_CHECK(send_byte((*i).brightness | 0b11100000));
         // HAL_CHECK(send_byte((*i).brightness & 0x00011111));
         HAL_CHECK(send_byte((*i).b));
@@ -169,8 +138,7 @@ hal::status hal::sk9822<N>::update() {
     return hal::success();
 }
 
-template<std::size_t N>
-hal::status hal::sk9822<N>::send_byte(hal::byte data) {
+hal::status hal::sk9822::send_byte(hal::byte data) {
     for(int i = 0; i < 8; i ++) {
     if(data & (1 << i)) {
       HAL_CHECK((*data_pin).level(true));
