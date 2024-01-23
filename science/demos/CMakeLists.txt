@@ -22,6 +22,7 @@ libhal_build_demos(
   pressure_sensor_demo
   scd40_demo
   color_sensor_demo
+  led_strip_demo
 
   SOURCES
   ../platform-implementations/scd40.cpp
