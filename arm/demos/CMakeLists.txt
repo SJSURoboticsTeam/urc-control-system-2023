@@ -19,6 +19,7 @@ project(demos LANGUAGES CXX)
 libhal_build_demos(
   DEMOS
   rc_servo
+  debug_serial_i2c
 
   PACKAGES
   libhal-lpc40

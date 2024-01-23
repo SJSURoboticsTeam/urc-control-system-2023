@@ -15,7 +15,7 @@
 #include "../hardware_map.hpp"
 // #include "../../platform-implementations/mission_control.hpp"
 // #include "../../platform-implementations/helper.hpp"
-#include "../../platform-implementations/serial_mission_control.cpp"
+// #include "../../platform-implementations/serial_mission_control.cpp"
 
 #include <libhal-lpc40/clock.hpp>
 #include <libhal-lpc40/pwm.hpp>
@@ -53,11 +53,10 @@ hal::result<application_framework> initialize_platform()
   // servos, we need to init all of the mc_x motors then call make_servo
   // in order to pass servos into the application
   
-  // static auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c, 0b100'0000));
-//   static auto i2c = HAL_CHECK(hal::lpc40::i2c::get(2)); //need to use pca here
+  HAL_CHECK(hal::lpc40::i2c::get(2)); //need to use pca here
 
 //   static auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c,0b100'0000)); 
-//   static auto pwm0 = pca9685.get_pwm_channel<0>(); 
+//   static auto pwm0 = pca9685.get_pwm_channel<3>(); 
 //   auto servo_settings = hal::soft::rc_servo::settings{
 //   .min_angle = 0.0_deg, //to be tested with end effector
 //   .max_angle = 180.0_deg, 

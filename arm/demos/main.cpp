@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+#include <libhal-util/serial.hpp>
 
 #include "hardware_map.hpp"
 
@@ -24,7 +25,7 @@ int main()
 
   auto hardware_map = platform_status.value();
   auto is_finished = sjsu::arm::application(hardware_map);
-
+  hal::print(*hardware_map.terminal, "crashed");
   if (!is_finished) {
     hardware_map.reset();
   } else {
