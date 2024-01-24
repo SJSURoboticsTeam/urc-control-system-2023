@@ -34,31 +34,31 @@ inline hal::status home(hal::accelerometer& p_rotunda_accelerometer,
 
   hal::degrees shoulder_error;
 
-  HAL_CHECK(p_shoulder_servo.position(0));
-  hal::delay(clk, 5s);
   hal::print(terminal, "HOMING SHOULDER \n");
   hal::print<1024>(terminal, "shoulder: off: %f\n", p_shoulder_servo.get_offset());
-  // do{
+
+  do{
     auto shoulder_read = HAL_CHECK(p_shoulder_accelerometer.read());
 
     shoulder_error =
       (rotunda_base_yz - 90) -
       atan2_d(shoulder_read.y, shoulder_read.z);  // shoulder error
-    hal::print<1024>(terminal, "ERROR: %f\n", shoulder_error);
+    hal::print<1024>(terminal, "\nERROR: %f\n", shoulder_error);
 
     p_shoulder_servo.set_offset(
       (p_shoulder_servo.get_offset() - shoulder_error));
 
     hal::print<1024>(terminal, "shoulder: off: %f\n", p_shoulder_servo.get_offset());
     HAL_CHECK(p_shoulder_servo.position(0));
-    hal::delay(clk, 10s);
+    hal::delay(clk, 15s);
+
+    shoulder_read = HAL_CHECK(p_shoulder_accelerometer.read());
     shoulder_error =
       (rotunda_base_yz - 90) -
       atan2_d(shoulder_read.y, shoulder_read.z); 
-
     hal::print<1024>(terminal, "VALIDATION ERROR: %f\n", shoulder_error);
     
-  // }while(shoulder_error > 5); 
+  }while(abs(shoulder_error) > 5); 
 
   hal::degrees elbow_error =
     rotunda_base_yz - atan2_d(elbow_read.y, elbow_read.z);  // elbow error

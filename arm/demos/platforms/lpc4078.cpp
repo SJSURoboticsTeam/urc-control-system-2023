@@ -24,12 +24,13 @@
 
 #include <libhal-util/steady_clock.hpp>
 #include <libhal/steady_clock.hpp>
+#include <libhal/can.hpp>
 
 #include <libhal-mpu/mpu6050.hpp>
 #include <libhal-soft/inert_drivers/inert_accelerometer.hpp>
 
-#include "../../platform-implementations/offset_servo.hpp"
 #include "../../platform-implementations/home.hpp"
+#include "../../platform-implementations/offset_servo.hpp"
 #include <libhal-rmd/mc_x.hpp>
 
 #include "../applications/application.hpp"
@@ -61,7 +62,6 @@ hal::result<sjsu::arm::application_framework> initialize_platform()
                                                        hal::serial::settings{
                                                          .baud_rate = 38400,
                                                        })));
-
 
   static auto i2c1 = HAL_CHECK((hal::lpc40::i2c::get(1,
                                                      hal::i2c::settings{
@@ -125,41 +125,58 @@ hal::result<sjsu::arm::application_framework> initialize_platform()
     HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x145));
   static auto right_wrist_mc_x_servo =
     HAL_CHECK(hal::make_servo(right_wrist_mc_x, 2.0_rpm));
+
   hal::print(uart0, "REQUESTING FB\n");
-  HAL_CHECK(rotunda_mc_x.feedback_request(hal::rmd::mc_x::read::multi_turns_angle));
+  HAL_CHECK(
+    rotunda_mc_x.feedback_request(hal::rmd::mc_x::read::multi_turns_angle));
+  hal::print(uart0, "ROTUNDA SUCCESS\n");
   hal::delay(counter, 10ms);
-  HAL_CHECK(shoulder_mc_x.feedback_request(hal::rmd::mc_x::read::multi_turns_angle));
+  HAL_CHECK(
+    shoulder_mc_x.feedback_request(hal::rmd::mc_x::read::multi_turns_angle));
+  hal::print(uart0, "SHOULDER SUCCESS\n");
   hal::delay(counter, 10ms);
-  HAL_CHECK(elbow_mc_x.feedback_request(hal::rmd::mc_x::read::multi_turns_angle));
+  HAL_CHECK(
+    elbow_mc_x.feedback_request(hal::rmd::mc_x::read::multi_turns_angle));
+  hal::print(uart0, "WLBOW SUCCESS\n");
   hal::delay(counter, 10ms);
-  HAL_CHECK(left_wrist_mc_x.feedback_request(hal::rmd::mc_x::read::multi_turns_angle));
+  HAL_CHECK(
+    left_wrist_mc_x.feedback_request(hal::rmd::mc_x::read::multi_turns_angle));
+  hal::print(uart0, "LWRIST SUCCESS\n");
   hal::delay(counter, 10ms);
-  HAL_CHECK(right_wrist_mc_x.feedback_request(hal::rmd::mc_x::read::multi_turns_angle));
+  HAL_CHECK(
+    right_wrist_mc_x.feedback_request(hal::rmd::mc_x::read::multi_turns_angle));
+  hal::print(uart0, "RWRIST SUCCESS\n");
   hal::delay(counter, 10ms);
 
-  auto rotunda_offset = rotunda_mc_x.feedback().angle();
+  auto rotunda_offset = rotunda_mc_x.feedback().encoder;
   hal::delay(counter, 10ms);
-  auto shoulder_offset = shoulder_mc_x.feedback().angle();
+  auto shoulder_offset = shoulder_mc_x.feedback().encoder;
   hal::delay(counter, 10ms);
-  auto elbow_offset = elbow_mc_x.feedback().angle();
+  auto elbow_offset = elbow_mc_x.feedback().encoder;
   hal::delay(counter, 10ms);
-  auto left_wrist_offset = left_wrist_mc_x.feedback().angle();
+  auto left_wrist_offset = left_wrist_mc_x.feedback().encoder;
   hal::delay(counter, 10ms);
-  auto right_wrist_offset = right_wrist_mc_x.feedback().angle();
+  auto right_wrist_offset = right_wrist_mc_x.feedback().encoder;
   hal::delay(counter, 10ms);
-  
-  hal::print<1024>(uart0, "shoulder_offset: %f\n\n", shoulder_offset);
+
+  hal::print<1024>(uart0,
+                   "encoders\nR: %d\nS: %d\nE: %d\nLWR: %d\nRWR: %d\n",
+                   rotunda_offset,
+                   shoulder_offset,
+                   elbow_offset,
+                   left_wrist_offset,
+                   right_wrist_offset);
 
   static auto rotunda_offset_servo =
-    HAL_CHECK(offset_servo::create(rotunda_mc_x_servo, rotunda_offset));
+    HAL_CHECK(offset_servo::create(rotunda_mc_x_servo, 0));
   static auto elbow_offset_servo =
-    HAL_CHECK(offset_servo::create(elbow_mc_x_servo, shoulder_offset));
+    HAL_CHECK(offset_servo::create(elbow_mc_x_servo, 0));
   static auto shoulder_offset_servo =
-    HAL_CHECK(offset_servo::create(shoulder_mc_x_servo, elbow_offset));
+    HAL_CHECK(offset_servo::create(shoulder_mc_x_servo, 0));
   static auto left_wrist_offset_servo =
-    HAL_CHECK(offset_servo::create(left_wrist_mc_x_servo, left_wrist_offset));
+    HAL_CHECK(offset_servo::create(left_wrist_mc_x_servo, 0));
   static auto right_wrist_offset_servo =
-    HAL_CHECK(offset_servo::create(right_wrist_mc_x_servo, right_wrist_offset));
+    HAL_CHECK(offset_servo::create(right_wrist_mc_x_servo, 0));
 
   hal::print(uart0, "\nBEFORE: \n");
   print_arm(rotunda_offset_servo,
@@ -169,19 +186,26 @@ hal::result<sjsu::arm::application_framework> initialize_platform()
             right_wrist_offset_servo,
             uart0);
 
-  HAL_CHECK(home(rotunda_mpu,
-                 shoulder_mpu,
-                 elbow_mpu,
-                 wrist_mpu,
-                 rotunda_offset_servo,
-                 shoulder_offset_servo,
-                 elbow_offset_servo,
-                 left_wrist_offset_servo,
-                 right_wrist_offset_servo,
-                 uart0,
-                 counter));
+  hal::can::message_t set_zero;
+  set_zero.id = 0x142;
+  set_zero.payload = {0x64, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+  set_zero.length = 8;
+  HAL_CHECK(can.send(set_zero));
 
-  HAL_CHECK(shoulder_offset_servo.position(0));
+  hal::delay(counter, 5s);
+  HAL_CHECK(shoulder_offset_servo.position(-45));
+
+  // HAL_CHECK(home(rotunda_mpu,
+  //                shoulder_mpu,
+  //                elbow_mpu,
+  //                wrist_mpu,
+  //                rotunda_offset_servo,
+  //                shoulder_offset_servo,
+  //                elbow_offset_servo,
+  //                left_wrist_offset_servo,
+  //                right_wrist_offset_servo,
+  //                uart0,
+  //                counter));
 
   return sjsu::arm::application_framework{
 
