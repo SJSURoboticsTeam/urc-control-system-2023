@@ -13,7 +13,7 @@ namespace sjsu::arm {
 struct application_framework
 {
 
-  // hal::servo* end_effector;
+  hal::servo* end_effector;
   // hal::pca::pca9685* pca;
   hal::serial* terminal;
   // mission_control* mc;
