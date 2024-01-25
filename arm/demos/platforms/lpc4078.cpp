@@ -191,6 +191,7 @@ hal::result<sjsu::arm::application_framework> initialize_platform()
   set_zero.payload = {0x64, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
   set_zero.length = 8;
   HAL_CHECK(can.send(set_zero));
+  uart0.read
 
   hal::delay(counter, 5s);
   HAL_CHECK(shoulder_offset_servo.position(-45));
