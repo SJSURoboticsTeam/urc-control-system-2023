@@ -27,6 +27,7 @@
 #include "../platform-implementations/print_servo.hpp"
 #include "../platform-implementations/print_speed_sensor.hpp"
 
+#include <cmath>
 
 namespace sjsu::drive {
 
@@ -160,6 +161,16 @@ hal::result<application_framework> initialize_platform()
   //             .propulsion_speed_sensor = &
   //             };
 // 
+
+
+  static std::array<vector2, number_of_legs> wheel_locations = {
+      vector2::from_bearing(1, -30 * std::numbers::pi / 180),
+      vector2::from_bearing(1, 30 * std::numbers::pi / 180),
+      vector2::from_bearing(1, std::numbers::pi),
+      // NO IDEA WHERE THE 4th LEG IS
+  };
+
+  static ackermann_steering steering(wheel_locations, 2_Rpm, 2_Rpm); // WE ARE UNABLE TO USE MAXIMUM ANGULAR SPEED UNLESS WE HAVE THE CORRECT SCALE FACTORS SET. 
 
   static std::array<leg*, number_of_legs> legs = {
     &left_leg, 

@@ -9,7 +9,7 @@
 #include "../platform-implementations/speed_sensor.hpp"
 #include "../platform-implementations/mission_control.hpp"
 #include "../platform-implementations/offset_servo.hpp"
-
+#include "../platform-implementations/ackermann_steering.hpp"
 namespace sjsu::drive {
 
 struct leg {
@@ -23,6 +23,7 @@ struct leg {
 // for three legs, the order of legs in the span need's to be left, right, back
 struct application_framework
 {
+  ackermann_steering* steering;
   std::span<leg*> legs;
 
   mission_control* mc;
