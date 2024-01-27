@@ -6,8 +6,8 @@
 #include "../platform-implementations/mission_control.hpp"
 #include "../platform-implementations/offset_servo.hpp"
 
-static constexpr float shoulder_gear_ratio = 65/35;
-static constexpr float elbow_gear_ratio = 40/35;
+static constexpr float shoulder_gear_ratio = 65/30;
+static constexpr float elbow_gear_ratio = 40/30;
 
 namespace sjsu::arm {
 class joint_router

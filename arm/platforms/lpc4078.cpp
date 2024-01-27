@@ -77,12 +77,12 @@ hal::result<application_framework> initialize_platform()
   static auto shoulder_mc_x = HAL_CHECK(
     hal::rmd::mc_x::create(can_router, counter, 36.0 * 65 / 30, 0x142));
   static auto shoulder_mc_x_servo =
-    HAL_CHECK(hal::make_servo(shoulder_mc_x, 2.0_rpm));
+    HAL_CHECK(hal::make_servo(shoulder_mc_x, 5.0_rpm));
 
   static auto elbow_mc_x = HAL_CHECK(
     hal::rmd::mc_x::create(can_router, counter, 36.0 * 40 / 30, 0x143));
   static auto elbow_mc_x_servo =
-    HAL_CHECK(hal::make_servo(elbow_mc_x, 2.0_rpm));
+    HAL_CHECK(hal::make_servo(elbow_mc_x, 5.0_rpm));
 
   static auto left_wrist_mc_x =
     HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x144));
@@ -223,7 +223,7 @@ hal::result<application_framework> initialize_platform()
                  counter));
 
   hal::delay(counter, 1s);
-
+  
   return application_framework{
     .rotunda_servo = &rotunda_offset_servo,
     .shoulder_servo = &shoulder_offset_servo,

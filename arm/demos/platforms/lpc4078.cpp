@@ -162,8 +162,8 @@ hal::result<sjsu::arm::application_framework> initialize_platform()
                  can,
                  counter));
 
-  hal::delay(counter, 1s);  
-
+  hal::delay(counter, 10s);  
+  HAL_CHECK(shoulder_mc_x.position_control(30 * 65/30, 5));
   return sjsu::arm::application_framework{
 
     .rotunda_accelerometer = &rotunda_mpu,
