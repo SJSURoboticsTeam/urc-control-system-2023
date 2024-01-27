@@ -1,14 +1,5 @@
 #include <libhal-util/steady_clock.hpp>
-
-#include "../dto/motor_feedback.hpp"
-
-#include "../implementations/rules_engine.hpp"
-#include "../implementations/command_lerper.hpp"
-#include "../implementations/mode_select.hpp"
-#include "../implementations/mode_switcher.hpp"
-#include "../implementations/tri_wheel_router.hpp"
-
-#include "../platform-implementations/mission_control.hpp"
+#include <libhal-util/serial.hpp>
 #include "application.hpp"
 
 namespace sjsu::drive {
@@ -19,12 +10,9 @@ hal::status application(application_framework& p_framework)
   using namespace hal::literals;
 
   auto& steering = *p_framework.steering;
-  auto& legs = *p_framework.legs;
-  auto& mission_control = *(p_framework.mc);
   auto& terminal = *p_framework.terminal;
   auto& clock = *p_framework.clock;
   auto loop_count = 0;
-  auto leg_count = legs.size();
 
 //   sjsu::drive::tri_wheel_router tri_wheel{legs};
 //   sjsu::drive::mission_control::mc_commands commands;
@@ -34,7 +22,7 @@ hal::status application(application_framework& p_framework)
 //   sjsu::drive::mode_switch mode_switcher;
 //   sjsu::drive::command_lerper lerp;
 
-  auto wheel_settings = steering.calculate_wheel_settings(std::numeric_limits<float>::infinity, 0, 1);
+  auto wheel_settings = steering.calculate_wheel_settings(std::numeric_limits<float>::infinity(), 0, 1);
   hal::print<1024>(terminal, "|FL: %-5.1f°, %-5.1f rpm | FR: %-5.1f°, %-5.1f rpm | B: %-5.1f°, %-5.1f rpm |\n", 
     wheel_settings[0].angle,
     wheel_settings[0].wheel_speed, 
@@ -42,7 +30,7 @@ hal::status application(application_framework& p_framework)
     wheel_settings[1].wheel_speed, 
     wheel_settings[2].angle,
     wheel_settings[2].wheel_speed);
-  auto wheel_settings = steering.calculate_wheel_settings(std::numeric_limits<float>::infinity, 20, 1);
+  wheel_settings = steering.calculate_wheel_settings(std::numeric_limits<float>::infinity(), 20, 1);
   hal::print<1024>(terminal, "|FL: %-5.1f°, %-5.1f rpm | FR: %-5.1f°, %-5.1f rpm | B: %-5.1f°, %-5.1f rpm |\n", 
     wheel_settings[0].angle,
     wheel_settings[0].wheel_speed, 
@@ -50,7 +38,7 @@ hal::status application(application_framework& p_framework)
     wheel_settings[1].wheel_speed, 
     wheel_settings[2].angle,
     wheel_settings[2].wheel_speed);
-  auto wheel_settings = steering.calculate_wheel_settings(std::numeric_limits<float>::infinity, -120, 1);
+  wheel_settings = steering.calculate_wheel_settings(std::numeric_limits<float>::infinity(), -120, 1);
   hal::print<1024>(terminal, "|FL: %-5.1f°, %-5.1f rpm | FR: %-5.1f°, %-5.1f rpm | B: %-5.1f°, %-5.1f rpm |\n", 
     wheel_settings[0].angle,
     wheel_settings[0].wheel_speed, 
@@ -58,7 +46,7 @@ hal::status application(application_framework& p_framework)
     wheel_settings[1].wheel_speed, 
     wheel_settings[2].angle,
     wheel_settings[2].wheel_speed);
-  auto wheel_settings = steering.calculate_wheel_settings(0, 0, 1);
+  wheel_settings = steering.calculate_wheel_settings(0, 0, 1);
   hal::print<1024>(terminal, "|FL: %-5.1f°, %-5.1f rpm | FR: %-5.1f°, %-5.1f rpm | B: %-5.1f°, %-5.1f rpm |\n", 
     wheel_settings[0].angle,
     wheel_settings[0].wheel_speed, 
@@ -66,7 +54,7 @@ hal::status application(application_framework& p_framework)
     wheel_settings[1].wheel_speed, 
     wheel_settings[2].angle,
     wheel_settings[2].wheel_speed);
-  auto wheel_settings = steering.calculate_wheel_settings(0, 20, 1);
+  wheel_settings = steering.calculate_wheel_settings(0, 20, 1);
   hal::print<1024>(terminal, "|FL: %-5.1f°, %-5.1f rpm | FR: %-5.1f°, %-5.1f rpm | B: %-5.1f°, %-5.1f rpm |\n", 
     wheel_settings[0].angle,
     wheel_settings[0].wheel_speed, 
@@ -74,7 +62,7 @@ hal::status application(application_framework& p_framework)
     wheel_settings[1].wheel_speed, 
     wheel_settings[2].angle,
     wheel_settings[2].wheel_speed);
-  auto wheel_settings = steering.calculate_wheel_settings(0, -120, 1);
+  wheel_settings = steering.calculate_wheel_settings(0, -120, 1);
   hal::print<1024>(terminal, "|FL: %-5.1f°, %-5.1f rpm | FR: %-5.1f°, %-5.1f rpm | B: %-5.1f°, %-5.1f rpm |\n", 
     wheel_settings[0].angle,
     wheel_settings[0].wheel_speed, 

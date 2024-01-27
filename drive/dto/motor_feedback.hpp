@@ -10,7 +10,7 @@ namespace sjsu::drive
     {
         float steer = 5.0f;
         float drive = 5.0f;
-    }
+    };
 
     struct motor_speed_feedback
     {
