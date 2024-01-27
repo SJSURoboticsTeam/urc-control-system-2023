@@ -22,6 +22,24 @@ std::span<wheel_setting> ackermann_steering::get_wheel_settings() {
 std::span<wheel_setting> ackermann_steering::calculate_wheel_settings(float p_signed_turning_radius, hal::degrees p_heading, hal::rpm p_speed) {
     // hal::rpm max_speed_of_wheels = 0;
 
+    if(std::isinf(p_signed_turning_radius)) {
+        // Translate mode;
+
+        
+    for(size_t i = 0; i < m_wheel_locations.size(); i ++) {
+        vector2 direction = m_wheel_locations[i] - turning_circle_center;
+        if(p_signed_turning_radius < 0) {
+            m_wheel_settings[i].angle = vector2::bearing_angle(vector2::rotate_90_ccw(direction)) * 180 / std::numbers::pi;
+        }else {
+            m_wheel_settings[i].angle = vector2::bearing_angle(vector2::rotate_90_cw(direction)) * 180 / std::numbers::pi;
+        }
+
+        float wheel_distance = vector2::length(wheel_distance);
+        m_wheel_settings[i].wheel_speed = p_speed * wheel_distance / imaginary_wheel_distance;
+        // max_speed_of_wheels = std::max(max_speed_of_wheels, std::abs(m_wheel_settings[i].wheel_speed));
+    }
+    }
+
     float turning_radius = std::abs(p_signed_turning_radius);
     float imaginary_wheel_distance = sqrt(1 + turning_radius * turning_radius);
 
@@ -35,15 +53,23 @@ std::span<wheel_setting> ackermann_steering::calculate_wheel_settings(float p_si
     vector2 turning_circle_center = vector2::rotate_90_cw(vector2::from_bearing(turning_radius, p_heading * std::numbers::pi / 180));
 
     for(size_t i = 0; i < m_wheel_locations.size(); i ++) {
-        vector2 direction = m_wheel_locations[i] - turning_circle_center;
-        if(p_signed_turning_radius < 0) {
-            m_wheel_settings[i].angle = vector2::bearing_angle(vector2::rotate_90_ccw(direction)) * 180 / std::numbers::pi;
+        
+        if(std::isinf(p_signed_turning_radius)) {
+            // Translate mode;
+            m_wheel_settings[i].angle = p_heading * 180 / std::numbers::pi;
+            m_wheel_settings[i].wheel_speed = p_speed;
         }else {
-            m_wheel_settings[i].angle = vector2::bearing_angle(vector2::rotate_90_cw(direction)) * 180 / std::numbers::pi;
+            vector2 direction = m_wheel_locations[i] - turning_circle_center;
+            if(p_signed_turning_radius < 0) {
+                m_wheel_settings[i].angle = vector2::bearing_angle(vector2::rotate_90_ccw(direction)) * 180 / std::numbers::pi;
+            }else {
+                m_wheel_settings[i].angle = vector2::bearing_angle(vector2::rotate_90_cw(direction)) * 180 / std::numbers::pi;
+            }
+
+            float wheel_distance = vector2::length(wheel_distance);
+            m_wheel_settings[i].wheel_speed = p_speed * wheel_distance / imaginary_wheel_distance;
         }
 
-        float wheel_distance = vector2::length(wheel_distance);
-        m_wheel_settings[i].wheel_speed = p_speed * wheel_distance / imaginary_wheel_distance;
         // max_speed_of_wheels = std::max(max_speed_of_wheels, std::abs(m_wheel_settings[i].wheel_speed));
     }
 
