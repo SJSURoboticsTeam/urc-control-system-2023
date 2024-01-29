@@ -20,7 +20,7 @@ struct wheel_setting {
  */
 class ackermann_steering {
     public:
-        ackermann_steering(std::span<vector2> p_wheel_locations, hal::rpm p_maximum_wheel_speed, hal::rpm p_maximum_angular_velocity);
+        ackermann_steering(std::span<vector2> p_wheel_locations, std::span<wheel_setting> p_wheel_settings_span, hal::rpm p_maximum_wheel_speed, hal::rpm p_maximum_angular_velocity);
 
         std::span<wheel_setting> get_wheel_settings();
 

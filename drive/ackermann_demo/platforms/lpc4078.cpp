@@ -161,7 +161,9 @@ hal::result<application_framework> initialize_platform()
       // NO IDEA WHERE THE 4th LEG IS
   };
 
-  static ackermann_steering steering(wheel_locations, 2, 2); // WE ARE UNABLE TO USE MAXIMUM ANGULAR SPEED UNLESS WE HAVE THE CORRECT SCALE FACTORS SET. 
+  static std::array<wheel_setting, number_of_legs> wheel_settings;
+
+  static ackermann_steering steering(wheel_locations, wheel_settings, 2, 2); // WE ARE UNABLE TO USE MAXIMUM ANGULAR SPEED UNLESS WE HAVE THE CORRECT SCALE FACTORS SET. 
 
   // static std::array<leg*, number_of_legs> legs = {
   //   &left_leg, 

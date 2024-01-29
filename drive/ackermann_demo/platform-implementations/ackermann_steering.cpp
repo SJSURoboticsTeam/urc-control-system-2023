@@ -3,10 +3,11 @@
 
 using namespace sjsu::drive;
 
-ackermann_steering::ackermann_steering(std::span<vector2> p_wheel_locations, hal::rpm p_maximum_wheel_speed, hal::rpm p_maximum_angular_velocity) {
+ackermann_steering::ackermann_steering(std::span<vector2> p_wheel_locations, std::span<wheel_setting> p_wheel_settings_span, hal::rpm p_maximum_wheel_speed, hal::rpm p_maximum_angular_velocity) {
     m_wheel_locations = p_wheel_locations;
     m_maximum_wheel_speed = p_maximum_wheel_speed;
     m_maximum_angular_velocity = p_maximum_angular_velocity;
+    m_wheel_settings = p_wheel_settings_span;
 }
 
 // hal::degrees ackermann_steering::calculate_wheel_angle(vector2 p_turning_circle_center, vector2 p_wheel_location) {
@@ -48,7 +49,7 @@ std::span<wheel_setting> ackermann_steering::calculate_wheel_settings(float p_si
                 m_wheel_settings[i].angle = vector2::bearing_angle(vector2::rotate_90_cw(direction)) * 180 / std::numbers::pi;
             }
 
-            float wheel_distance = vector2::length(wheel_distance);
+            float wheel_distance = vector2::length(direction);
             m_wheel_settings[i].wheel_speed = p_speed * wheel_distance / imaginary_wheel_distance;
         }
 
