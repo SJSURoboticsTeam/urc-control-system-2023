@@ -27,6 +27,7 @@ class demos(ConanFile):
         self.tool_requires("libhal-cmake-util/2.2.0")
 
     def requirements(self):
+        self.requires("libhal/[^2.0.3]")
         if str(self.options.platform).startswith("lpc40"):
             self.requires("libhal-lpc40/[^2.1.4]")
         self.requires("libhal-rmd/3.0.0")
