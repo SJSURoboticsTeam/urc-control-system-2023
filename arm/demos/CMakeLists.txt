@@ -1,7 +1,7 @@
 
 cmake_minimum_required(VERSION 3.20)
 
-project(arm_main.elf VERSION 0.0.1 LANGUAGES CXX)
+project(arm_demo.elf VERSION 0.0.1 LANGUAGES CXX)
 
 set(platform_library $ENV{LIBHAL_PLATFORM_LIBRARY})
 set(platform $ENV{LIBHAL_PLATFORM})
@@ -20,7 +20,7 @@ find_package(libhal-mpu REQUIRED CONFIG)
 
 add_executable(${PROJECT_NAME}
     main.cpp
-    applications/application.cpp
+    applications/arm_angle.cpp
     platforms/${platform}.cpp)
 target_include_directories(${PROJECT_NAME} PUBLIC .)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
