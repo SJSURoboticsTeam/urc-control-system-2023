@@ -3,13 +3,12 @@
 #include <libhal-util/steady_clock.hpp>
 #include <libhal/accelerometer.hpp>
 #include <math.h>
-#define M_PI 3.14156265
 
 using namespace std::chrono_literals;
 namespace sjsu::arm {
-inline hal::degrees atan2_d(float y, float x)
+inline hal::degrees atan2_to_degrees(float y, float x)
 {
-  return atan2(y, x) * 180 / M_PI;
+  return atan2(y, x) * 180.0f / std::numbers::pi_v<float>;
 }
 
 inline hal::status set_zero(hal::can::id_t p_addr, hal::can& p_can)
@@ -55,16 +54,16 @@ inline hal::status home(hal::accelerometer& p_rotunda_accelerometer,
   while (!shoulder_homed || !elbow_homed) {
     auto rotunda_read = HAL_CHECK(p_rotunda_accelerometer.read());
     hal::degrees rotunda_base_yz =
-      atan2_d(rotunda_read.y, rotunda_read.z);  // elbow/shoulder 0
+      atan2_to_degrees(rotunda_read.y, rotunda_read.z);  // elbow/shoulder 0
 
     auto shoulder_read = HAL_CHECK(p_shoulder_accelerometer.read());
     shoulder_error =
       (rotunda_base_yz - 90) -
-      atan2_d(shoulder_read.y, shoulder_read.z);  // shoulder error
+      atan2_to_degrees(shoulder_read.y, shoulder_read.z);  // shoulder error
 
     auto elbow_read = HAL_CHECK(p_elbow_accelerometer.read());
-    elbow_error = (atan2_d(shoulder_read.y, shoulder_read.z) + 90) -
-                  atan2_d(elbow_read.y, elbow_read.z);  // shoulder error
+    elbow_error = (atan2_to_degrees(shoulder_read.y, shoulder_read.z) + 90) -
+                  atan2_to_degrees(elbow_read.y, elbow_read.z);  // shoulder error
 
     shoulder_speed = shoulder_error * -1;
     shoulder_speed = std::clamp(shoulder_speed, -3.0f, 3.0f);
@@ -99,11 +98,19 @@ inline hal::status home(hal::accelerometer& p_rotunda_accelerometer,
   hal::delay(p_clk, 1ms);
 
   hal::delay(p_clk, 1ms);
-  while(!p_shoulder_mc_x.velocity_control(2));
-  while(!p_elbow_mc_x.velocity_control(2));
+  while(!p_shoulder_mc_x.velocity_control(2)){
+    continue;
+  }
+  while(!p_elbow_mc_x.velocity_control(2)){
+    continue;
+  }
   hal::delay(p_clk, 7s);
-  while(!p_shoulder_mc_x.velocity_control(0));
-  while(!p_elbow_mc_x.velocity_control(0));
+  while(!p_shoulder_mc_x.velocity_control(0)){
+    continue;
+  }
+  while(!p_elbow_mc_x.velocity_control(0)){
+    continue;
+  }
   hal::delay(p_clk, 1ms);
 
   HAL_CHECK(reset_mc_x(0x142, p_can));
@@ -111,7 +118,8 @@ inline hal::status home(hal::accelerometer& p_rotunda_accelerometer,
   hal::delay(p_clk, 5s);
 
   hal::print(p_terminal, "MOVING TO 0 POSITION\n");
-  for(int i = 0; i < 2; i ++){
+  constexpr int  number_of_retries = 2;
+  for(int i = 0; i < number_of_retries; i ++){
     HAL_CHECK(p_shoulder_mc_x.position_control(0, 5));
     HAL_CHECK(p_elbow_mc_x.position_control(0, 5));
     hal::delay(p_clk, 10ms);

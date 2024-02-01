@@ -28,7 +28,7 @@ hal::status application(sjsu::arm::application_framework& p_framework)
   auto& shoulder_accelerometer = *p_framework.shoulder_accelerometer;
   auto& elbow_accelerometer = *p_framework.elbow_accelerometer;
   auto& wrist_accelerometer = *p_framework.wrist_accelerometer;
-  
+
   auto& mission_control = *(p_framework.mc);
   auto loop_count = 0;
   // auto& end_effector = *p_framework.end_effector;
@@ -38,15 +38,14 @@ hal::status application(sjsu::arm::application_framework& p_framework)
   std::string_view json;
 
   joint_router arm(rotunda_servo,
-                        shoulder_servo,
-                        elbow_servo,
-                        left_wrist_servo,
-                        right_wrist_servo,
-                        rotunda_accelerometer,
-                        shoulder_accelerometer,
-                        elbow_accelerometer,
-                        wrist_accelerometer
-                        );
+                   shoulder_servo,
+                   elbow_servo,
+                   left_wrist_servo,
+                   right_wrist_servo,
+                   rotunda_accelerometer,
+                   shoulder_accelerometer,
+                   elbow_accelerometer,
+                   wrist_accelerometer);
 
   sjsu::arm::mission_control::mc_commands commands;
   speed_control speed_control;
@@ -55,7 +54,7 @@ hal::status application(sjsu::arm::application_framework& p_framework)
   hal::delay(clock, 1000ms);
 
   while (true) {
-    if(loop_count==10) {
+    if (loop_count == 10) {
       auto timeout = hal::create_timeout(clock, 100ms);
       commands = mission_control.get_command(timeout).value();
       loop_count = 0;

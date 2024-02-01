@@ -127,28 +127,6 @@ hal::result<sjsu::arm::application_framework> initialize_platform()
   static auto right_wrist_mc_x_servo =
     HAL_CHECK(hal::make_servo(right_wrist_mc_x, 2.0_rpm));
 
-  auto rotunda_offset = rotunda_mc_x.feedback().encoder;
-  hal::delay(counter, 10ms);
-  auto shoulder_offset = shoulder_mc_x.feedback().encoder;
-  hal::delay(counter, 10ms);
-  auto elbow_offset = elbow_mc_x.feedback().encoder;
-  hal::delay(counter, 10ms);
-  auto left_wrist_offset = left_wrist_mc_x.feedback().encoder;
-  hal::delay(counter, 10ms);
-  auto right_wrist_offset = right_wrist_mc_x.feedback().encoder;
-  hal::delay(counter, 10ms);
-
-  static auto rotunda_offset_servo =
-    HAL_CHECK(offset_servo::create(rotunda_mc_x_servo, 0));
-  static auto elbow_offset_servo =
-    HAL_CHECK(offset_servo::create(elbow_mc_x_servo, 0));
-  static auto shoulder_offset_servo =
-    HAL_CHECK(offset_servo::create(shoulder_mc_x_servo, 0));
-  static auto left_wrist_offset_servo =
-    HAL_CHECK(offset_servo::create(left_wrist_mc_x_servo, 0));
-  static auto right_wrist_offset_servo =
-    HAL_CHECK(offset_servo::create(right_wrist_mc_x_servo, 0));
-
   HAL_CHECK(home(rotunda_mpu,
                  shoulder_mpu,
                  elbow_mpu,
