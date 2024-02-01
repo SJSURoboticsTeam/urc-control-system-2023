@@ -3,6 +3,7 @@
 #include <libhal-armcortex/dwt_counter.hpp>
 #include <libhal-armcortex/startup.hpp>
 #include <libhal-armcortex/system_control.hpp>
+#include <libhal-rmd/drc.hpp>
 
 #include <libhal-lpc40/adc.hpp>
 #include <libhal-lpc40/can.hpp>
@@ -17,9 +18,10 @@
 
 #include <libhal-util/units.hpp>
 
-#include "../../applications/application.hpp"
+#include "../application.hpp"
 #include "../../platform-implementations/helper.hpp"
-#include "../../platform-implementations/pwm_relay.hpp"
+#include "../../include/pwm_relay.hpp"
+#include "../../include/relay.hpp"
 
 namespace sjsu::drive {
 
@@ -42,6 +44,13 @@ hal::result<application_framework> initialize_platform()
   auto cpu_frequency = clock.get_frequency(hal::lpc40::peripheral::cpu);
   static hal::cortex_m::dwt_counter counter(cpu_frequency);
 
+  // Setting Relay
+  // static const pwm_relay::settings relay_pwm_settings{ .frequency = 20.0_kHz, .initial_duty_cycle = 1.0f, .tapered_duty_cycle = 0.4f };
+  // static auto relay_pwm_pin = HAL_CHECK((hal::lpc40::pwm::get(1, 6)));
+
+  // static auto power_saving_relay = HAL_CHECK(pwm_relay::create(relay_pwm_settings, relay_pwm_pin, counter));
+  // HAL_CHECK(power_saving_relay.toggle(true));
+
   // Setting Serial
   static std::array<hal::byte, 1024> recieve_buffer0{};
   static auto uart0 = HAL_CHECK((hal::lpc40::uart::get(0,
@@ -49,7 +58,7 @@ hal::result<application_framework> initialize_platform()
                                                        hal::serial::settings{
                                                          .baud_rate = 38400.0f,
                                                        })));
-  std::array<hal::byte, 1024> receive_buffer1{};
+  static std::array<hal::byte, 1024> receive_buffer1{};
   static auto uart1 = HAL_CHECK(hal::lpc40::uart::get(0,
                                                       receive_buffer1,
                                                       {
@@ -73,13 +82,6 @@ hal::result<application_framework> initialize_platform()
   static auto adc_4 = HAL_CHECK(hal::lpc40::adc::get(4));
   static auto adc_5 = HAL_CHECK(hal::lpc40::adc::get(5));
 
-  // Setting Relay
-  static const pwm_relay::settings relay_pwm_settings{ .frequency = 20.0_kHz, .initial_duty_cycle = 1.0f, .tapered_duty_cycle = 0.4f };
-  static auto relay_pwm_pin = HAL_CHECK((hal::lpc40::pwm::get(1, 6)));
-
-  static auto power_saving_relay = HAL_CHECK(pwm_relay::create(relay_pwm_settings, relay_pwm_pin, counter));
-  HAL_CHECK(power_saving_relay.toggle(true));
-
   return application_framework{ .terminal = &uart0,
                                 .can = &can,
                                 .in_pin0 = &in_pin0,
@@ -92,7 +94,7 @@ hal::result<application_framework> initialize_platform()
                                 .i2c = &i2c,
                                 .steady_clock = &counter,
                                 .reset = []() { hal::cortex_m::reset(); },
-                                .motor_relay = &power_saving_relay,
+                                .motor_relay = nullptr
                               };
 }
 

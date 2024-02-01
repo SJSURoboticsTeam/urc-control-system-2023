@@ -22,6 +22,7 @@ libhal_build_demos(
   
   SOURCES
   ../platform-implementations/drc_speed_sensor.cpp
+  ../platform-implementations/pwm_relay.cpp
 
   PACKAGES
   libhal-lpc40

@@ -5,10 +5,11 @@
 #include <libhal/i2c.hpp>
 #include <libhal/input_pin.hpp>
 #include <libhal/pwm.hpp>
+#include <libhal-rmd/drc.hpp>
 #include <libhal/serial.hpp>
 #include <libhal/steady_clock.hpp>
 
-#include "../platform-implementations/relay.hpp"
+#include "../include/pwm_relay.hpp"
 
 namespace sjsu::drive {
 

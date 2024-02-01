@@ -1,11 +1,10 @@
 #include <libhal-util/serial.hpp>
-#include <libhal/steady_clock.hpp>
 #include <libhal-util/steady_clock.hpp>
+#include <libhal/steady_clock.hpp>
 
 #include "../implementations/joint_router.hpp"
-#include "../implementations/speed_control.hpp"
 #include "../implementations/rules_engine.hpp"
-
+#include "../implementations/speed_control.hpp"
 
 #include "application.hpp"
 
@@ -29,14 +28,14 @@ hal::status application(sjsu::arm::application_framework& p_framework)
   // auto& end_effector = *p_framework.end_effector;
 
   // mission control init should go here, if anything is needed
-  
+
   std::string_view json;
 
   joint_router arm(rotunda_servo,
-                        shoulder_servo,
-                        elbow_servo,
-                        left_wrist_servo,
-                        right_wrist_servo);
+                   shoulder_servo,
+                   elbow_servo,
+                   left_wrist_servo,
+                   right_wrist_servo);
 
   sjsu::arm::mission_control::mc_commands commands;
   speed_control speed_control;
@@ -45,10 +44,10 @@ hal::status application(sjsu::arm::application_framework& p_framework)
   hal::delay(clock, 1000ms);
 
   while (true) {
-    if(loop_count==10) {
+    if (loop_count == 10) {
       auto timeout = hal::create_timeout(clock, 60ms);
       commands = mission_control.get_command(timeout).value();
-      loop_count=0;
+      loop_count = 0;
     }
     loop_count++;
     commands = validate_commands(commands);
@@ -61,4 +60,4 @@ hal::status application(sjsu::arm::application_framework& p_framework)
 
   return hal::success();
 }
-}
+}  // namespace sjsu::arm

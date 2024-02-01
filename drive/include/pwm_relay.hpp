@@ -24,9 +24,9 @@ namespace sjsu::drive {
 
     hal::result<set_status_t> driver_toggle(bool p_toggle) override;
 
+    const settings& m_settings;
     hal::pwm* m_pwm;
     hal::steady_clock* m_clock;
-    const settings& m_settings;
     status_t m_status;
   };
   

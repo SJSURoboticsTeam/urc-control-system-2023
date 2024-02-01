@@ -7,7 +7,7 @@
 #include <libhal/steady_clock.hpp>
 #include <libhal/timeout.hpp>
 
-namespace sjsu::drive{
+namespace sjsu::science{
 
 static constexpr char kResponseBodyFormat[] =
   "{\"HB\":%d,\"IO\":%d,\"WO\":%d,\"DM\":\"%c\",\"CMD\":[%d,%d]}\n";
