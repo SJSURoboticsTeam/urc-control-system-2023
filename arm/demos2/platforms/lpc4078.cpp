@@ -62,7 +62,7 @@ hal::result<sjsu::arm::application_framework> initialize_platform()
   static hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
   static auto can = HAL_CHECK((hal::lpc40::can::get(2, can_settings)));
 
-  static auto can_router = hal::can_router::create(can).value();
+  static auto can_router = HAL_CHECK(hal::can_router::create(can));
 
   return sjsu::arm::application_framework{
     .router = &can_router,

@@ -1,6 +1,7 @@
+#pragma once
 
-
-
+#include <libhal-util/static_list.hpp>
+// #include <libhal-util/static_callable.hpp>
 
 
 
@@ -8,9 +9,9 @@
 namespace what {
 template<typename T>
 struct promise_manager {
-    using filter_function = std::function<bool(const T&)>;
+    using filter_function = hal::callback<bool(const T&)>;
     template<typename K>
-    using promise_function = std::function<K(const T&)>;
+    using promise_function = hal::callback<K(const T&)>;
 
 
     struct promise_callback {

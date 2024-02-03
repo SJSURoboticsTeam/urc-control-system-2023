@@ -19,14 +19,15 @@ hal::status mcx_configurer::response_waiter::wait() {
     return hal::success();
 }
 
+
 // void mcx_configurer::on_message(const hal::can::message_t& p_message) {
 //     m_message_number++;
 //     last_message = p_message;
 // }
 
 void mcx_configurer::operator()(const hal::can::message_t& p_message){
-    m_message_number++;
     last_message = p_message;
+    m_message_number = m_message_number + 1;
 }
 
 hal::result<mcx_configurer> mcx_configurer::create(
@@ -43,8 +44,40 @@ mcx_configurer::mcx_configurer(hal::can_router& p_router, hal::can::id_t p_mcx_a
     m_mcx_address(p_mcx_address), 
     m_timeout_duration(p_timeout_duration),
     m_route_item(p_router.add_message_callback(p_mcx_address - 0x140 + 0x240)) {
+
+
     m_route_item.get().handler = std::ref(*this);
 }
+
+
+mcx_configurer::mcx_configurer(mcx_configurer&& p_other):
+//   : m_feedback(p_other.m_feedback)
+  m_clock(p_other.m_clock)
+  , m_router(p_other.m_router)
+  , m_route_item(std::move(p_other.m_route_item))
+//   , m_gear_ratio(p_other.m_gear_ratio)
+//   , m_device_id(p_other.m_device_id)
+//   , m_max_response_time(p_other.m_max_response_time)
+{
+  m_route_item.get().handler = std::ref(*this);
+}
+
+mcx_configurer& mcx_configurer::operator=(mcx_configurer&& p_other)
+{
+//   m_feedback = p_other.m_feedback;
+  m_clock = p_other.m_clock;
+  m_router = p_other.m_router;
+  m_route_item = std::move(p_other.m_route_item);
+//   m_gear_ratio = p_other.m_gear_ratio;
+//   m_device_id = p_other.m_device_id;
+//   m_max_response_time = p_other.m_max_response_time;
+
+  m_route_item.get().handler = std::ref(*this);
+
+  return *this;
+}
+
+
 
 hal::result<hal::can::message_t> mcx_configurer::send_command_and_wait_for_reply(std::span<hal::byte> p_data) {
     hal::can::message_t message;

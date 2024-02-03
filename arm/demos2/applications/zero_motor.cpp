@@ -30,9 +30,10 @@ hal::status application(sjsu::arm::application_framework& p_framework)
     auto& terminal = *p_framework.terminal;
     auto& clock = *p_framework.clock;
 
-    auto motor = HAL_CHECK(mcx_configurer::create(can_router, 0x141, clock, 10ms));
+    auto motor = HAL_CHECK(mcx_configurer::create(can_router, 0x141, clock, 1ms));
 
     hal::print(terminal, "intialization finished\n");
+    // hal::can::message_t msg;
 
     while(true) {
         std::array<hal::byte, 512> buffer;
@@ -40,20 +41,24 @@ hal::status application(sjsu::arm::application_framework& p_framework)
         if(reading.data.size() > 0) {
             if(starts_with(reading.data, "zero")) {
                 hal::print(terminal, "sending zero command\n");
-                HAL_CHECK(motor.set_current_encoder_position_as_zero());
+                (motor.set_current_encoder_position_as_zero());
                 hal::print(terminal, "zero command sent\n");
             }else if(starts_with(reading.data, "goto")) {
                 float f = std::atof((char *) &reading.data[5]);
                 hal::print<1024>(terminal, "Moing to %f°\n", f);
-                HAL_CHECK(motor.set_position(f, 60));
+                (motor.set_position(f, 60 * 36 * 5));
             }else if(starts_with(reading.data, "shutdown")) {
                 hal::print(terminal, "sending shutdown command\n");
-                HAL_CHECK(motor.shutdown());
+                (motor.shutdown());
                 hal::print(terminal, "shutdown command sent\n");
             }else if(starts_with(reading.data, "reset")) {
                 hal::print(terminal, "sending reset command\n");
-                HAL_CHECK(motor.reset_system());
+                (motor.reset_system());
                 hal::print(terminal, "reset command sent\n");
+            }else if(starts_with(reading.data, "where")) {
+                hal::print(terminal, "Getting angle");
+                auto a = HAL_CHECK(motor.get_motor_angle());
+                hal::print<512>(terminal, "Angle: %f°\n", a);
             }
         }
     }

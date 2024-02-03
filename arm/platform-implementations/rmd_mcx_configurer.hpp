@@ -207,6 +207,12 @@ public:
      * @param p_message 
      */
     void operator()(const hal::can::message_t& p_message);
+
+    mcx_configurer(mcx_configurer&& p_other);
+    mcx_configurer& operator=(mcx_configurer&& p_other);
+    
+    std::uint32_t m_message_number = 0;
+    hal::can::message_t last_message;
 private:
     /**
      * @brief Construct a new mcx configurer object
@@ -222,9 +228,6 @@ private:
     hal::can_router* m_router;
     hal::can_router::route_item m_route_item;
     hal::can::id_t m_mcx_address;
-
-    std::uint32_t m_message_number = 0;
-    hal::can::message_t last_message;
 
     hal::steady_clock* m_clock;
     hal::time_duration m_timeout_duration;
