@@ -18,17 +18,19 @@ project(demos LANGUAGES CXX)
 
 libhal_build_demos(
   DEMOS
-  co2_demo
-  pressure_sensor_demo
-  
-  SOURCES
-  ../platform-implementations/pressure_sensor_bme680.cpp
+  rotunda_science
 
   PACKAGES
   libhal-lpc40
   libhal-util
+  libhal-rmd
+  libhal-soft
+  libhal-pca
 
   LINK_LIBRARIES
   libhal::lpc40
   libhal::util
+  libhal::rmd
+  libhal::soft
+  libhal::pca
 )

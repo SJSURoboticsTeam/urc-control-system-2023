@@ -1,3 +1,4 @@
+
 # Copyright 2023 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,13 +24,23 @@ class demos(ConanFile):
     default_options = {"platform": "unspecified"}
 
     def build_requirements(self):
-        self.tool_requires("cmake/3.27.1")
         self.tool_requires("libhal-cmake-util/2.2.0")
 
     def requirements(self):
+        self.requires("libhal-util/[^3.0.0]")
+        self.requires("libhal-rmd/[^3.0.0]")
+        self.requires("libhal-soft/[^3.0.1]")
+        self.requires("libhal/[^2.0.3]")
+        self.requires("libhal-pca/2.0.0")
+
+
+        # List of supported platforms
         if str(self.options.platform).startswith("lpc40"):
-            self.requires("libhal-lpc40/[^2.1.4]")
-        self.requires("libhal-rmd/3.0.0")
+            self.requires("libhal-lpc40/[^2.1.6]")
+        else:
+            raise ConanInvalidConfiguration(
+                f"The platform '{str(self.options.platform)}' is not"
+                f"supported.")
 
     def layout(self):
         platform_directory = "build/" + str(self.options.platform)
