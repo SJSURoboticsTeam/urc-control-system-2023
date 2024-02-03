@@ -46,20 +46,19 @@ hal::status beedoo_beedoo_beedoo(effect_hardware hardware, hal::rgb_brightness o
  * @return hal::status 
  */
 hal::status rampup_rampdown(effect_hardware hardware) {
-  while (true) {
-    for(auto i = hardware.lights.begin(); i != hardware.lights.end(); i ++) {
-      *i = hal::colors::WHITE;
-      hardware.driver->update(hardware.lights);
-      hal::delay(*hardware.clock, 10ms);
-    }
-    for(auto i = hardware.lights.rbegin(); i != hardware.lights.rend(); i ++) {
-      *i = hal::colors::BLACK;
-      hardware.driver->update(hardware.lights);
-      hal::delay(*hardware.clock, 10ms);
-    }
+  for(auto i = hardware.lights.begin(); i != hardware.lights.end(); i ++) {
+    *i = hal::colors::GREEN;
+    hardware.driver->update(hardware.lights);
+    hal::delay(*hardware.clock, 10ms);
   }
+  for(auto i = hardware.lights.rbegin(); i != hardware.lights.rend(); i ++) {
+    *i = hal::colors::BLACK;
+    hardware.driver->update(hardware.lights);
+    hal::delay(*hardware.clock, 10ms);
+  }
+  
 }
-hal::status light_change(effect_hardware hardware, hal::rgb_brightness color) {
+hal::status light_change(effect_hardware hardware, hal::rgb_brightness color) { //red, blue, flashing green
     for(auto i = hardware.lights.begin(); i != hardware.lights.end(); i ++) {
       *i = color;
       hardware.driver->update(hardware.lights);
@@ -94,12 +93,14 @@ hal::status led_strip_controller(application_framework& p_resources, mission_con
 
   // HAL_CHECK(beedoo_beedoo_beedoo(hardware, hal::color::red, hal::color::black, 100ms));
 //   HAL_CHECK(rampup_rampdown(hardware));
-  if(p_commands.led_status == 1) { //turn on
+  if(p_commands.led_status == 1) { //red - autonomous driving
     HAL_CHECK(light_change(hardware, hal::colors::RED));
   }
-  else{
+  else if(p_commands.led_status == 2){ //blue - manually driving 
     HAL_CHECK(light_change(hardware, hal::colors::BLACK));
-
+  }
+  else{ //flashing green
+    HAL_CHECK(rampup_rampdown(hardware)); //hardcoded to flash green 
   }
 //   return p_commands;
   return hal::success();
