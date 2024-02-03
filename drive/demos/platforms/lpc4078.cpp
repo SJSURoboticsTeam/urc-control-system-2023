@@ -45,11 +45,11 @@ hal::result<application_framework> initialize_platform()
   static hal::cortex_m::dwt_counter counter(cpu_frequency);
 
   // Setting Relay
-  // static const pwm_relay::settings relay_pwm_settings{ .frequency = 20.0_kHz, .initial_duty_cycle = 1.0f, .tapered_duty_cycle = 0.4f };
-  // static auto relay_pwm_pin = HAL_CHECK((hal::lpc40::pwm::get(1, 6)));
+  static const pwm_relay::settings relay_pwm_settings{ .frequency = 20.0_kHz, .initial_duty_cycle = 1.0f, .tapered_duty_cycle = 0.4f };
+  static auto relay_pwm_pin = HAL_CHECK((hal::lpc40::pwm::get(1, 6)));
 
-  // static auto power_saving_relay = HAL_CHECK(pwm_relay::create(relay_pwm_settings, relay_pwm_pin, counter));
-  // HAL_CHECK(power_saving_relay.toggle(true));
+  static auto power_saving_relay = HAL_CHECK(pwm_relay::create(relay_pwm_settings, relay_pwm_pin, counter));
+  HAL_CHECK(power_saving_relay.toggle(true));
 
   // Setting Serial
   static std::array<hal::byte, 1024> recieve_buffer0{};
@@ -94,7 +94,7 @@ hal::result<application_framework> initialize_platform()
                                 .i2c = &i2c,
                                 .steady_clock = &counter,
                                 .reset = []() { hal::cortex_m::reset(); },
-                                .motor_relay = nullptr
+                                .motor_relay = &power_saving_relay,
                               };
 }
 

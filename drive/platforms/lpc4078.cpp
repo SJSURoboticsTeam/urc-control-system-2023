@@ -23,8 +23,7 @@
 #include "../include/mission_control.hpp"
 #include "../include/offset_servo.hpp"
 #include "../platform-implementations/helper.hpp"
-#include "../platform-implementations/pwm_relay.hpp"
-#include "../platform-implementations/output_pin_relay.hpp"
+#include "../include/pwm_relay.hpp"
 
 #include "../platform-implementations/home.hpp"
 
@@ -57,12 +56,14 @@ hal::result<application_framework> initialize_platform()
                                                          .baud_rate = 38400,
                                                        })));
 
-  // Relay
+   // Relay
   static const pwm_relay::settings relay_pwm_settings{ .frequency = 20.0_kHz, .initial_duty_cycle = 1.0f, .tapered_duty_cycle = 0.4f };
-  static auto relay_pwm_pin = HAL_CHECK((hal::lpc40::pwm::get(2,5)));
+  static auto relay_pwm_pin = HAL_CHECK((hal::lpc40::pwm::get(1,6)));
 
   static auto power_saving_relay = HAL_CHECK(pwm_relay::create(relay_pwm_settings, relay_pwm_pin, counter));
   HAL_CHECK(power_saving_relay.toggle(true));
+
+  HAL_CHECK(hal::write(uart0, "Code executed past relay setup"));
   
   // servos, we need to init all of the mc_x motors then call make_servo
   // in order to pass servos into the application
@@ -71,8 +72,13 @@ hal::result<application_framework> initialize_platform()
 
   static auto can_router = hal::can_router::create(can).value();
   
+  HAL_CHECK(hal::write(uart0, "Code executed past can setup"));
+  
   // left leg
   static auto left_leg_steer_drc = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 6.0, 0x141));
+
+  HAL_CHECK(hal::write(uart0, "Code executed past first drc create"));
+
   static auto left_leg_drc_servo = HAL_CHECK(hal::make_servo(left_leg_steer_drc, 5.0_rpm));
   static auto left_leg_drc_steer_speed_sensor = HAL_CHECK(make_speed_sensor(left_leg_steer_drc));
   auto left_leg_mag = HAL_CHECK(hal::lpc40::input_pin::get(1, 15, hal::input_pin::settings{}));

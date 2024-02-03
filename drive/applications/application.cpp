@@ -6,6 +6,7 @@
 #include "../implementations/rules_engine.hpp"
 #include "../include/command_lerper.hpp"
 #include "../include/mode_switcher.hpp"
+#include "../include/pwm_relay.hpp"
 #include "../include/tri_wheel_router.hpp"
 
 #include "../include/mission_control.hpp"
@@ -55,6 +56,7 @@ hal::status application(application_framework& p_framework)
 
     arguments = sjsu::drive::select_mode(commands);
     HAL_CHECK(tri_wheel.move(arguments, clock));
+
     hal::delay(clock, 8ms);
   }
 

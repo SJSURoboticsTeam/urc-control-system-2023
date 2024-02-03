@@ -20,48 +20,21 @@ hal::status application(application_framework& p_framework)
     auto& can = *p_framework.can;
     auto& terminal = *p_framework.terminal;
     auto& clock = *p_framework.steady_clock;
-    [[maybe_unused]] auto& relay = *p_framework.motor_relay;
-    
-    HAL_CHECK(hal::write(terminal, "Flag 1 "));
+    auto& relay = *p_framework.motor_relay;
 
-    // HAL_CHECK(relay.toggle(true));
-    // if(!relay.toggle(true)) {
-    //     HAL_CHECK(hal::write(terminal, "Toggle failed!!\n"));    
-    // }
-    HAL_CHECK(hal::write(terminal, "Flag 2 "));
+    HAL_CHECK(hal::write(terminal, "Starting demo...\n"));
 
-    auto router_result = hal::can_router::create(can);
+    HAL_CHECK(relay.toggle(true));
 
-    if (!router_result) {
-        HAL_CHECK(hal::write(terminal, "can router failed!\n"));
-        while(true) {continue;}
-    }
-
-    HAL_CHECK(hal::write(terminal, "Flag 3 "));
-    [[maybe_unused]] auto& router = router_result.value();
+    static auto router = HAL_CHECK(hal::can_router::create(can));
 
     hal::delay(clock, 1s);
 
-    // auto motor_result = hal::rmd::drc::create(router, clock, 15.0, 0x141);
-
-    // if (!motor_result) {
-    //     HAL_CHECK(hal::write(terminal, "drc create failed!\n"));
-    //     while(true) {continue;}
-    // }
-
-    // auto& motor = motor_result.value();
-
-    HAL_CHECK(hal::write(terminal, "Flag 4 "));
+    static auto motor = HAL_CHECK(hal::rmd::drc::create(router, clock, 6.0, 0x141));
 
     hal::delay(clock, 1s);
-
-    HAL_CHECK(hal::write(terminal, "Flag 5 "));
-
     
-
-    // HAL_CHECK(motor.velocity_control(5.0_rpm));
-
-    HAL_CHECK(hal::write(terminal, "Flag 5 "));
+    HAL_CHECK(motor.velocity_control(5.0_rpm));
 
     while (true) {
         hal::delay(clock, 1s);
