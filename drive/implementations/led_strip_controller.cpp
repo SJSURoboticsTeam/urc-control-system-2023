@@ -1,13 +1,12 @@
+//needs to have 2 methods control_strip, should turn on or off depending on command
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
 #include <libhal/steady_clock.hpp>
-#include <libhal/pwm.hpp>
 #include <libhal-lpc40/output_pin.hpp>
 
 #include <array>
-#include "../hardware_map.hpp"
-#include "../../platform-implementations/sk9822.hpp"
-
+#include "../applications/application.hpp"
+#include "../include/sk9822.hpp"
 using namespace hal::literals;
 using namespace std::chrono_literals;
 
@@ -60,17 +59,25 @@ hal::status rampup_rampdown(effect_hardware hardware) {
     }
   }
 }
+hal::status light_change(effect_hardware hardware, hal::rgb_brightness color) {
+    for(auto i = hardware.lights.begin(); i != hardware.lights.end(); i ++) {
+      *i = color;
+      hardware.driver->update(hardware.lights);
+      hal::delay(*hardware.clock, 10ms);
+    }
+    return hal::success();
+}
 
 namespace sjsu::drive {
-hal::status application(application_framework& p_resources)
+hal::status led_strip_controller(application_framework& p_resources, mission_control::mc_commands p_commands)
 {
   using namespace std::literals;
 
-  auto& clock = *p_resources.steady_clock;
+  auto& clock = *p_resources.clock;
 //   auto& console = *p_resources.terminal;
 
-  auto clock_pin = HAL_CHECK(hal::lpc40::output_pin::get(1, 15));
-  auto data_pin = HAL_CHECK(hal::lpc40::output_pin::get(1, 23));
+  auto clock_pin = HAL_CHECK(hal::lpc40::output_pin::get(1, 15)); //hope we have 2 more gpio pins here
+  auto data_pin = HAL_CHECK(hal::lpc40::output_pin::get(1, 23)); //hope we have 2 more gpio pins here
 
   hal::light_strip<35> lights;
   hal::sk9822 driver(clock_pin, data_pin, clock);
@@ -86,26 +93,15 @@ hal::status application(application_framework& p_resources)
   hardware.driver = &driver;
 
   // HAL_CHECK(beedoo_beedoo_beedoo(hardware, hal::color::red, hal::color::black, 100ms));
-  HAL_CHECK(rampup_rampdown(hardware));
-
-  while (true) {
-    // Print message
-    // hal::print(console, "Hello, World\n");
-
-    // for(int i = 0; i  < 35; i ++ ) {
-    //   lights[i].set(0xff, 0xff, 0xff, 0b111);
-    //   lights.update(); 
-    //   hal::delay(clock, 10ms);
-    //   hal::print(console, ".");
-    // }
-    // for(int i = 34; i >= 0; i -- ) {
-    //   lights[i].set(0x00,0x00,0x00, 0b000);
-    //   lights.update(); 
-    //   hal::delay(clock, 10ms);
-    //   hal::print(console, ".");
-    // }
-    // hal::print(console, "\n");
-  
+//   HAL_CHECK(rampup_rampdown(hardware));
+  if(p_commands.led_status == 1) { //turn on
+    HAL_CHECK(light_change(hardware, hal::colors::RED));
   }
+  else{
+    HAL_CHECK(light_change(hardware, hal::colors::BLACK));
+
+  }
+//   return p_commands;
+  return hal::success();
 }
 };

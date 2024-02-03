@@ -131,11 +131,11 @@ esp8266_mission_control::impl_get_command(
   return m_commands;
 }
 
-void esp8266_mission_control::parse_commands()
+void esp8266_mission_control::parse_commands() //edit this for beacon
 {
 
   auto result = to_string_view(m_command_buffer);
-  static constexpr int expected_number_of_arguments = 6;
+  static constexpr int expected_number_of_arguments = 7;
   mc_commands commands;
 
   int actual_arguments = sscanf(result.data(),
@@ -145,7 +145,8 @@ void esp8266_mission_control::parse_commands()
                                 &commands.wheel_orientation,
                                 &commands.mode,
                                 &commands.speed,
-                                &commands.angle);
+                                &commands.angle,
+                                &commands.led_status);
   if (actual_arguments != expected_number_of_arguments) {
     hal::print<200>(*m_console,
                     "Received %d arguments, expected %d\n",

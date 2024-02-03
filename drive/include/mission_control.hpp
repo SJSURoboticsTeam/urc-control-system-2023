@@ -19,7 +19,7 @@ static constexpr char kGETRequestFormat[] =
 class mission_control
 {
 public:
-  struct mc_commands
+  struct mc_commands //edit this for beacon
   {
     char mode = 'D';
     int speed = 0;
@@ -27,6 +27,7 @@ public:
     int wheel_orientation = 0;
     int is_operational = 0;
     int heartbeat_count = 0;
+    int led_status = 0;
     hal::status print(hal::serial* terminal)
     {
       hal::print<128>(*terminal,
@@ -36,12 +37,14 @@ public:
                       "Angle: %d\n"
                       "Mode: %c\n"
                       "Wheel Orientation: %d\n",
+                      "LED Status: %d\n",
                       heartbeat_count,
                       is_operational,
                       speed,
                       angle,
                       mode,
-                      wheel_orientation);
+                      wheel_orientation,
+                      led_status);
       return hal::success();
     }
   };

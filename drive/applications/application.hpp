@@ -28,7 +28,7 @@ struct application_framework
   hal::serial* terminal;
   hal::steady_clock* clock;
   hal::callback<void()> reset;
-};
+};   
 
 // Application function must be implemented by one of the compilation units
 // (.cpp) files.

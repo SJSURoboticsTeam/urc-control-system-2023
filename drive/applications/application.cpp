@@ -7,7 +7,7 @@
 #include "../include/command_lerper.hpp"
 #include "../include/mode_switcher.hpp"
 #include "../include/tri_wheel_router.hpp"
-
+#include "../implementations/led_strip_controller.cpp"
 #include "../include/mission_control.hpp"
 #include "application.hpp"
 
@@ -47,7 +47,7 @@ hal::status application(application_framework& p_framework)
     motor_speeds = HAL_CHECK(tri_wheel.get_motor_feedback());
 
     commands = sjsu::drive::validate_commands(commands);
-
+    HAL_CHECK(sjsu::drive::led_strip_controller(p_framework, commands));
     commands =
       mode_switcher.switch_steer_mode(commands, arguments, motor_speeds);
     commands.speed = lerp.lerp(commands.speed);
