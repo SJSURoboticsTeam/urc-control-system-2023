@@ -54,18 +54,26 @@ hal::result<application_framework> initialize_platform()
   // in order to pass servos into the application
   
   static auto i2c = HAL_CHECK(hal::lpc40::i2c::get(2)); //need to use pca here
+  hal::print(uart0, "i2c created\n");
+  // auto pca_settings = hal::pca::pca9685::settings {
+  //   .pin_disabled_state = hal::pca::pca9685::disabled_pin_state::set_high,
+  // };
+  static auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c, 0x40)); 
 
-  static auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c,0b100'0000)); 
-  static auto pwm0 = pca9685.get_pwm_channel<3>(); 
+  hal::print(uart0, "pca created\n");
+  static auto pwm0 = pca9685.get_pwm_channel<0>(); 
   auto servo_settings = hal::soft::rc_servo::settings{
   .min_angle = 0.0_deg, //to be tested with end effector
   .max_angle = 180.0_deg, 
   .min_microseconds = 500,
   .max_microseconds = 2500,
 };
+  hal::print(uart0, "servo settings\n");
+
   static auto end_effector_servo =
     HAL_CHECK(hal::soft::rc_servo::create(pwm0, servo_settings));
     // mission control object
+  hal::print(uart0, "servo  created\n");
 
 
   return application_framework{

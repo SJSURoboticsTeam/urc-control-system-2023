@@ -27,9 +27,11 @@ hal::status application(sjsu::arm::application_framework& p_framework) {
    
     auto& clock = *p_framework.clock;
     std::array<hal::byte, 1024> received_buffer{}; //{100
+
     while (true) {
 
-        hal::delay(clock, 2000ms);
+        hal::delay(clock, 1000ms);
+        hal::print(terminal, "hi\n");
 
 
         auto readings = HAL_CHECK(terminal.read(received_buffer)); //.data,
@@ -45,7 +47,7 @@ hal::status application(sjsu::arm::application_framework& p_framework) {
 
             result = result.substr(result.find('{') +1 );
             // char * end; //string view is not null terminated
-            float location = (std::clamp(std::stof(result.data()),0.0f,100.0f)/100) * 110; //clamps to value
+            float location = (std::clamp(std::stof(result.data()),10.0f,100.0f)/100) * 120; //clamps to value
             hal::print<200>(terminal, "Go to: %f\n", location);
             // hal::delay(clock, 10ms);
             HAL_CHECK(end_effector_my.position(static_cast<float>(location)));
