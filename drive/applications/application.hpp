@@ -8,7 +8,7 @@
 #include <libhal/servo.hpp>
 #include <libhal/steady_clock.hpp>
 #include <libhal/timeout.hpp>
-
+#include "../include/sk9822.hpp"
 namespace sjsu::drive {
 
 struct leg
@@ -18,7 +18,12 @@ struct leg
   speed_sensor* steer_speed_sensor;
   speed_sensor* propulsion_speed_sensor;
 };
-
+struct effect_hardware
+{
+  light_strip_view lights;
+  sk9822* driver;
+  hal::steady_clock* clock;
+};
 struct application_framework
 {
   std::span<leg*> legs;
@@ -27,6 +32,7 @@ struct application_framework
 
   hal::serial* terminal;
   hal::steady_clock* clock;
+  effect_hardware* led_strip;
   hal::callback<void()> reset;
 };   
 

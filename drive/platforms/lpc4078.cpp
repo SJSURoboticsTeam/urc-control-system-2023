@@ -9,6 +9,7 @@
 #include <libhal-lpc40/constants.hpp>
 #include <libhal-lpc40/input_pin.hpp>
 #include <libhal-lpc40/uart.hpp>
+#include <libhal-lpc40/output_pin.hpp>
 
 #include <libhal-lpc40/input_pin.hpp>
 #include <libhal-rmd/drc.hpp>
@@ -254,13 +255,32 @@ hal::result<application_framework> initialize_platform()
   }
   static auto drive_mission_control = esp_mission_control.value();
 
+  //LED initializations, wrap it up into a struct
+  auto clock_pin = HAL_CHECK(
+    hal::lpc40::output_pin::get(1, 15));  // hope we have 2 more gpio pins here
+  auto data_pin = HAL_CHECK(
+    hal::lpc40::output_pin::get(1, 23));  // hope we have 2 more gpio pins here
+
+  light_strip<35> lights;
+  sk9822 driver(clock_pin, data_pin, counter);
+  set_all(lights, colors::WHITE);
+  // hal::print<512>(
+  //   terminal, "%d %d %d\n", lights[0].r, lights[0].g, lights[0].b);
+  driver.update(lights, 0b0111); //reduce the brightness
+  hal::delay(counter, 50ms);
+  // hal::print(terminal, "turn on\n");
+  effect_hardware led_hardware;
+  led_hardware.lights = lights;
+  led_hardware.driver = &driver;
+  led_hardware.clock = &counter;
+
   return application_framework{
     // .legs = legs,
-
     .mc = &drive_mission_control,
-
     .terminal = &uart0,
     .clock = &counter,
+    .led_strip = &led_hardware,
+
     .reset = []() { hal::cortex_m::reset(); },
   };
 }
