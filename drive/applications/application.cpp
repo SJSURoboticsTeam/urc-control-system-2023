@@ -5,14 +5,51 @@
 #include "../implementations/mode_select.hpp"
 #include "../implementations/rules_engine.hpp"
 #include "../include/command_lerper.hpp"
-#include "../include/mode_switcher.hpp"
-#include "../include/tri_wheel_router.hpp"
-#include "../implementations/led_strip_controller.cpp"
 #include "../include/mission_control.hpp"
+#include "../include/mode_switcher.hpp"
+#include "../include/sk9822.hpp"
+#include "../include/tri_wheel_router.hpp"
 #include "application.hpp"
-
+#include <libhal-lpc40/output_pin.hpp>
+// #include <libhal/serial.hpp>
 namespace sjsu::drive {
 
+struct effect_hardware
+{
+  light_strip_view lights;
+  sk9822* driver;
+  hal::steady_clock* clock;
+};
+hal::status light_change(effect_hardware& hardware, rgb_brightness color)
+{  // red, blue, flashing green
+
+  for (auto i = hardware.lights.begin(); i != hardware.lights.end(); i++) {
+    *i = color;
+  }
+  hardware.driver->update(hardware.lights, 0b0111);
+  return hal::success();
+}
+
+hal::status rampup_rampdown(effect_hardware& hardware)
+{
+
+  // for (auto i = hardware.lights.begin(); i != hardware.lights.end(); i++) {
+  //   *i = colors::GREEN;
+  //   hardware.driver->update(hardware.lights, 0b0111);
+  //   hal::delay(*hardware.clock, 10ms);
+  // }
+  // for (auto i = hardware.lights.rbegin(); i != hardware.lights.rend(); i++) {
+  //   *i = colors::BLACK;
+  //   hardware.driver->update(hardware.lights, 0b0111);
+  //   hal::delay(*hardware.clock, 10ms);
+  // }
+  light_change(hardware, colors::GREEN);
+  hal::delay(*hardware.clock, 50ms);
+  light_change(hardware, colors::BLACK);
+  hal::delay(*hardware.clock, 50ms);
+
+  return hal::success();
+}
 hal::status application(application_framework& p_framework)
 {
   using namespace std::chrono_literals;
@@ -25,6 +62,24 @@ hal::status application(application_framework& p_framework)
   auto& terminal = *p_framework.terminal;
   auto& clock = *p_framework.clock;
   auto loop_count = 0;
+
+  auto clock_pin = HAL_CHECK(
+    hal::lpc40::output_pin::get(1, 15));  // hope we have 2 more gpio pins here
+  auto data_pin = HAL_CHECK(
+    hal::lpc40::output_pin::get(1, 23));  // hope we have 2 more gpio pins here
+
+  light_strip<35> lights;
+  sk9822 driver(clock_pin, data_pin, clock);
+  set_all(lights, colors::WHITE);
+  hal::print<512>(
+    terminal, "%d %d %d\n", lights[0].r, lights[0].g, lights[0].b);
+  driver.update(lights);
+  hal::delay(clock, 500ms);
+  hal::print(terminal, "turn on\n");
+  effect_hardware led_hardware;
+  led_hardware.lights = lights;
+  led_hardware.driver = &driver;
+  led_hardware.clock = &clock;
 
   // sjsu::drive::tri_wheel_router tri_wheel{ back_leg, right_leg, left_leg };
   sjsu::drive::mission_control::mc_commands commands;
@@ -47,7 +102,15 @@ hal::status application(application_framework& p_framework)
     // motor_speeds = HAL_CHECK(tri_wheel.get_motor_feedback());
 
     // commands = sjsu::drive::validate_commands(commands);
-    HAL_CHECK(sjsu::drive::led_strip_controller(p_framework, commands));
+    // HAL_CHECK(led_strip_controller(p_framework, commands));
+    hal::print<512>(terminal, "%d\n", commands.led_status);
+    if (commands.led_status == 1) {  // red - autonomous driving
+      HAL_CHECK(light_change(led_hardware, colors::RED));
+    } else if (commands.led_status == 2) {  // blue - manually driving
+      HAL_CHECK(light_change(led_hardware, colors::BLUE));
+    } else {                                     // flashing green
+      HAL_CHECK(rampup_rampdown(led_hardware));  // hardcoded to flash green
+    }
     // commands =
     //   mode_switcher.switch_steer_mode(commands, arguments, motor_speeds);
     // commands.speed = lerp.lerp(commands.speed);

@@ -56,7 +56,7 @@ hal::result<application_framework> initialize_platform()
   static hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
   static auto can = HAL_CHECK((hal::lpc40::can::get(2, can_settings)));
 
-  static auto can_router = hal::can_router::(can).value();
+  static auto can_router = hal::can_router::create(can).value();
   // left leg
 
   // static auto left_leg_steer_drc =
@@ -227,8 +227,12 @@ hal::result<application_framework> initialize_platform()
   // static auto helper = serial_mirror(uart1, uart0);
 
   auto timeout = hal::create_timeout(counter, 10s);
+    HAL_CHECK(hal::write(uart0, "before esp\n"));
+
   static auto esp8266 = HAL_CHECK(hal::esp8266::at::create(uart1, timeout));
   auto mc_timeout = hal::create_timeout(counter, 10s);
+  HAL_CHECK(hal::write(uart0, "created esp\n"));
+
   esp8266_mission_control::create_t create_mission_control{
     .esp8266 = esp8266,
     .console = uart0,
@@ -241,6 +245,7 @@ hal::result<application_framework> initialize_platform()
   };
   static auto esp_mission_control =
     esp8266_mission_control::create(create_mission_control, mc_timeout);
+  HAL_CHECK(hal::write(uart0, "created mission control\n"));
 
   while (esp_mission_control.has_error()) {
     mc_timeout = hal::create_timeout(counter, 30s);
