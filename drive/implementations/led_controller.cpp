@@ -1,5 +1,12 @@
 #include "../include/sk9822.hpp"
+#include "../applications/application.hpp"
 namespace sjsu::drive{
+class led_controller {
+public:
+led_controller(application_framework& p_framework)
+    :m_framework(p_framework)
+{
+}
 hal::status light_change(effect_hardware& hardware, rgb_brightness color)
 {  // red, blue, flashing green
 
@@ -20,18 +27,22 @@ hal::status rampup_rampdown(effect_hardware& hardware)
   return hal::success();
 }
 
-hal::status led_controller(application_framework& p_framework, mission_control::mc_commands p_commands) {
-    auto led_hardware = *p_framework.led_strip;
-    auto& terminal = *p_framework.terminal;
-    auto& clock = *p_framework.clock;
+hal::status control_leds(mission_control::mc_commands commands) {
+    auto led_hardware = *m_framework.led_strip;
+    auto& terminal = *m_framework.terminal;
+    auto& clock = *m_framework.clock;
 
-    hal::print<512>(terminal, "%d\n", p_commands.led_status);
-    if (p_commands.led_status == 1) {  // red - autonomous driving
+    hal::print<512>(terminal, "%d\n", commands.led_status);
+    if (commands.led_status == 1) {  // red - autonomous driving
       HAL_CHECK(light_change(led_hardware, colors::RED));
-    } else if (p_commands.led_status == 2) {  // blue - manually driving
+    } else if (commands.led_status == 2) {  // blue - manually driving
       HAL_CHECK(light_change(led_hardware, colors::BLUE));
     } else {                                     // flashing green
       HAL_CHECK(rampup_rampdown(led_hardware));  // hardcoded to flash green
     }
+    return hal::success();
 }
+private:
+    application_framework& m_framework;
+};
 }

@@ -29,6 +29,7 @@ add_executable(${PROJECT_NAME}
     implementations/mode_switcher.cpp
     implementations/tri_wheel_router.cpp
     implementations/sk9822.cpp
+    implementations/led_controller.cpp
     platforms/${platform}.cpp)
 target_include_directories(${PROJECT_NAME} PUBLIC .)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)

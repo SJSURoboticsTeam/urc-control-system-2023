@@ -37,12 +37,6 @@ struct rgb_brightness
   }
 };
 
-// struct effect_hardware {
-//   hal::light_strip_view lights;
-//   hal::sk9822 *driver;
-//   hal::steady_clock *clock;
-// };
-// using namespace hal::literals;
 using namespace std::chrono_literals;
 namespace colors {
 constexpr rgb_brightness RED = rgb_brightness(0xff, 0x00, 0x00, 0b11111);
@@ -76,14 +70,6 @@ public:
   hal::status update(sjsu::drive::light_strip_view lights);
   // overriding brightness will ignore the default values for brightness passed into the struct 
   hal::status update(sjsu::drive::light_strip_view lights, hal::byte overriding_brightness);
-  // hal::status light_change(effect_hardware hardware,
-  //                          sjsu::drive::rgb_brightness color);
-  // hal::status led_strip_controller(application_framework& p_resources,
-  //                                  mission_control::mc_commands p_commands);
-
-  // hal::status beedoo_beedoo_beedoo(effect_hardware hardware,
-  // hal::rgb_brightness on_value, hal::rgb_brightness off_value,
-  // hal::time_duration period);
 
 private:
   hal::output_pin *clock_pin, *data_pin;

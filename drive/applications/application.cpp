@@ -14,42 +14,7 @@
 // #include <libhal/serial.hpp>
 namespace sjsu::drive {
 
-// struct effect_hardware
-// {
-//   light_strip_view lights;
-//   sk9822* driver;
-//   hal::steady_clock* clock;
-// };
-// hal::status light_change(effect_hardware& hardware, rgb_brightness color)
-// {  // red, blue, flashing green
 
-//   for (auto i = hardware.lights.begin(); i != hardware.lights.end(); i++) {
-//     *i = color;
-//   }
-//   hardware.driver->update(hardware.lights, 0b0111);
-//   return hal::success();
-// }
-
-// hal::status rampup_rampdown(effect_hardware& hardware)
-// {
-
-//   // for (auto i = hardware.lights.begin(); i != hardware.lights.end(); i++) {
-//   //   *i = colors::GREEN;
-//   //   hardware.driver->update(hardware.lights, 0b0111);
-//   //   hal::delay(*hardware.clock, 10ms);
-//   // }
-//   // for (auto i = hardware.lights.rbegin(); i != hardware.lights.rend(); i++) {
-//   //   *i = colors::BLACK;
-//   //   hardware.driver->update(hardware.lights, 0b0111);
-//   //   hal::delay(*hardware.clock, 10ms);
-//   // }
-//   light_change(hardware, colors::GREEN);
-//   hal::delay(*hardware.clock, 50ms);
-//   light_change(hardware, colors::BLACK);
-//   hal::delay(*hardware.clock, 50ms);
-
-//   return hal::success();
-// }
 hal::status application(application_framework& p_framework)
 {
   using namespace std::chrono_literals;
@@ -63,9 +28,10 @@ hal::status application(application_framework& p_framework)
   auto& clock = *p_framework.clock;
   auto loop_count = 0;
   auto led_strip = *p_framework.led_strip;
-
   // sjsu::drive::tri_wheel_router tri_wheel{ back_leg, right_leg, left_leg };
   sjsu::drive::mission_control::mc_commands commands;
+  sjsu::drive::led_controller controller = led_controller(p_framework);
+
   // sjsu::drive::motor_feedback motor_speeds;
   // sjsu::drive::tri_wheel_router_arguments arguments;
 
@@ -85,7 +51,7 @@ hal::status application(application_framework& p_framework)
     // motor_speeds = HAL_CHECK(tri_wheel.get_motor_feedback());
 
     // commands = sjsu::drive::validate_commands(commands);
-    HAL_CHECK(led_controller(p_framework, commands));
+    HAL_CHECK(controller.control_leds(commands));
 
     // commands =
     //   mode_switcher.switch_steer_mode(commands, arguments, motor_speeds);

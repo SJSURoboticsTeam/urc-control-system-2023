@@ -4,12 +4,6 @@ namespace sjsu::drive {
 using namespace hal::literals;
 using namespace std::chrono_literals;
 
-// const rgb_brightness RED = rgb_brightness(0xff, 0x00, 0x00, 0b11111);
-// const rgb_brightness GREEN = rgb_brightness(0x00, 0xff, 0x00, 0b11111);
-// const rgb_brightness BLUE = rgb_brightness(0x00, 0x00, 0xff, 0b11111);
-// const rgb_brightness WHITE = rgb_brightness(0xff, 0xff, 0xff, 0b11111);
-// const rgb_brightness BLACK = rgb_brightness(0x00, 0x00, 0x00, 0x00);
-
 void set_all(sjsu::drive::light_strip_view lights,
              const hal::byte r,
              const hal::byte g,
@@ -105,62 +99,5 @@ hal::status sk9822::send_byte(hal::byte data)
 
   return hal::success();
 }
-// hal::status led_strip_controller(application_framework& p_resources,
-//                                  mission_control::mc_commands p_commands)
-// {
-//   using namespace std::literals;
 
-//   auto& clock = *p_resources.clock;
-//   //   auto& console = *p_resources.terminal;
-
-//   auto clock_pin = HAL_CHECK(
-//     hal::lpc40::output_pin::get(1, 22));  // hope we have 2 more gpio pins
-//     here
-//   auto data_pin = HAL_CHECK(
-//     hal::lpc40::output_pin::get(1, 20));  // hope we have 2 more gpio pins
-//     here
-
-//   hal::light_strip<35> lights;
-//   hal::sk9822 driver(clock_pin, data_pin, clock);
-//   hal::light_strip_util::set_all(lights, BLACK);
-
-//   hal::rgb_brightness ON, OFF;
-//   ON.set(0xff, 0x00, 0x00, 0b11111);
-//   OFF.set(0, 0, 0, 0);
-
-//   effect_hardware hardware;
-//   hardware.clock = &clock;
-//   hardware.lights = lights;
-//   hardware.driver = &driver;
-
-//   if (p_commands.led_status == 1) {  // red - autonomous driving
-//     HAL_CHECK(light_change(hardware, RED));
-//   } else if (p_commands.led_status == 2) {  // blue - manually driving
-//     HAL_CHECK(light_change(hardware, BLACK));
-//   } else {                                 // flashing green
-//     HAL_CHECK(rampup_rampdown(hardware));  // hardcoded to flash green
-//   }
-//   return hal::success();
-// }
-// hal::status rampup_rampdown(effect_hardware hardware)
-// {
-//   for (auto i = hardware.lights.begin(); i != hardware.lights.end(); i++) {
-//     *i = GREEN;
-//     hardware.driver->update(hardware.lights);
-//     hal::delay(*hardware.clock, 10ms);
-//   }
-//   for (auto i = hardware.lights.rbegin(); i != hardware.lights.rend(); i++) {
-//     *i = BLACK;
-//     hardware.driver->update(hardware.lights);
-//     hal::delay(*hardware.clock, 10ms);
-//   }
-// }
-// hal::status light_change(effect_hardware hardware, rgb_brightness color)
-// {  // red, blue, flashing green
-//   for (auto i = hardware.lights.begin(); i != hardware.lights.end(); i++) {
-//     *i = color;
-//   }
-//   hardware.driver->update(hardware.lights);
-//   return hal::success();
-// }
 }  // namespace sjsu::drive
