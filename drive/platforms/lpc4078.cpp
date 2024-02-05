@@ -23,7 +23,7 @@
 #include "../include/offset_servo.hpp"
 #include "../platform-implementations/helper.hpp"
 #include "../platform-implementations/home.hpp"
-
+#include "../include/sk9822.hpp"
 namespace sjsu::drive {
 
 hal::status initialize_processor()
@@ -268,7 +268,8 @@ hal::result<application_framework> initialize_platform()
   //   terminal, "%d %d %d\n", lights[0].r, lights[0].g, lights[0].b);
   driver.update(lights, 0b0111); //reduce the brightness
   hal::delay(counter, 50ms);
-  // hal::print(terminal, "turn on\n");
+  hal::print(uart0, "turn on\n");
+
   effect_hardware led_hardware;
   led_hardware.lights = lights;
   led_hardware.driver = &driver;
