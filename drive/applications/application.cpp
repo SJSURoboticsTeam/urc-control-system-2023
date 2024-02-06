@@ -2,6 +2,7 @@
 
 #include "../dto/motor_feedback.hpp"
 
+#include "../implementations/led_controller.cpp"
 #include "../implementations/mode_select.hpp"
 #include "../implementations/rules_engine.hpp"
 #include "../include/command_lerper.hpp"
@@ -10,10 +11,8 @@
 #include "../include/sk9822.hpp"
 #include "../include/tri_wheel_router.hpp"
 #include "application.hpp"
-#include "../implementations/led_controller.cpp"
 // #include <libhal/serial.hpp>
 namespace sjsu::drive {
-
 
 hal::status application(application_framework& p_framework)
 {
@@ -49,7 +48,7 @@ hal::status application(application_framework& p_framework)
     }
     loop_count++;
     // motor_speeds = HAL_CHECK(tri_wheel.get_motor_feedback());
-
+    hal::print(terminal, "command gotten\n");
     // commands = sjsu::drive::validate_commands(commands);
     HAL_CHECK(controller.control_leds(commands));
 
