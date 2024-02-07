@@ -10,7 +10,7 @@
 namespace sjsu::drive {
 
 static constexpr char kResponseBodyFormat[] =
-  "{\"HB\":%d,\"IO\":%d,\"WO\":%d,\"DM\":\"%c\",\"CMD\":[%d,%d]}\n";
+  "{\"HB\":%d,\"IO\":%d,\"WO\":%d,\"DM\":\"%c\",\"CMD\":[%d,%d],\"LS\":%d}\n";
 
 static constexpr char kGETRequestFormat[] =
   "drive?heartbeat_count=%d&is_operational=%d&wheel_orientation=%d&drive_mode=%"
@@ -19,7 +19,7 @@ static constexpr char kGETRequestFormat[] =
 class mission_control
 {
 public:
-  struct mc_commands
+  struct mc_commands //edit this for beacon
   {
     char mode = 'D';
     int speed = 0;
@@ -27,6 +27,7 @@ public:
     int wheel_orientation = 0;
     int is_operational = 0;
     int heartbeat_count = 0;
+    int led_status = 1;
     hal::status print(hal::serial* terminal)
     {
       hal::print<128>(*terminal,
@@ -36,12 +37,14 @@ public:
                       "Angle: %d\n"
                       "Mode: %c\n"
                       "Wheel Orientation: %d\n",
+                      "LED Status: %d\n",
                       heartbeat_count,
                       is_operational,
                       speed,
                       angle,
                       mode,
-                      wheel_orientation);
+                      wheel_orientation,
+                      led_status);
       return hal::success();
     }
   };
