@@ -52,9 +52,10 @@ public:
 
     int right_wrist_angle = (p_arguments.wrist_roll_angle) - (p_arguments.wrist_pitch_angle);
     HAL_CHECK(m_right_wrist_servo.position(static_cast<float>((right_wrist_angle))));
-
-    HAL_CHECK(m_end_effector.position(static_cast<float>(
-      p_arguments.rr9_angle)));
+    
+    float location = (std::clamp(static_cast<float>(p_arguments.rr9_angle),10.0f,100.0f)/100) * 120; //clamps to value
+    // hal::print<200>(terminal, "Go to: %f\n", location);
+    HAL_CHECK(m_end_effector.position(location));
     return p_arguments;
   }
 
