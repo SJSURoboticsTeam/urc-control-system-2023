@@ -20,7 +20,7 @@ namespace sjsu::science {
                 BIURET_REAGENT,
                 OBSERVATION
             };
-            static hal::result<revolver> cerate(hal::servo& p_servo, hal::input_pin& p_hall_effect_input_pin);
+            static hal::result<revolver> create(hal::servo& p_servo, hal::input_pin& p_hall_effect_input_pin);
             hal::status rotate_vial_to_position(positions position, int vial);
     };
 
