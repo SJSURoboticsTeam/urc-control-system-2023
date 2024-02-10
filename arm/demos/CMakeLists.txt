@@ -17,10 +17,14 @@ find_package(libhal-rmd REQUIRED CONFIG)
 find_package(libhal-soft REQUIRED CONFIG)
 find_package(libhal-esp8266 REQUIRED CONFIG)
 find_package(libhal-mpu REQUIRED CONFIG)
+find_package(libhal-pca REQUIRED CONFIG)
+
 
 add_executable(${PROJECT_NAME}
     main.cpp
     applications/arm_angle.cpp
+    applications/rc_servo.cpp
+    applications/debug_serial_i2c.cpp
     platforms/${platform}.cpp)
 target_include_directories(${PROJECT_NAME} PUBLIC .)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
@@ -33,5 +37,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     libhal::soft
     libhal::esp8266
     libhal::mpu
+    libhal::pca
     )
 libhal_post_build(${PROJECT_NAME})

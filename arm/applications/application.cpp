@@ -31,7 +31,7 @@ hal::status application(sjsu::arm::application_framework& p_framework)
 
   auto& mission_control = *(p_framework.mc);
   auto loop_count = 0;
-  // auto& end_effector = *p_framework.end_effector;
+  auto& end_effector = *p_framework.end_effector;
 
   // mission control init should go here, if anything is needed
 

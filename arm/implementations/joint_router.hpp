@@ -51,6 +51,8 @@ public:
     int right_wrist_angle = (p_arguments.wrist_roll_angle) - (p_arguments.wrist_pitch_angle);
     HAL_CHECK(m_right_wrist_servo.position(static_cast<float>((right_wrist_angle))));
 
+    HAL_CHECK(m_end_effector.position(static_cast<float>(
+      p_arguments.rr9_angle)));
     return p_arguments;
   }
 
