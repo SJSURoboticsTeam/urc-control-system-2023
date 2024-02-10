@@ -169,10 +169,8 @@ private:
                                   kResponseBodyFormat,
                                   &commands.heartbeat_count,
                                   &commands.is_operational,
-                                  &commands.wheel_orientation,
-                                  &commands.mode,
-                                  &commands.speed,
-                                  &commands.angle);
+                                  &commands.pause,
+                                  &commands.reset);
     if (actual_arguments != expected_number_of_arguments) {
       hal::print<200>(*m_console,
                       "Received %d arguments, expected %d\n",

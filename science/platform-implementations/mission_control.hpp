@@ -22,10 +22,8 @@ class mission_control
   public:
   struct mc_commands
   {
-    char mode = 'D';
-    int speed = 0;
-    int angle = 0;
-    int wheel_orientation = 0;
+    int pause = 0;
+    int reset = 0;
     int is_operational = 0;
     int heartbeat_count = 0;
     hal::status print(hal::serial* terminal)
@@ -33,16 +31,12 @@ class mission_control
       hal::print<128>(*terminal,
                       "HB: %d\n"
                       "IS_OP: %d\n"
-                      "Speed: %d\n"
-                      "Angle: %d\n"
-                      "Mode: %c\n"
-                      "Wheel Orientation: %d\n",
+                      "Pause: %d\n"
+                      "Contianment_Reset: %d\n"
                       heartbeat_count,
                       is_operational,
-                      speed,
-                      angle,
-                      mode,
-                      wheel_orientation);
+                      pause,
+                      reset);
       return hal::success();
     }
   };
