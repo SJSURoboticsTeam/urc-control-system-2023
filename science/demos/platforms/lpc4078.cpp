@@ -35,6 +35,7 @@
 
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
+#include <libhal/input_pin.hpp>
 
 #include "../hardware_map.hpp"
 
@@ -71,6 +72,8 @@ namespace sjsu::science
                                                          .baud_rate = 38400,
                                                        })));
 
+    static auto in_pin2 = HAL_CHECK(hal::lpc40::input_pin::get(1, 22, hal::input_pin::settings{}));                                      
+
     static auto i2c = HAL_CHECK(hal::lpc40::i2c::get(2));
 
     static auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c,0b100'0000)); 
@@ -88,6 +91,7 @@ namespace sjsu::science
 
     return application_framework
     { .rotunda_science = &rotunda_science_servo,
+      .rotunda_magnet = &in_pin2,
       .terminal = &uart0,
       .clock = &counter,
       .reset = []() { hal::cortex_m::reset(); },
