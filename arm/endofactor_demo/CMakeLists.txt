@@ -37,3 +37,4 @@ libhal_build_demos(
   libhal::esp8266
   libhal::pca
 )
+

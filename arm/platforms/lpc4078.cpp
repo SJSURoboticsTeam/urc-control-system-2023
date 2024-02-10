@@ -4,8 +4,11 @@
 
 #include <libhal-lpc40/can.hpp>
 #include <libhal-lpc40/constants.hpp>
+#include <libhal-lpc40/i2c.hpp>
 #include <libhal-lpc40/input_pin.hpp>
 #include <libhal-lpc40/uart.hpp>
+
+#include <libhal-mpu/mpu6050.hpp>
 #include <libhal-rmd/mc_x.hpp>
 #include <libhal-lpc40/i2c.hpp>
 
@@ -13,11 +16,15 @@
 #include <libhal-util/units.hpp>
 #include <libhal-pca/pca9685.hpp>
 #include "../applications/application.hpp"
+#include "../platform-implementations/home.hpp"
 #include "../platform-implementations/esp8266_mission_control.cpp"
+#include "../platform-implementations/helper.hpp"
+#include "../platform-implementations/offset_servo.hpp"
 #include "../platform-implementations/helper.hpp"
 
 #include <libhal-lpc40/clock.hpp>
 #include <libhal-lpc40/pwm.hpp>
+#include <libhal-soft/inert_drivers/inert_accelerometer.hpp>
 #include <libhal-soft/rc_servo.hpp>
 
 namespace sjsu::arm {
@@ -38,6 +45,14 @@ hal::result<application_framework> initialize_platform()
   // setting clock
   HAL_CHECK(hal::lpc40::clock::maximum(12.0_MHz));
   auto& clock = hal::lpc40::clock::get();
+  static auto i2c1 = HAL_CHECK((hal::lpc40::i2c::get(1,
+                                                     hal::i2c::settings{
+                                                       .clock_rate = 100.0_kHz,
+                                                     })));
+  static auto i2c2 = HAL_CHECK((hal::lpc40::i2c::get(2,
+                                                     hal::i2c::settings{
+                                                       .clock_rate = 100.0_kHz,
+                                                     })));
   auto cpu_frequency = clock.get_frequency(hal::lpc40::peripheral::cpu);
   static hal::cortex_m::dwt_counter counter(cpu_frequency);
 
@@ -58,27 +73,27 @@ hal::result<application_framework> initialize_platform()
 
   static auto rotunda_mc_x =
     HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x141));
-  static auto rotunda_mc_x_servo =
+  static auto rotunda_servo =
     HAL_CHECK(hal::make_servo(rotunda_mc_x, 2.0_rpm));
 
   static auto shoulder_mc_x = HAL_CHECK(
     hal::rmd::mc_x::create(can_router, counter, 36.0 * 65 / 30, 0x142));
-  static auto shoulder_mc_x_servo =
-    HAL_CHECK(hal::make_servo(shoulder_mc_x, 2.0_rpm));
+  static auto shoulder_servo =
+    HAL_CHECK(hal::make_servo(shoulder_mc_x, 5.0_rpm));
 
   static auto elbow_mc_x = HAL_CHECK(
     hal::rmd::mc_x::create(can_router, counter, 36.0 * 40 / 30, 0x143));
-  static auto elbow_mc_x_servo =
-    HAL_CHECK(hal::make_servo(elbow_mc_x, 2.0_rpm));
+  static auto elbow_servo =
+    HAL_CHECK(hal::make_servo(elbow_mc_x, 5.0_rpm));
 
   static auto left_wrist_mc_x =
     HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x144));
-  static auto left_wrist_mc_x_servo =
+  static auto left_wrist_servo =
     HAL_CHECK(hal::make_servo(left_wrist_mc_x, 2.0_rpm));
 
   static auto right_wrist_mc_x =
     HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x145));
-  static auto right_wrist_mc_x_servo =
+  static auto right_wrist_servo =
     HAL_CHECK(hal::make_servo(right_wrist_mc_x, 2.0_rpm));
   static auto i2c = HAL_CHECK(hal::lpc40::i2c::get(2)); //need to use pca here
 
@@ -95,6 +110,8 @@ static auto end_effector_servo =
 
   // mission control object
   // mission control object
+
+  // MPU INIT
   static std::array<hal::byte, 8192> recieve_buffer1{};
 
   static auto uart1 = HAL_CHECK((hal::lpc40::uart::get(1,
@@ -153,13 +170,50 @@ static auto end_effector_servo =
   }
   static auto arm_mission_control = esp_mission_control.value();
 
+  static auto elbow_mpu = HAL_CHECK(
+    hal::mpu::mpu6050::create(i2c1, hal::mpu::mpu6050::address_ground));
+  HAL_CHECK(elbow_mpu.configure_full_scale(hal::mpu::mpu6050::max_acceleration::g2));
+
+  static auto shoulder_mpu = HAL_CHECK(
+    hal::mpu::mpu6050::create(i2c1, hal::mpu::mpu6050::address_voltage_high));
+  HAL_CHECK(shoulder_mpu.configure_full_scale(hal::mpu::mpu6050::max_acceleration::g2));
+
+  static auto rotunda_mpu = HAL_CHECK(
+    hal::mpu::mpu6050::create(i2c2, hal::mpu::mpu6050::address_voltage_high));
+  HAL_CHECK(rotunda_mpu.configure_full_scale(hal::mpu::mpu6050::max_acceleration::g2));
+  
+  auto zero_a = HAL_CHECK(rotunda_mpu.read());
+  static auto wrist_mpu =
+    HAL_CHECK(hal::soft::inert_accelerometer::create(zero_a));
+
+  HAL_CHECK(home(rotunda_mpu,
+                 shoulder_mpu,
+                 elbow_mpu,
+                 wrist_mpu,
+                 rotunda_mc_x,
+                 shoulder_mc_x,
+                 elbow_mc_x,
+                 left_wrist_mc_x,
+                 right_wrist_mc_x,
+                 uart0,
+                 can,
+                 counter));
+
+  hal::delay(counter, 1s);
+  
   return application_framework{
-    .rotunda_servo = &rotunda_mc_x_servo,
-    .shoulder_servo = &shoulder_mc_x_servo,
-    .elbow_servo = &elbow_mc_x_servo,
-    .left_wrist_servo = &left_wrist_mc_x_servo,
-    .right_wrist_servo = &right_wrist_mc_x_servo,
+    .rotunda_servo = &rotunda_servo,
+    .shoulder_servo = &shoulder_servo,
+    .elbow_servo = &elbow_servo,
+    .left_wrist_servo = &left_wrist_servo,
+    .right_wrist_servo = &right_wrist_servo,
     .end_effector = &end_effector_servo,
+
+    .rotunda_accelerometer = &rotunda_mpu,
+    .shoulder_accelerometer = &shoulder_mpu,
+    .elbow_accelerometer = &elbow_mpu,
+    .wrist_accelerometer = &wrist_mpu,
+
     .terminal = &uart0,
     .mc = &arm_mission_control,
     .clock = &counter,
