@@ -23,7 +23,7 @@ hal::status application(sjsu::arm::application_framework& p_framework)
   auto& elbow_servo = *p_framework.elbow_servo;
   auto& left_wrist_servo = *p_framework.left_wrist_servo;
   auto& right_wrist_servo = *p_framework.right_wrist_servo;
-
+  auto& end_effector = *p_framework.end_effector;
   auto& rotunda_accelerometer = *p_framework.rotunda_accelerometer;
   auto& shoulder_accelerometer = *p_framework.shoulder_accelerometer;
   auto& elbow_accelerometer = *p_framework.elbow_accelerometer;
@@ -31,7 +31,6 @@ hal::status application(sjsu::arm::application_framework& p_framework)
 
   auto& mission_control = *(p_framework.mc);
   auto loop_count = 0;
-  auto& end_effector = *p_framework.end_effector;
 
   // mission control init should go here, if anything is needed
 
@@ -42,6 +41,7 @@ hal::status application(sjsu::arm::application_framework& p_framework)
                    elbow_servo,
                    left_wrist_servo,
                    right_wrist_servo,
+                   end_effector,
                    rotunda_accelerometer,
                    shoulder_accelerometer,
                    elbow_accelerometer,

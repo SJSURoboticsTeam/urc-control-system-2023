@@ -103,7 +103,7 @@ hal::result<application_framework> initialize_platform()
   .min_microseconds = 500,
   .max_microseconds = 2500,
 };
-static auto end_effector_servo =
+  static auto end_effector_servo =
   HAL_CHECK(hal::soft::rc_servo::create(pwm0, servo_settings));
 
   // mission control object
@@ -214,7 +214,7 @@ static auto end_effector_servo =
     .elbow_accelerometer = &elbow_mpu,
     .wrist_accelerometer = &wrist_mpu,
 
-    // .end_effector = &end_effector_servo,
+    .end_effector = &end_effector_servo,
     .terminal = &uart0,
     .mc = &arm_mission_control,
     .clock = &counter,

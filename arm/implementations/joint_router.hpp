@@ -4,7 +4,9 @@
 #include <libhal/accelerometer.hpp>
 
 #include "../platform-implementations/mission_control.hpp"
-
+#include <string_view>
+#include <array>
+#include <cinttypes>
 static constexpr float shoulder_gear_ratio = 65.0f/30.0f;
 static constexpr float elbow_gear_ratio = 40.0f/30.0f;
 
@@ -17,6 +19,7 @@ public:
                hal::servo& p_elbow_servo,
                hal::servo& p_left_wrist_servo,
                hal::servo& p_right_wrist_servo,
+               hal::servo& p_end_effector_servo,
                hal::accelerometer& p_rotunda_accelerometer,
                hal::accelerometer& p_shoulder_accelerometer,
                hal::accelerometer& p_elbow_accelerometer,
@@ -26,6 +29,7 @@ public:
     , m_elbow_servo(p_elbow_servo)
     , m_left_wrist_servo(p_left_wrist_servo)
     , m_right_wrist_servo(p_right_wrist_servo)
+    , m_end_effector_servo(p_end_effector_servo)
     , m_rotunda_accelerometer(p_rotunda_accelerometer)
     , m_shoulder_accelerometer(p_shoulder_accelerometer)
     , m_elbow_accelerometer(p_elbow_accelerometer)
@@ -50,9 +54,9 @@ public:
 
     int right_wrist_angle = (p_arguments.wrist_roll_angle) - (p_arguments.wrist_pitch_angle);
     HAL_CHECK(m_right_wrist_servo.position(static_cast<float>((right_wrist_angle))));
+    float location = (std::clamp(static_cast<float>((p_arguments.rr9_angle)),10.0f,100.0f)/100) * 120; //clamps to value
+    HAL_CHECK(m_end_effector_servo.position(static_cast<float>(location)));
 
-    HAL_CHECK(m_end_effector.position(static_cast<float>(
-      p_arguments.rr9_angle)));
     return p_arguments;
   }
 
@@ -62,7 +66,7 @@ private:
   hal::servo& m_elbow_servo;
   hal::servo& m_left_wrist_servo;
   hal::servo& m_right_wrist_servo;
-
+  hal::servo& m_end_effector_servo;
   hal::accelerometer& m_rotunda_accelerometer;
   hal::accelerometer& m_shoulder_accelerometer;
   hal::accelerometer& m_elbow_accelerometer;
