@@ -10,11 +10,11 @@
 namespace sjsu::science{
 
 static constexpr char kResponseBodyFormat[] =
-  "{\"HB\":%d,\"IO\":%d,\"WO\":%d,\"DM\":\"%c\",\"CMD\":[%d,%d]}\n";
+  "{\"HB\":%d,\"IO\":%d,\"SR\":%d,\"PP\":\"%d\",\"CR\":\"%d\"}\n";
 
 static constexpr char kGETRequestFormat[] =
-  "drive?heartbeat_count=%d&is_operational=%d&wheel_orientation=%d&drive_mode=%"
-  "c&speed=%d&angle=%d";
+  "drive?heartbeat_count=%d&is_operational=%d&sample_recieved=%d&pause_play=%"
+  "c&contianment_reset=%d";
 
 
 class mission_control
@@ -31,12 +31,15 @@ class mission_control
       hal::print<128>(*terminal,
                       "HB: %d\n"
                       "IS_OP: %d\n"
-                      "Pause: %d\n"
+                      "Sample_Recieved: %d\n"
+                      "Pause_Play: %d\n"
                       "Contianment_Reset: %d\n"
                       heartbeat_count,
                       is_operational,
-                      pause,
-                      reset);
+                      sample_recieved,
+                      pause_play,
+                      contianment_reset,
+                      );
       return hal::success();
     }
   };

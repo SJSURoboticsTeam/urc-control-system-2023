@@ -27,18 +27,21 @@ namespace sjsu::science {
 struct application_framework
 {
   hal::serial* terminal;
-  hal::can* can;
-  hal::input_pin* in_pin0;
-  hal::input_pin* in_pin1;
-  hal::input_pin* in_pin2;
-  hal::pwm* pwm_1_6;
-  hal::pwm* pwm_1_5;
-  hal::adc* adc_4;
-  hal::adc* adc_5;
+
+  // hal::can* can;
+  // hal::input_pin* in_pin0;
+  // hal::input_pin* in_pin1;
+  // hal::input_pin* in_pin2;
+  // hal::pwm* pwm_1_6;
+  // hal::pwm* pwm_1_5;
+  // hal::adc* adc_4;
+  // hal::adc* adc_5;
   hal::serial* esp;
   hal::i2c* i2c;
   hal::steady_clock* steady_clock;
   hal::callback<void()> reset;
+  mission_control* mc;
+  science_state_machine* myScienceRobot;
 };
 
 // Application function must be implemented by one of the compilation units

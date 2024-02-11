@@ -6,13 +6,12 @@ namespace sjsu::science{
         enum class science_states{
             GET_SAMPLES,
             MOLISCH_TEST,
-            BIURWT_TEST,
+            BIURET_TEST,
             RESET
         };
 
-        science_states state;
         hal::result<bool> check_sample(); 
-        hal::status run_state_machine();
+        hal::status run_state_machine(science_states state);
         hal::status pump_dio_water();
         hal::status mix_solution();
         hal::status pump_to_vial();
@@ -22,6 +21,7 @@ namespace sjsu::science{
         hal::status read_color_sensor();//move contnets insdie
         hal::result<bool> get_mission_control_cmnd(); //temporary
         hal::status containment_reset();
+
 
         
 
