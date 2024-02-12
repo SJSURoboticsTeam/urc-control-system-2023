@@ -28,7 +28,7 @@ hal::status application(application_framework& p_framework)
 
     const uint8_t N = 6;
     std::array<float, N> scrambled_results = {};
-    std::array<float, N> results = {};
+    std::array<float, N> results = {0};
     float true_degree;
     float max_volt = 4096;
     float max_deg = 360;
@@ -39,25 +39,39 @@ hal::status application(application_framework& p_framework)
 
         auto buffer_of_results = HAL_CHECK(TLA2528.read_all());
         for(int i = 0; i < N; i++) {
-            true_degree = tla::voltage_to_degree(buffer_of_results[i], max_volt,max_deg);
-            scrambled_results[i] = true_degree;
+            // true_degree = tla::voltage_to_degree(buffer_of_results[i], max_volt,max_deg);
+            // scrambled_results[i] = true_degree;
+            scrambled_results[i] = buffer_of_results[i];
+            // hal::print<64>(uart0, "volt %d: %d ", i, (int)buffer_of_results[i]);
         }
-
-        results[0] = 0;                     // ROTUNDA
-        results[1] = scrambled_results[2] - 269;  // SHOULDER
-        results[2] = -(scrambled_results[1] - 180);  // ELBOW
-        // results[3] = scrambled_results[0];  // WRIST PITCH
-        // results[4] = scrambled_results[5];  // WRIST ROLL
-        results[3] = 0;
-        results[4] = 0;
-        results[5] = 0;
+        // hal::print<64>(uart0, "\n");
 
         // for(int i = 0; i < N; i++) {
-        //     hal::print<64>(uart0, "volt %d: %d ", i, (int)results[i]);
+        //     hal::print<64>(uart0, "volt %d: %d ", i, (int)scrambled_results[i]);
         // }
         // hal::print<64>(uart0, "\n");
 
-        HAL_CHECK(tla::send_data_to_mc(*p_framework.terminal, results));
+        // sr1 is shoulder
+
+        // memset(0, results, sizeof(results));
+
+        results[0] = scrambled_results[0];                     // ROTUNDA
+        // results[1] = scrambled_results[1] - 347;  // SHOULDER
+        // results[2] = -(scrambled_results[2] - 140);  // ELBOW
+        // results[3] = scrambled_results[0];  // WRIST PITCH
+        // results[4] = scrambled_results[5];  // WRIST ROLL
+        results[1] = scrambled_results[1];
+        results[2] = scrambled_results[2];
+        results[3] = scrambled_results[3];
+        results[4] = scrambled_results[4];
+        results[5] = scrambled_results[5];
+
+        for(int i = 0; i < N; i++) {
+            hal::print<64>(uart0, "volt %d: %d ", i, (int)results[i]);
+        }
+        hal::print<64>(uart0, "\n");
+
+        // HAL_CHECK(tla::send_data_to_mc(*p_framework.terminal, results));
     }
 }
 }
