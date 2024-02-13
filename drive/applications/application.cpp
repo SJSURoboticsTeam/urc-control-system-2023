@@ -42,13 +42,13 @@ hal::status application(application_framework& p_framework)
 
   while (true) {
     if (loop_count == 10) {
-      auto timeout = hal::create_timeout(clock, 1s);
+      auto timeout = hal::create_timeout(clock, 100ms);
       commands = mission_control.get_command(timeout).value();
       loop_count = 0;
     }
     loop_count++;
     // motor_speeds = HAL_CHECK(tri_wheel.get_motor_feedback());
-    hal::print(terminal, "command gotten\n");
+    // hal::print(terminal, "command gotten\n");
     // commands = sjsu::drive::validate_commands(commands);
     HAL_CHECK(controller.control_leds(commands));
 

@@ -54,10 +54,10 @@ hal::result<application_framework> initialize_platform()
                                                        })));
   // servos, we need to init all of the mc_x motors then call make_servo
   // in order to pass servos into the application
-  static hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
-  static auto can = HAL_CHECK((hal::lpc40::can::get(2, can_settings)));
+  // static hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
+  // static auto can = HAL_CHECK((hal::lpc40::can::get(2, can_settings)));
 
-  static auto can_router = hal::can_router::create(can).value();
+  // static auto can_router = hal::can_router::create(can).value();
   // left leg
 
   // static auto left_leg_steer_drc =
@@ -213,7 +213,7 @@ hal::result<application_framework> initialize_platform()
     "R0Bot1cs3250";  // change to wifi password you are using
 
   // still need to decide what we want the static IP to be
-  static constexpr std::string_view ip = "";
+  static constexpr std::string_view ip = "192.168.0.220";
   static constexpr auto socket_config = hal::esp8266::at::socket_config{
     .type = hal::esp8266::at::socket_type::tcp,
     .domain = "192.168.0.211",
@@ -230,7 +230,9 @@ hal::result<application_framework> initialize_platform()
   auto timeout = hal::create_timeout(counter, 10s);
     HAL_CHECK(hal::write(uart0, "before esp\n"));
 
-  static auto esp8266 = HAL_CHECK(hal::esp8266::at::create(uart1, timeout));
+  static auto uart_mirror = serial_mirror(uart1, uart0);
+
+  static auto esp8266 = HAL_CHECK(hal::esp8266::at::create(uart_mirror, timeout));
   auto mc_timeout = hal::create_timeout(counter, 10s);
   HAL_CHECK(hal::write(uart0, "created esp\n"));
 

@@ -34,16 +34,16 @@ public:
     auto& terminal = *m_framework.terminal;
     auto& clock = *m_framework.clock;
 
-    hal::print<512>(terminal, "%d\n", commands.led_status);
+    // hal::print<512>(terminal, "%d\n", commands.led_status);
     if (commands.led_status == 1) {  // red - autonomous driving
       HAL_CHECK(light_change(led_hardware, colors::RED));
-      hal::print(terminal, "turn red");
+      // hal::print(terminal, "turn red");
     } else if (commands.led_status == 2) {  // blue - manually driving
       HAL_CHECK(light_change(led_hardware, colors::BLUE));
-      hal::print(terminal, "turn blue");
+      // hal::print(terminal, "turn blue");
     } else {                                     // flashing green
       HAL_CHECK(rampup_rampdown(led_hardware));  // hardcoded to flash green
-      hal::print(terminal, "turn flashing green");
+      // hal::print(terminal, "turn flashing green");
     }
     return hal::success();
   }
