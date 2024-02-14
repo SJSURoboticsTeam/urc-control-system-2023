@@ -39,9 +39,9 @@ hal::status application(application_framework& p_framework)
 
         auto buffer_of_results = HAL_CHECK(TLA2528.read_all());
         for(int i = 0; i < N; i++) {
-            // true_degree = tla::voltage_to_degree(buffer_of_results[i], max_volt,max_deg);
-            // scrambled_results[i] = true_degree;
-            scrambled_results[i] = buffer_of_results[i];
+            true_degree = tla::voltage_to_degree(buffer_of_results[i], max_volt,max_deg);
+            scrambled_results[i] = true_degree;
+            // scrambled_results[i] = buffer_of_results[i];
             // hal::print<64>(uart0, "volt %d: %d ", i, (int)buffer_of_results[i]);
         }
         // hal::print<64>(uart0, "\n");
@@ -56,15 +56,11 @@ hal::status application(application_framework& p_framework)
         // memset(0, results, sizeof(results));
 
         results[0] = scrambled_results[0];                     // ROTUNDA
-        // results[1] = scrambled_results[1] - 347;  // SHOULDER
-        // results[2] = -(scrambled_results[2] - 140);  // ELBOW
-        // results[3] = scrambled_results[0];  // WRIST PITCH
-        // results[4] = scrambled_results[5];  // WRIST ROLL
-        results[1] = scrambled_results[1];
-        results[2] = scrambled_results[2];
-        results[3] = scrambled_results[3];
-        results[4] = scrambled_results[4];
-        results[5] = scrambled_results[5];
+        results[1] = scrambled_results[1] - 346;
+        results[2] = scrambled_results[2] - 131;
+        results[3] = scrambled_results[5];
+        // results[4] = scrambled_results[3];
+        results[5] = scrambled_results[3];
 
         for(int i = 0; i < N; i++) {
             hal::print<64>(uart0, "volt %d: %d ", i, (int)results[i]);
