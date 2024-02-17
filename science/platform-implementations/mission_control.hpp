@@ -10,11 +10,11 @@
 namespace sjsu::science{
 
 static constexpr char kResponseBodyFormat[] =
-  "{\"HB\":%d,\"IO\":%d,\"WO\":%d,\"DM\":\"%c\",\"CMD\":[%d,%d]}\n";
+  "{\"HB\":%d,\"IO\":%d,\"SR\":%d,\"PP\":\"%d\",\"CR\":\"%d\"}\n";
 
 static constexpr char kGETRequestFormat[] =
-  "drive?heartbeat_count=%d&is_operational=%d&wheel_orientation=%d&drive_mode=%"
-  "c&speed=%d&angle=%d";
+  "drive?heartbeat_count=%d&is_operational=%d&sample_recieved=%d&pause_play=%"
+  "c&contianment_reset=%d";
 
 
 class mission_control
@@ -22,10 +22,8 @@ class mission_control
   public:
   struct mc_commands
   {
-    char mode = 'D';
-    int speed = 0;
-    int angle = 0;
-    int wheel_orientation = 0;
+    int pause = 0;
+    int reset = 0;
     int is_operational = 0;
     int heartbeat_count = 0;
     hal::status print(hal::serial* terminal)
@@ -33,16 +31,15 @@ class mission_control
       hal::print<128>(*terminal,
                       "HB: %d\n"
                       "IS_OP: %d\n"
-                      "Speed: %d\n"
-                      "Angle: %d\n"
-                      "Mode: %c\n"
-                      "Wheel Orientation: %d\n",
+                      "Sample_Recieved: %d\n"
+                      "Pause_Play: %d\n"
+                      "Contianment_Reset: %d\n"
                       heartbeat_count,
                       is_operational,
-                      speed,
-                      angle,
-                      mode,
-                      wheel_orientation);
+                      sample_recieved,
+                      pause_play,
+                      contianment_reset,
+                      );
       return hal::success();
     }
   };
