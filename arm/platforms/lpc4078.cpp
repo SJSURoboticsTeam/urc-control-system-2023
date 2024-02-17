@@ -95,8 +95,11 @@ hal::result<application_framework> initialize_platform()
     HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x145));
   static auto right_wrist_servo =
     HAL_CHECK(hal::make_servo(right_wrist_mc_x, 2.0_rpm));
-    
-  static auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c2,0b100'0000)); 
+  
+  hal::print(uart0, "hello\n");
+  
+  static auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c1,0b100'0000)); 
+  hal::print(uart0, "pca created\n");
   static auto pwm0 = pca9685.get_pwm_channel<0>(); 
   auto servo_settings = hal::soft::rc_servo::settings{
   .min_angle = 0.0_deg, //to be tested with end effector
@@ -184,6 +187,7 @@ static auto end_effector_servo =
   auto zero_a = HAL_CHECK(rotunda_mpu.read());
   static auto wrist_mpu =
     HAL_CHECK(hal::soft::inert_accelerometer::create(zero_a));
+  hal::print(uart0, "IMUs alive");
 
   HAL_CHECK(home(rotunda_mpu,
                  shoulder_mpu,

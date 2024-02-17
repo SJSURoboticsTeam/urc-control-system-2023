@@ -78,23 +78,28 @@ inline hal::status home(hal::accelerometer& p_rotunda_accelerometer,
       elbow_homed = true;
     }
 
+    hal::print<1024>(p_terminal, "%f \t %f\n", shoulder_speed, elbow_speed);
     if (!shoulder_homed) {
-      HAL_CHECK(p_shoulder_mc_x.velocity_control(shoulder_speed));
+      while(!p_shoulder_mc_x.velocity_control(shoulder_speed));
     } else {
-      HAL_CHECK(p_shoulder_mc_x.velocity_control(0));
+      while(!p_shoulder_mc_x.velocity_control(0));
     }
 
     if (!elbow_homed) {
-      HAL_CHECK(p_elbow_mc_x.velocity_control(elbow_speed));
+      while(!p_elbow_mc_x.velocity_control(elbow_speed));
     } else {
-      HAL_CHECK(p_elbow_mc_x.velocity_control(0));
+      while(!p_elbow_mc_x.velocity_control(0));
     }
-    hal::print<1024>(p_terminal, "%f \t %f\n", shoulder_speed, elbow_speed);
   }
 
   hal::print(p_terminal, "ZEROINGTHE MOTORS\n");
+
+  HAL_CHECK(set_zero(0x145, p_can));
+  HAL_CHECK(set_zero(0x144, p_can));
   HAL_CHECK(set_zero(0x143, p_can));
   HAL_CHECK(set_zero(0x142, p_can));
+  HAL_CHECK(set_zero(0x141, p_can));
+  
   hal::delay(p_clk, 1ms);
 
   hal::delay(p_clk, 1ms);
@@ -113,13 +118,19 @@ inline hal::status home(hal::accelerometer& p_rotunda_accelerometer,
   }
   hal::delay(p_clk, 1ms);
 
-  HAL_CHECK(reset_mc_x(0x142, p_can));
+
+  HAL_CHECK(reset_mc_x(0x145, p_can));
+  HAL_CHECK(reset_mc_x(0x144, p_can));
   HAL_CHECK(reset_mc_x(0x143, p_can));
+  HAL_CHECK(reset_mc_x(0x142, p_can));
+  HAL_CHECK(reset_mc_x(0x141, p_can));
   hal::delay(p_clk, 5s);
 
   hal::print(p_terminal, "MOVING TO 0 POSITION\n");
   constexpr int  number_of_retries = 2;
   for(int i = 0; i < number_of_retries; i ++){
+    HAL_CHECK(p_left_wrist_mc_x.position_control(0, 5));
+    HAL_CHECK(p_right_wrist_mc_x.position_control(0, 5));
     HAL_CHECK(p_shoulder_mc_x.position_control(0, 5));
     HAL_CHECK(p_elbow_mc_x.position_control(0, 5));
     hal::delay(p_clk, 10ms);

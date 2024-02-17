@@ -53,7 +53,7 @@ hal::result<application_framework> initialize_platform()
   // servos, we need to init all of the mc_x motors then call make_servo
   // in order to pass servos into the application
   
-  static auto i2c = HAL_CHECK(hal::lpc40::i2c::get(2)); //need to use pca here
+  static auto i2c = HAL_CHECK(hal::lpc40::i2c::get(1)); //need to use pca here
   hal::print(uart0, "i2c created\n");
   // auto pca_settings = hal::pca::pca9685::settings {
   //   .pin_disabled_state = hal::pca::pca9685::disabled_pin_state::set_high,
@@ -74,8 +74,7 @@ hal::result<application_framework> initialize_platform()
     HAL_CHECK(hal::soft::rc_servo::create(pwm0, servo_settings));
     // mission control object
   hal::print(uart0, "servo  created\n");
-
-
+  
   return application_framework{
     .end_effector = &end_effector_servo,
     // .pca = &pca9685,

@@ -22,10 +22,11 @@ return std::string_view(reinterpret_cast<const char*>(p_span.data()),
 hal::status application(sjsu::arm::application_framework& p_framework) {
     using namespace std::literals;
     auto& terminal = *p_framework.terminal;
-
     auto& end_effector_my = *p_framework.end_effector;
    
     auto& clock = *p_framework.clock;
+
+    hal::print(terminal, "APPLICATION INIT\n");
     std::array<hal::byte, 1024> received_buffer{}; //{100
 
     while (true) {
