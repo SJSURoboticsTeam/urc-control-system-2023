@@ -21,12 +21,14 @@
 #include <libhal/timeout.hpp>
 #include <libhal/pwm.hpp>
 #include <libhal-pca/pca9685.hpp>
+#include <libhal/input_pin.hpp>
 
 namespace sjsu::science {
 
 struct application_framework
 {
   hal::servo* rotunda_science;
+  hal::input_pin* magnet;
   hal::serial* terminal;
   // mission_control* mc;
   hal::steady_clock* clock;
