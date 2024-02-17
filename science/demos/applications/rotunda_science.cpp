@@ -40,22 +40,21 @@ namespace sjsu::science
         {
             hal::print<1024>(terminal, "LOW \n");
         }
-        
-        HAL_CHECK(rotunda_science_my.position(hal::degrees(360.0)));
 
         while (true) 
         {
             hal::delay(clock,std::chrono::milliseconds(2000));
 
-            if (magnet_my.level())
+            if (!magnet_my.level())
             {
                 hal::print<1024>(terminal,"2 slow 2 sad\n");
                 HAL_CHECK(rotunda_science_my.position(hal::degrees(360.0)));
             }
             else 
             {
+                hal::print<1024>(terminal,"2 fast 2 furious\n");
                 HAL_CHECK(rotunda_science_my.position(hal::degrees(180.0)));
             }
         }
-    }   
+    } 
 }
