@@ -87,7 +87,7 @@ namespace sjsu::science
       HAL_CHECK(hal::soft::rc_servo::create(pwm0, rotunda_science_settings));
     
     static auto in_pin2 =
-      HAL_CHECK(hal::lpc40::input_pin::get(1, 22, hal::input_pin::settings{}));
+      HAL_CHECK(hal::lpc40::input_pin::get(1, 22));
 
     return application_framework
     { .rotunda_science = &rotunda_science_servo,

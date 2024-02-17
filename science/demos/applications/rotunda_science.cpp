@@ -32,20 +32,22 @@ namespace sjsu::science
         auto& rotunda_science_my = *p_framework.rotunda_science;
         auto& magnet_my = *p_framework.magnet;
 
-        if (magnet_my.level())
-        {
-            hal::print<1024>(terminal, "HIGH \n");
-        }
-        else
-        {
-            hal::print<1024>(terminal, "LOW \n");
-        }
 
         while (true) 
         {
-            hal::delay(clock,std::chrono::milliseconds(2000));
+            hal::delay(clock,std::chrono::milliseconds(5));
 
-            if (!magnet_my.level())
+            if (magnet_my.level().value().state)
+            {
+                hal::print<1024>(terminal, "HIGH \n");
+            }
+
+            else
+            {
+                hal::print<1024>(terminal, "LOW \n");
+            }
+
+            if (!magnet_my.level().value().state)
             {
                 hal::print<1024>(terminal,"2 slow 2 sad\n");
                 HAL_CHECK(rotunda_science_my.position(hal::degrees(360.0)));
