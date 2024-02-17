@@ -69,6 +69,32 @@ public:
     return result;
   }
 
+  hal::status write_GPO(hal::byte channel,bool on)
+  {
+    using namespace std::literals;
+
+    if (channel > 7) {
+      return hal::new_error(
+        "Invalid channel\n");  // TODO: switch to an error number,
+                               // strings take up too much space
+    }
+    std::array<hal::byte, 3> selection_cmd_buffer = {
+      OpCodes::SingleRegisterWrite,    // Command to write data to a register
+      RegisterAddresses::CHANNEL_SEL,  // Register to select channel
+      channel
+    };
+
+    std::array<hal::byte, 3> set_gpio_cmd_buffer = { OpCodes::SingleRegisterWrite, PIN_CFG, 0x01};
+    std::array<hal::byte, 3> set_gpo_cmd_buffer = { OpCodes::SingleRegisterWrite, GPIO_CFG, 0x01};
+    std::array<hal::byte, 3> write_cmd_buffer = { OpCodes::SingleRegisterWrite, GPO_VALUE, on};
+
+    HAL_CHECK(hal::write(m_bus, m_mux_i2c_id, selection_cmd_buffer));
+    HAL_CHECK(hal::write(m_bus, m_mux_i2c_id, set_gpo_cmd_buffer));
+    HAL_CHECK(hal::write(m_bus, m_mux_i2c_id, write_cmd_buffer));
+
+    return hal::success();
+  };
+
 private:
   enum OpCodes
   {
