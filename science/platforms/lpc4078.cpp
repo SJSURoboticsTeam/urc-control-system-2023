@@ -21,6 +21,7 @@
 #include <libhal-lpc40/can.hpp>
 #include <libhal-lpc40/constants.hpp>
 #include <libhal-lpc40/i2c.hpp>
+#include <libhal-lpc40/can.hpp>
 #include <libhal-lpc40/input_pin.hpp>
 #include <libhal-lpc40/output_pin.hpp>
 #include <libhal-lpc40/pwm.hpp>
@@ -29,8 +30,10 @@
 #include <libhal-lpc40/uart.hpp>
 
 #include <libhal-util/units.hpp>
+#include "../platform-implementations/esp8266_mission_control.cpp"
+#include "../platform-implementations/helper.hpp"
 
-#include "applications/application.hpp"
+#include "../applications/application.hpp"
 namespace sjsu::science {
 hal::status initialize_processor()
 {
@@ -59,6 +62,65 @@ hal::result<application_framework> initialize_platform()
                                                        hal::serial::settings{
                                                          .baud_rate = 38400,
                                                        })));
+
+  static std::array<hal::byte, 8192> recieve_buffer1{};
+
+  static auto uart1 = HAL_CHECK((hal::lpc40::uart::get(1,
+                                                       recieve_buffer1,
+                                                       hal::serial::settings{
+                                                         .baud_rate = 115200,
+                                                       })));
+
+  static constexpr std::string_view ssid =
+    "TP-Link_FC30";  // change to wifi name that you are using
+  static constexpr std::string_view password =
+    "R0Bot1cs3250";  // change to wifi password you are using
+
+  // still need to decide what we want the static IP to be
+  static constexpr std::string_view ip = "192.168.0.216";
+  static constexpr auto socket_config = hal::esp8266::at::socket_config{
+    .type = hal::esp8266::at::socket_type::tcp,
+    .domain = "192.168.0.211",
+    .port = 5000,
+  };
+  HAL_CHECK(hal::write(uart0, "created Socket\n"));
+  static constexpr std::string_view get_request = "GET /science HTTP/1.1\r\n"
+                                                  "Host: 192.168.0.211:5000\r\n"
+                                                  "Keep-Alive: timeout=1000\r\n"
+                                                  "Connection: keep-alive\r\n"
+                                                  "\r\n";
+
+  static std::array<hal::byte, 2048> buffer{};
+  static auto helper = serial_mirror(uart1, uart0);
+
+  auto timeout = hal::create_timeout(counter, 10s);
+  static auto esp8266 = HAL_CHECK(hal::esp8266::at::create(helper, timeout));
+  auto mc_timeout = hal::create_timeout(counter, 10s);
+  static auto esp_mission_control =
+    sjsu::science::esp8266_mission_control::create(esp8266,
+                                               uart0,
+                                               ssid,
+                                               password,
+                                               socket_config,
+                                               ip,
+                                               mc_timeout,
+                                               buffer,
+                                               get_request);
+  while (esp_mission_control.has_error()) {
+    mc_timeout = hal::create_timeout(counter, 10s);
+    esp_mission_control =
+      sjsu::science::esp8266_mission_control::create(esp8266,
+                                                 uart0,
+                                                 ssid,
+                                                 password,
+                                                 socket_config,
+                                                 ip,
+                                                 mc_timeout,
+                                                 buffer,
+                                                 get_request);
+  }
+  static auto science_mission_control = esp_mission_control.value();
+
   // Don't think we need can for the science applications thus far
   //  hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
   //  auto& can = HAL_CHECK((hal::lpc40::can::get<2>(can_settings)));
@@ -84,10 +146,10 @@ hal::result<application_framework> initialize_platform()
                                                       }));
 
   static auto i2c = HAL_CHECK(hal::lpc40::i2c::get(2));
+  static auto can = HAL_CHECK(hal::lpc40::can::get(0));
 
   return application_framework{
-    .terminal = &uart0,
-    // .can = &can,
+    
     .in_pin0 = &in_pin0,
     .in_pin1 = &in_pin1,
     .in_pin2 = &in_pin2,
@@ -95,9 +157,12 @@ hal::result<application_framework> initialize_platform()
     .pwm_1_5 = &pwm_1_5,
     .adc_4 = &adc_4,
     .adc_5 = &adc_5,
-    .esp = &uart1,
-    .i2c = &i2c,
+
     .steady_clock = &counter,
+    .terminal = &uart0, //uart0 is terminal
+    .mc = &science_mission_control,
+    .can = &can,
+    .i2c = &i2c,
     .reset = []() { hal::cortex_m::reset(); },
   };
 };

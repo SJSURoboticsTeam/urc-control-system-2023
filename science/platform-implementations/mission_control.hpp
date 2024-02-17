@@ -22,10 +22,12 @@ class mission_control
   public:
   struct mc_commands
   {
-    int pause = 0;
-    int reset = 0;
-    int is_operational = 0;
     int heartbeat_count = 0;
+    int is_operational = 0;
+    int sample_recieved = 0;
+    int pause_play = 0;
+    int contianment_reset =0;
+
     hal::status print(hal::serial* terminal)
     {
       hal::print<128>(*terminal,
@@ -33,13 +35,12 @@ class mission_control
                       "IS_OP: %d\n"
                       "Sample_Recieved: %d\n"
                       "Pause_Play: %d\n"
-                      "Contianment_Reset: %d\n"
+                      "Contianment_Reset: %d\n",
                       heartbeat_count,
                       is_operational,
                       sample_recieved,
                       pause_play,
-                      contianment_reset,
-                      );
+                      contianment_reset);
       return hal::success();
     }
   };

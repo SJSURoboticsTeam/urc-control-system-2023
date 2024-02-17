@@ -23,25 +23,26 @@
 #include <libhal/serial.hpp>
 #include <libhal/steady_clock.hpp>
 
+#include "../platform-implementations/mission_control.hpp"
+
+
 namespace sjsu::science {
 struct application_framework
 {
-  hal::serial* terminal;
+  hal::input_pin* in_pin0;
+  hal::input_pin* in_pin1;
+  hal::input_pin* in_pin2;
+  hal::pwm* pwm_1_6;
+  hal::pwm* pwm_1_5;
+  hal::adc* adc_4;
+  hal::adc* adc_5;
 
-  // hal::can* can;
-  // hal::input_pin* in_pin0;
-  // hal::input_pin* in_pin1;
-  // hal::input_pin* in_pin2;
-  // hal::pwm* pwm_1_6;
-  // hal::pwm* pwm_1_5;
-  // hal::adc* adc_4;
-  // hal::adc* adc_5;
-  hal::serial* esp;
-  hal::i2c* i2c;
   hal::steady_clock* steady_clock;
-  hal::callback<void()> reset;
+  hal::serial* terminal;
   mission_control* mc;
-  science_state_machine* myScienceRobot;
+  hal::can* can;
+  hal::i2c* i2c;
+  hal::callback<void()> reset;
 };
 
 // Application function must be implemented by one of the compilation units
