@@ -89,12 +89,12 @@ hal::result<application_framework> initialize_platform()
   static auto left_wrist_mc_x =
     HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x144));
   static auto left_wrist_servo =
-    HAL_CHECK(hal::make_servo(left_wrist_mc_x, 2.0_rpm));
+    HAL_CHECK(hal::make_servo(left_wrist_mc_x, 5.0_rpm));
 
   static auto right_wrist_mc_x =
     HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x145));
   static auto right_wrist_servo =
-    HAL_CHECK(hal::make_servo(right_wrist_mc_x, 2.0_rpm));
+    HAL_CHECK(hal::make_servo(right_wrist_mc_x, 5.0_rpm));
   
   hal::print(uart0, "hello\n");
   
