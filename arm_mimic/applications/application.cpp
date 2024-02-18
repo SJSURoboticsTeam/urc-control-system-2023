@@ -29,6 +29,7 @@ hal::status application(application_framework& p_framework)
     const uint8_t N = 6;
     std::array<float, N> scrambled_results = {};
     std::array<float, N> results = {0};
+    char* strings[] = {"Rotunda", "Shoulder", "Elbow", "Wrist Pitch", "Wrist Roll", "EndE"};
     float true_degree;
     float max_volt = 4096;
     float max_deg = 360;
@@ -55,19 +56,36 @@ hal::status application(application_framework& p_framework)
 
         // memset(0, results, sizeof(results));
 
-        results[0] = scrambled_results[0];                     // ROTUNDA
-        results[1] = scrambled_results[1] - 346;
-        results[2] = scrambled_results[2] - 131;
-        results[3] = scrambled_results[5];
-        // results[4] = scrambled_results[3];
-        results[5] = scrambled_results[3];
+        results[0] = (8*(scrambled_results[0] - 178) - 50);                     // ROTUNDA
+        results[1] = -(scrambled_results[1] - 346);
+        results[2] = -(scrambled_results[2] - 155);
+        results[3] = (scrambled_results[5] - 180)/2;
+        results[4] = scrambled_results[4] - 180;
+        results[5] = scrambled_results[3]/3;
 
-        for(int i = 0; i < N; i++) {
-            hal::print<64>(uart0, "volt %d: %d ", i, (int)results[i]);
+        // HARD LOCKS
+        if(results[0] > 80) { // ROTUNDA
+            results[0] = 80;
+        } else if (results[0] < -80) {
+            results[0] = -80;
         }
-        hal::print<64>(uart0, "\n");
 
-        // HAL_CHECK(tla::send_data_to_mc(*p_framework.terminal, results));
+        if(results[2] > 85) {
+            results[0] = 85;
+        }
+
+        if(results[5] > 100) {
+            results[5] = 100;
+        }
+
+        // HARD STOP ELBOW 85
+
+        // for(int i = 0; i < N; i++) {
+        //     hal::print<64>(uart0, "%s:%d  ", strings[i], (int)results[i]);
+        // }
+        // hal::print<64>(uart0, "\n");
+
+        HAL_CHECK(tla::send_data_to_mc(*p_framework.terminal, results));
     }
 }
 }
