@@ -39,16 +39,6 @@ namespace sjsu::science
 
             if (magnet_my.level().value().state)
             {
-                hal::print<1024>(terminal, "HIGH \n");
-            }
-
-            else
-            {
-                hal::print<1024>(terminal, "LOW \n");
-            }
-
-            if (!magnet_my.level().value().state)
-            {
                 hal::print<1024>(terminal,"2 slow 2 sad\n");
                 HAL_CHECK(rotunda_science_my.position(hal::degrees(360.0)));
             }
