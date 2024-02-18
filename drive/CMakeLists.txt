@@ -17,22 +17,22 @@ find_package(libhal-rmd REQUIRED CONFIG)
 find_package(libhal-soft REQUIRED CONFIG)
 find_package(libhal-esp8266 REQUIRED CONFIG)
 
-add_executable(${PROJECT_NAME}
-    main.cpp
-    applications/application.cpp
-    platforms/${platform}.cpp)
-target_include_directories(${PROJECT_NAME} PUBLIC .)
-target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
-target_link_options(${PROJECT_NAME} PRIVATE
---oslib=semihost --crt0=minimal)
-target_link_libraries(${PROJECT_NAME} PRIVATE
-    libhal::${platform_library}
-    libhal::util
-    libhal::rmd
-    libhal::soft
-    libhal::esp8266)
-# target_link_options(${PROJECT_NAME} INTERFACE "LINKER:--no-warn-rwx-segments")
-libhal_post_build(${PROJECT_NAME})
+# add_executable(${PROJECT_NAME}
+#     main.cpp
+#     applications/application.cpp
+#     platforms/${platform}.cpp)
+# target_include_directories(${PROJECT_NAME} PUBLIC .)
+# target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
+# target_link_options(${PROJECT_NAME} PRIVATE
+# --oslib=semihost --crt0=minimal)
+# target_link_libraries(${PROJECT_NAME} PRIVATE
+#     libhal::${platform_library}
+#     libhal::util
+#     libhal::rmd
+#     libhal::soft
+#     libhal::esp8266)
+# # target_link_options(${PROJECT_NAME} INTERFACE "LINKER:--no-warn-rwx-segments")
+# libhal_post_build(${PROJECT_NAME})
 
 
 
@@ -40,7 +40,6 @@ add_executable(ackermann
     main.cpp
     applications/ackermann.cpp
     platform-implementations/ackermann_steering.cpp
-    platform-implementations/vector_2.cpp
     platforms/${platform}.cpp)
 target_include_directories(ackermann PUBLIC .)
 target_compile_features(ackermann PRIVATE cxx_std_20)

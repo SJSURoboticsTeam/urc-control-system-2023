@@ -52,16 +52,18 @@ hal::result<application_framework> initialize_platform()
   // Serial
   static std::array<hal::byte, 1024> recieve_buffer0{};
   static auto uart0 = HAL_CHECK((hal::lpc40::uart::get(0, recieve_buffer0, hal::serial::settings{
-    .baud_rate = 38400,
+    .baud_rate = 115200,
   })));
   // servos, we need to init all of the mc_x motors then call make_servo 
   // in order to pass servos into the application
+  hal::print(uart0, "Initializing CAN\n");
   static hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
   static auto can = HAL_CHECK((hal::lpc40::can::get(2, can_settings)));
 
   static auto can_router = hal::can_router::create(can).value();
   // left leg
 
+  hal::print(uart0, "Initializing Left Leg\n");
   static auto left_leg_steer_drc = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 6.0, 0x141));
   static auto left_leg_drc_servo = HAL_CHECK(hal::make_servo(left_leg_steer_drc, 5.0_rpm));
   static auto left_leg_drc_steer_speed_sensor = HAL_CHECK(make_speed_sensor(left_leg_steer_drc));
@@ -78,7 +80,7 @@ hal::result<application_framework> initialize_platform()
   // static auto left_leg_drc_offset_servo  = HAL_CHECK(print_servo::create(uart0));
   // static auto left_leg_drc_motor = HAL_CHECK(print_motor::create(uart0));
 
-
+  hal::print(uart0, "Initializing Right Leg\n");
   // right leg
   static auto right_leg_steer_drc = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 6.0, 0x143));
   static auto right_leg_drc_servo = HAL_CHECK(hal::make_servo(right_leg_steer_drc, 5.0_rpm));
@@ -95,7 +97,7 @@ hal::result<application_framework> initialize_platform()
   // static auto right_leg_drc_offset_servo  = HAL_CHECK(print_servo::create(uart0));
   // static auto right_leg_drc_motor = HAL_CHECK(print_motor::create(uart0));
 
-
+  hal::print(uart0, "Initializing Back Leg\n");
   // back leg
   static auto back_leg_steer_drc = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 6.0, 0x145));
   static auto back_leg_drc_servo = HAL_CHECK(hal::make_servo(back_leg_steer_drc, 5.0_rpm));
@@ -133,8 +135,16 @@ hal::result<application_framework> initialize_platform()
         &back_home,
         // &extra_home,
     };
-
+  hal::print(uart0, "Begin homing\n");
   HAL_CHECK(home(homing_structs, counter, &uart0));
+  hal::print(uart0, "Finished homing\n");
+  left_leg_drc_offset_servo.set_offset(left_leg_drc_offset_servo.get_offset() - 37);
+  right_leg_drc_offset_servo.set_offset(right_leg_drc_offset_servo.get_offset() - 199.5);
+  back_leg_drc_offset_servo.set_offset(back_leg_drc_offset_servo.get_offset() - 117);
+
+  HAL_CHECK(left_leg_drc_offset_servo.position(0));
+  HAL_CHECK(right_leg_drc_offset_servo.position(0));
+  HAL_CHECK(back_leg_drc_offset_servo.position(0));
   // hal::print<100>(uart0, "right offset: %f", right_home.servo->get_offset());
   // hal::print<100>(uart0, "left offset: %f", left_home.servo->get_offset());
   // hal::print<100>(uart0, "back offset: %f", back_home.servo->get_offset());
@@ -163,14 +173,13 @@ hal::result<application_framework> initialize_platform()
 // 
 
 
-  static std::array<vector2, number_of_legs> wheel_locations = {
-      vector2::from_bearing(1, -30 * std::numbers::pi / 180),
-      vector2::from_bearing(1, 30 * std::numbers::pi / 180),
+    static std::array<vector2, 3> wheel_locations = {
+      vector2::from_bearing(1, -60 * std::numbers::pi / 180),
+      vector2::from_bearing(1, 60 * std::numbers::pi / 180),
       vector2::from_bearing(1, std::numbers::pi),
-      // NO IDEA WHERE THE 4th LEG IS
-  };
-
-  static ackermann_steering steering(wheel_locations, 2_Rpm, 2_Rpm); // WE ARE UNABLE TO USE MAXIMUM ANGULAR SPEED UNLESS WE HAVE THE CORRECT SCALE FACTORS SET. 
+    };
+    static std::array<wheel_setting, 3> _wheel_settings;
+    static ackermann_steering steering(wheel_locations, _wheel_settings, 2, 2);// WE ARE UNABLE TO USE MAXIMUM ANGULAR SPEED UNLESS WE HAVE THE CORRECT SCALE FACTORS SET. 
 
   static std::array<leg*, number_of_legs> legs = {
     &left_leg, 
@@ -187,41 +196,49 @@ hal::result<application_framework> initialize_platform()
       .baud_rate = 115200,
     })));
 
-  static constexpr std::string_view ssid = "TP-Link_FC30"; //change to wifi name that you are using
-  static constexpr std::string_view password = "R0Bot1cs3250";     // change to wifi password you are using
+  // static constexpr std::string_view ssid = "TP-Link_FC30"; //change to wifi name that you are using
+  // static constexpr std::string_view password = "R0Bot1cs3250";     // change to wifi password you are using
 
-  // still need to decide what we want the static IP to be
-  static constexpr std::string_view ip = "";
-  static constexpr auto socket_config = hal::esp8266::at::socket_config{
-    .type = hal::esp8266::at::socket_type::tcp,
-    .domain = "192.168.0.211",
-    .port = 5000,
-  };
-  HAL_CHECK(hal::write(uart0, "created Socket\n"));
-  static constexpr std::string_view get_request = "GET /drive HTTP/1.1\r\n"
-                                "Host: 192.168.0.211:5000\r\n"
-                                "\r\n";
+  // hal::print(uart0, "Creating socket\n");
+  // // still need to decide what we want the static IP to be
+  // static constexpr std::string_view ip = "";
+  // static constexpr auto socket_config = hal::esp8266::at::socket_config{
+  //   .type = hal::esp8266::at::socket_type::tcp,
+  //   .domain = "192.168.0.211",
+  //   .port = 5000,
+  // };
+  
+  // hal::print(uart0, "created Socket\n");
+  // static constexpr std::string_view get_request = "GET /drive HTTP/1.1\r\n"
+  //                               "Host: 192.168.0.211:5000\r\n"
+  //                               "\r\n";
 
-  static std::array<hal::byte, 1024> buffer{};
-  // static auto helper = serial_mirror(uart1, uart0);
+  // static std::array<hal::byte, 1024> buffer{};
+  // // static auto helper = serial_mirror(uart1, uart0);
 
-  auto timeout = hal::create_timeout(counter, 10s);
-  static auto esp8266 = HAL_CHECK(hal::esp8266::at::create(uart1, timeout));
-  auto mc_timeout = hal::create_timeout(counter, 10s);
-  static auto esp_mission_control = sjsu::drive::esp8266_mission_control::create(esp8266, 
-                                  uart0, ssid, password, socket_config, 
-                                  ip, mc_timeout, buffer, get_request);
-  while(esp_mission_control.has_error()) {
-    mc_timeout = hal::create_timeout(counter, 30s);
-    esp_mission_control = sjsu::drive::esp8266_mission_control::create(esp8266, 
-                                    uart0, ssid, password, socket_config, 
-                                    ip, mc_timeout, buffer, get_request);
-  }
-  static auto drive_mission_control = esp_mission_control.value();
+  // auto timeout = hal::create_timeout(counter, 10s);
+  // static auto esp8266 = HAL_CHECK(hal::esp8266::at::create(uart1, timeout));
+  // auto mc_timeout = hal::create_timeout(counter, 10s);
+  // static auto esp_mission_control = sjsu::drive::esp8266_mission_control::create(esp8266, 
+  //                                 uart0, ssid, password, socket_config, 
+  //                                 ip, mc_timeout, buffer, get_request);
+  // int i = 0;
+  // while(esp_mission_control.has_error()) {
+  //   mc_timeout = hal::create_timeout(counter, 30s);
+  //   hal::print<128>(uart0, "Pinging the server: %d\n", i);
+  //   i++;
+  //   esp_mission_control = sjsu::drive::esp8266_mission_control::create(esp8266, 
+  //                                   uart0, ssid, password, socket_config, 
+  //                                   ip, mc_timeout, buffer, get_request);
+  // }
+  // hal::print(uart0, "Found Server\n");
+  // static auto drive_mission_control = esp_mission_control.value();
 
-  return application_framework{.legs = legs,
-
-                              .mc = &drive_mission_control,
+  return application_framework{
+                              .steering = &steering,
+                              .legs = legs,
+                              
+                              // .mc = &drive_mission_control,
                               
                               .terminal = &uart0,
                               .clock = &counter,
