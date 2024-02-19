@@ -26,6 +26,13 @@ class mission_control
     int speed = 0;
     int angle = 0;
     int wheel_orientation = 0;
+
+    int message_count = 0;
+    float wheel_speed = 0.0;
+    float steering_angle = 0.0;
+    float wheel_heading = 0.0;
+
+
     int is_operational = 0;
     int heartbeat_count = 0;
     hal::status print(hal::serial* terminal)

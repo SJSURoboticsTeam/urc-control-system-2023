@@ -163,22 +163,47 @@ private:
 
     auto result = to_string_view(m_command_buffer);
     static constexpr int expected_number_of_arguments = 6;
-    mc_commands commands;
+    // mc_commands commands;
 
     int actual_arguments = sscanf(result.data(),
                                   kResponseBodyFormat,
-                                  &commands.heartbeat_count,
-                                  &commands.is_operational,
-                                  &commands.wheel_orientation,
-                                  &commands.mode,
-                                  &commands.speed,
-                                  &commands.angle);
+                                  &m_commands.heartbeat_count,
+                                  &m_commands.is_operational,
+                                  &m_commands.wheel_orientation,
+                                  &m_commands.mode,
+                                  &m_commands.speed,
+                                  &m_commands.angle);
+
     if (actual_arguments != expected_number_of_arguments) {
       hal::print<200>(*m_console,
                       "Received %d arguments, expected %d\n",
                       actual_arguments,
                       expected_number_of_arguments);
     }
+
+    // A hack to get the current mission control to work with the new steering.
+    m_commands.wheel_speed = m_commands.speed;
+    switch(m_commands.mode) {
+    case 'D':
+      // In drive mode, angle refers to steering angle.
+      m_commands.steering_angle = m_commands.angle;
+      m_commands.wheel_heading = 0.0;
+      break;
+    case 'S':
+      // In spin mode, wheel heading should not change and steering angle should be 90
+      m_commands.steering_angle = 90.0;
+      m_commands.wheel_heading = 0.0; // Set it to 0 for now.
+      break;
+    case 'T':
+      // In translate mode, angle refers to wheel heading.
+      m_commands.wheel_heading = m_commands.wheel_angle;
+      m_commands.steering_angle = 0.0;
+      break;
+    }
+
+    // Increment the message count.
+    m_commands.message_count ++; 
+
     // hal::print<200>(*m_console,
     //                   "HB: %d\t, IO %d\t, WO: %d\t, DM: %c\t, Speed: %d\n, Angle: %d\n",
     //                   commands.heartbeat_count,
@@ -188,7 +213,7 @@ private:
     //                   commands.speed,
     //                   commands.angle
     //                   );
-    m_commands = commands;
+    // m_commands = commands;
   }
 
 

@@ -17,47 +17,53 @@ struct frame_parser {
         AFTER_ESCAPE,
     };
 
-    parser_state state = WAIT_START_OF_FRAME;
+    enum frame_result {
+        FRAME_FINISHED,
+        FRAME_UNFINISHED,
+        FRAME_ERROR,
+    };
+
+    parser_state state = parser_state::WAIT_START_OF_FRAME;
 
     constexpr static std::size_t max_frame_size = 64;
 
     std::array<std::uint8_t, max_frame_size> frame;
     std::size_t i = 0;
 
-    bool process_byte(std::uint8_t byte) {
+    frame_result process_byte(std::uint8_t byte) {
         switch(state) {
-        case WAIT_START_OF_FRAME:
+        case parser_state::WAIT_START_OF_FRAME:
             if(byte == frame_bytes::START_OF_FRAME) {
-                state = PARSING_MESSAGE;
+                state = parser_state::PARSING_MESSAGE;
                 i = 0;
             }
-            return false;
-        case PARSING_MESSAGE:
+            return frame_result::FRAME_UNFINISHED;
+        case parser_state::PARSING_MESSAGE:
             if(byte == frame_bytes::ESCAPE) {
-                state = AFTER_ESCAPE;
-                return false;
+                state = parser_state::AFTER_ESCAPE;
+                return frame_result::FRAME_UNFINISHED;
             }else if(byte == frame_bytes::END_OF_FRAME) {
-                state = WAIT_START_OF_FRAME;
-                return true;
+                state = parser_state::WAIT_START_OF_FRAME;
+                return frame_result::FRAME_FINISHED;
             }
             if(i == max_frame_size) {
-                state = WAIT_START_OF_FRAME;
-                return false;
+                state = parser_state::WAIT_START_OF_FRAME;
+                return frame_result::FRAME_ERROR;
             }
             frame[i] = byte;
             i++;
-            return false;
-        case AFTER_ESCAPE:
-            state = PARSING_MESSAGE;
+            return frame_result::FRAME_UNFINISHED;
+        case parser_state::AFTER_ESCAPE:
+            state = parser_state::PARSING_MESSAGE;
             if(i == max_frame_size) {
-                state = WAIT_START_OF_FRAME;
-                return false;
+                state = parser_state::WAIT_START_OF_FRAME;
+                return frame_result::FRAME_ERROR;
             }
             frame[i] = byte;
             i ++;
-            return false;
+            return frame_result::FRAME_UNFINISHED;
         };
-        return false;
+        return frame::FRAME_ERROR;
     }
 
     std::span<std::uint8_t> get_frame() {
