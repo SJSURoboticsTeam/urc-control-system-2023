@@ -182,7 +182,7 @@ private:
     }
 
     // A hack to get the current mission control to work with the new steering.
-    m_commands.wheel_speed = m_commands.speed;
+    m_commands.wheel_speed = static_cast<float>(m_commands.speed);
     switch(m_commands.mode) {
     case 'D':
       // In drive mode, angle refers to steering angle.
@@ -196,7 +196,7 @@ private:
       break;
     case 'T':
       // In translate mode, angle refers to wheel heading.
-      m_commands.wheel_heading = m_commands.wheel_angle;
+      m_commands.wheel_heading = m_commands.angle;
       m_commands.steering_angle = 0.0;
       break;
     }

@@ -1,6 +1,7 @@
 #include <libhal-util/steady_clock.hpp>
 #include <libhal-util/serial.hpp>
 #include "application.hpp"
+#include "../platform-implementations/calibration_settings.hpp"
 // #include "../platform-implementations/serial_frame.hpp"
 namespace sjsu::drive {
 
@@ -15,29 +16,31 @@ void print_wheel_settings(hal::serial& serial, std::span<wheel_setting> settings
 }
 
 hal::status set_wheel_state(std::span<leg*> legs, std::span<wheel_setting> settings) {
-  HAL_CHECK(legs[0]->steer->position(wheel_settings[0].angle));
-  HAL_CHECK(legs[1]->steer->position(wheel_settings[1].angle));
-  HAL_CHECK(legs[2]->steer->position(wheel_settings[2].angle));
-  HAL_CHECK(legs[0]->propulsion->power(-wheel_settings[0].wheel_speed));
-  HAL_CHECK(legs[1]->propulsion->power(wheel_settings[1].wheel_speed));
-  HAL_CHECK(legs[2]->propulsion->power(wheel_settings[2].wheel_speed));
+  HAL_CHECK(legs[0]->steer->position(settings[0].angle * angle_correction_factor));
+  HAL_CHECK(legs[1]->steer->position(settings[1].angle * angle_correction_factor));
+  HAL_CHECK(legs[2]->steer->position(settings[2].angle * angle_correction_factor));
+  HAL_CHECK(legs[0]->propulsion->power(-settings[2].wheel_speed));
+  HAL_CHECK(legs[1]->propulsion->power(settings[1].wheel_speed));
+  HAL_CHECK(legs[2]->propulsion->power(settings[0].wheel_speed));
+
+  return hal::success();
 }
 
 void test_steering_math(hal::serial& serial, ackermann_steering steering) {
-  wheel_settings = steering.calculate_wheel_settings(std::numeric_limits<float>::infinity(), 20, 1);
-  print_wheel_settings(terminal, wheel_setting);
+  auto wheel_settings = steering.calculate_wheel_settings(std::numeric_limits<float>::infinity(), 20, 1);
+  print_wheel_settings(serial, wheel_settings);
 
   wheel_settings = steering.calculate_wheel_settings(std::numeric_limits<float>::infinity(), -120, 1);
-  print_wheel_settings(terminal, wheel_setting);
+  print_wheel_settings(serial, wheel_settings);
   
   wheel_settings = steering.calculate_wheel_settings(0, 0, 1);
-  print_wheel_settings(terminal, wheel_setting);
+  print_wheel_settings(serial, wheel_settings);
   
   wheel_settings = steering.calculate_wheel_settings(1/ std::tan(60 * std::numbers::pi / 180), 0, 0.1);
-  print_wheel_settings(terminal, wheel_setting);
+  print_wheel_settings(serial, wheel_settings);
   
   wheel_settings = steering.calculate_wheel_settings(1/ std::tan(35.4 * std::numbers::pi / 180), 44.7, 0.5);
-  print_wheel_settings(terminal, wheel_setting);
+  print_wheel_settings(serial, wheel_settings);
 }
 
 
@@ -60,23 +63,26 @@ hal::status application(application_framework& p_framework)
   // auto loop_count = 0;
 
 
-  // Test Steering math for debug purposes.
-  hal::print(serial, "Testing Steering Math...\n");
-  test_steering_math(serial, steering);
 
+  // Test Steering math for debug purposes.
+  hal::print(terminal, "Testing Steering Math...\n");
+  test_steering_math(terminal, steering);
+
+  // auto wheel_settings = steering.calculate_wheel_settings(0, 0, 0);
+  // set_wheel_state(legs, wheel_settings);
   // Stop here to check the steering math.
-  // debug_stop(serial);
+  // debug_stop(terminal);
   
 
   HAL_CHECK(hal::write(terminal, "Starting control loop...\n"));
   
-  float kP_steering_angle = 0.1;
-  float kP_wheel_heading = 0.1;
-  float kP_wheel_speed = 0.1;
+  float kP_steering_angle = 1;
+  float kP_wheel_heading = 10;
+  float kP_wheel_speed = 20;
 
   float max_d_steering_angle = 20;
-  float max_d_wheel_heading = 30;
-  float max_d_wheel_speed = 10;
+  float max_d_wheel_heading = 360;
+  float max_d_wheel_speed = 50;
 
   float current_steering_angle = 0.0;
   float current_wheel_heading = 0.0;
@@ -86,12 +92,17 @@ hal::status application(application_framework& p_framework)
   float target_wheel_heading = 0.0;
   float target_wheel_speed = 0.0;
 
-  int loop_count = 0;
-  int then = clock.uptime();
+  // auto wheel_settings = steering.calculate_wheel_settings(1/ std::tan(60 * std::numbers::pi / 180), 0, 0.1);
+  // set_wheel_state(legs, wheel_settings);
+  // debug_stop(terminal);
+  float next_update = static_cast<float>(clock.uptime().ticks) / clock.frequency().operating_frequency + 5;
+  float then = static_cast<float>(clock.uptime().ticks) / clock.frequency().operating_frequency;
+
+  mission_control::mc_commands commands;
   while (true) {
     // Calculate time since last frame. Use this for physics.
-    int now = clock.uptime();
-    float dt = (now - then) / clock.frequency();
+    float now = static_cast<float>(clock.uptime().ticks) / clock.frequency().operating_frequency;
+    float dt = now - then;
     then = now;
     
     // A steering configuration is defined by 2 numbers: Turning Radius and Turning Heading.
@@ -117,65 +128,61 @@ hal::status application(application_framework& p_framework)
     //    The steering is completely continuous, so moving from 0 -> 90 -> 180 turning angles will result in the rover
     //    correctly moving from forwards to spin to reverse.
 
-    if(loop_count >= 10) {
-      auto timeout = hal::create_timeout(clock, 1s);
-      auto commands = mission_control.get_command(timeout).value();
+    if(next_update < now) {
+      auto timeout = hal::create_timeout(clock, 100ms);
+      commands = mission_control.get_command(timeout).value();
+      float mission_control_dt = now - next_update;
       
-      loop_count=0;
+      if(commands.mode == 'T') {
+        // target_wheel_heading += commands.wheel_heading * mission_control_dt;
+        target_steering_angle = commands.steering_angle;
+      }else {
+        target_steering_angle = commands.steering_angle;
+        target_wheel_heading = commands.wheel_heading;
+      }
+      target_wheel_speed = commands.wheel_speed;
+      // hal::print<128>(terminal, "\nsped : %f, %d\n", commands.wheel_speed, commands.speed);
+
+      // target_steering_angle *= -1;
+      next_update = now + 0.1;
+      // loop_count=0;
     }
-    loop_count ++;
+    // loop_count ++;
 
     float d_steering_angle = (target_steering_angle - current_steering_angle) * kP_steering_angle;
     float d_wheel_heading = (target_wheel_heading - current_wheel_heading) * kP_wheel_heading;
     float d_wheel_speed = (target_wheel_speed - current_wheel_speed) * kP_wheel_speed;
-
+    if(commands.mode == 'T') {
+      d_wheel_heading = static_cast<float>(commands.angle);
+    }
     d_steering_angle = std::clamp(d_steering_angle, -max_d_steering_angle, max_d_steering_angle);
     d_wheel_heading = std::clamp(d_wheel_heading, -max_d_wheel_heading, max_d_wheel_heading);
     d_wheel_speed = std::clamp(d_wheel_speed, -max_d_wheel_speed, max_d_wheel_speed);
 
     current_steering_angle += d_steering_angle * dt;
     current_wheel_heading += d_wheel_heading * dt;
-    current_wheel_speed += max_d_wheel_speed * dt;
-
+    current_wheel_speed += d_wheel_speed * dt;
+    // hal::print<64>(terminal, "dt: %f\n", dt);
+    // hal::print<64>(terminal, "| dt: %.4f s | steering_angle: %4.2f° | speed: %4.2f rpm ", dt, current_steering_angle, current_wheel_speed);
 
     float turning_radius = 1 / std::tan(current_steering_angle * std::numbers::pi / 180);
-    auto wheel_settings = steering.calculate_wheel_settings(turning_radius, current_wheel_heading, current_wheel_heading);
-    print_wheel_settings(terminal, wheel_setting);
-
-    HAL_CHECK(legs[0]->steer->position(wheel_settings[0].angle));
-    HAL_CHECK(legs[1]->steer->position(wheel_settings[1].angle));
-    HAL_CHECK(legs[2]->steer->position(wheel_settings[2].angle));
-
-    hal::delay(clock, 1ms);
-  }
-
-
-
-  // frame_parser parser;  
-
-  // while (true) {
+    auto wheel_settings = steering.calculate_wheel_settings(turning_radius, current_wheel_heading, current_wheel_speed / 100);
+    // print_wheel_settings(terminal, wheel_settings);
     
-  //   std::array<hal::byte, 64> buffer;
-  //   auto read_result = HAL_CHECK(terminal.read(buffer));
+    set_wheel_state(legs, wheel_settings);
+    
+    // HAL_CHECK(legs[0]->steer->position(wheel_settings[0].angle * angle_correction_factor));
+    // HAL_CHECK(legs[1]->steer->position(wheel_settings[1].angle * angle_correction_factor));
+    // HAL_CHECK(legs[2]->steer->position(wheel_settings[2].angle * angle_correction_factor));
+    // HAL_CHECK(legs[0]->steer->position(180 * 1.3625));
+    // HAL_CHECK(legs[1]->steer->position(180 * 1.3625));
+    // HAL_CHECK(legs[2]->steer->position(180 * 1.3625)); // 1.35 1.375
+    // HAL_CHECK(legs[0]->steer->position(180));
+    // HAL_CHECK(legs[1]->steer->position(180));
+    // HAL_CHECK(legs[2]->steer->position(180)); // 1.35 1.4
 
-  //   for(auto i = read_result.data.begin(); i != read_result.data.end(); i++) {
-  //     bool frame_finish = parser.process_byte(*i);
-  //     if(frame_finish) {
-  //       auto frame = parser.get_frame();
-  //       // Do frame parsing.
-  //       hal::print<32>(terminal, "Recieved frame: %s\n", frame);
-  //     }
-  //   }
-  //   // Print message
-  //   hal::print(terminal, "Hello, World\n");
-
-  //   // Toggle LED
-  //   // HAL_CHECK(led.level(true));
-  //   hal::delay(clock, 500ms);
-
-  //   // HAL_CHECK(led.level(false));
-  //   // hal::delay(clock, 500ms);
-  // }
+    // hal::delay(clock, 1ms);
+  }
 
   return hal::success();
 }
