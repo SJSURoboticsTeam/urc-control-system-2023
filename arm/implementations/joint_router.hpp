@@ -9,6 +9,14 @@ static constexpr float shoulder_gear_ratio = 65.0f/30.0f;
 static constexpr float elbow_gear_ratio = 40.0f/30.0f;
 
 namespace sjsu::arm {
+  struct arm_state {
+    float rotunda = 0.0;
+    float shoulder = 0.0;
+    float elbow = 0.0;
+    float wrist_roll = 0.0;
+    float wrist_pitch = 0.0;
+    float end_effector = 0.0;
+  };
 class joint_router
 {
 public:
@@ -33,6 +41,23 @@ public:
     , m_elbow_accelerometer(p_elbow_accelerometer)
     , m_wrist_accelerometer(p_wrist_accelerometer)
   {
+  }
+
+  hal::status move(arm_state state) {
+
+    HAL_CHECK(m_rotunda_servo.position((state.rotunda)));
+    HAL_CHECK(m_shoulder_servo.position((-state.shoulder * shoulder_gear_ratio)));
+    HAL_CHECK(m_elbow_servo.position((state.elbow * elbow_gear_ratio)));
+
+    int left_wrist_angle = (state.wrist_roll) +
+                           (state.wrist_pitch);
+    HAL_CHECK(m_left_wrist_servo.position((left_wrist_angle)));
+
+    int right_wrist_angle = (state.wrist_roll) -
+                            (state.wrist_pitch);
+    HAL_CHECK(m_right_wrist_servo.position((right_wrist_angle)));
+
+    return hal::success();
   }
 
   hal::result<mission_control::mc_commands> move(

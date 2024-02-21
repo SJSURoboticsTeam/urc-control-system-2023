@@ -7,7 +7,7 @@
 #include "../implementations/speed_control.hpp"
 
 #include "application.hpp"
-
+#include "../platform-implementations/constants.hpp"
 namespace sjsu::arm {
 
 hal::status application(sjsu::arm::application_framework& p_framework)
@@ -54,19 +54,69 @@ hal::status application(sjsu::arm::application_framework& p_framework)
   HAL_CHECK(hal::write(terminal, "Starting control loop..."));
   hal::delay(clock, 1000ms);
 
+  arm_state current_state;
+  arm_state target_state;
+  arm_state d_state;
+  arm_state kP;
+  kP.rotunda = 1;
+  kP.end_effector = 1;
+  kP.elbow = 1;
+  kP.wrist_pitch = 1;
+  kP.wrist_roll = 1;
+  kP.shoulder = 1;
+
+  arm_state max_speed;
+  max_speed.rotunda = max_speed.wrist_roll = max_speed.wrist_pitch = max_speed.elbow = max_speed.shoulder = max_speed.end_effector = 360;
+
+  float next_update = static_cast<float>(clock.uptime().ticks) / clock.frequency().operating_frequency + 5;
+  float then = static_cast<float>(clock.uptime().ticks) / clock.frequency().operating_frequency;
   while (true) {
-    if (loop_count == 10) {
+    // Calculate time since last frame. Use this for physics.
+    float now = static_cast<float>(clock.uptime().ticks) / clock.frequency().operating_frequency;
+    float dt = now - then;
+    then = now;
+
+    if(next_update < now) {
       auto timeout = hal::create_timeout(clock, 100ms);
       commands = mission_control.get_command(timeout).value();
-      loop_count = 0;
+      
+      target_state.elbow = static_cast<float>(commands.elbow_angle) / precision_multiplier;
+      target_state.shoulder = static_cast<float>(commands.shoulder_angle) / precision_multiplier;
+      target_state.rotunda = static_cast<float>(commands.rotunda_angle) / precision_multiplier;
+      target_state.wrist_pitch = static_cast<float>(commands.wrist_pitch_angle) / precision_multiplier;
+      target_state.wrist_roll = static_cast<float>(commands.wrist_roll_angle) / precision_multiplier;
+      target_state.end_effector = static_cast<float>(commands.rr9_angle);
+      next_update = now + 0.1;
     }
-    loop_count++;
-    commands = validate_commands(commands);
+    // commands = validate_commands(commands);
     // commands = speed_control.lerp(commands);
     // HAL_CHECK(hal::write(terminal, "\n\n"));
-    commands.print(&terminal);
-    arm.move(commands);
-    hal::delay(clock, 8ms);
+    // commands.print(&terminal);
+    d_state.rotunda = (target_state.rotunda - current_state.rotunda) * kP.rotunda;
+    d_state.rotunda = std::clamp(d_state.rotunda, -max_speed.rotunda, max_speed.rotunda);
+    current_state.rotunda += d_state.rotunda * dt;
+
+    d_state.elbow = (target_state.elbow - current_state.elbow) * kP.elbow;
+    d_state.elbow = std::clamp(d_state.elbow, -max_speed.elbow, max_speed.elbow);
+    current_state.elbow += d_state.elbow * dt;
+
+    d_state.shoulder = (target_state.shoulder - current_state.shoulder) * kP.shoulder;
+    d_state.shoulder = std::clamp(d_state.shoulder, -max_speed.shoulder, max_speed.shoulder);
+    current_state.shoulder += d_state.shoulder * dt;
+    
+    d_state.wrist_pitch = (target_state.wrist_pitch - current_state.wrist_pitch) * kP.wrist_pitch;
+    d_state.wrist_pitch = std::clamp(d_state.wrist_pitch, -max_speed.wrist_pitch, max_speed.wrist_pitch);
+    current_state.wrist_pitch += d_state.wrist_pitch * dt;
+
+    d_state.wrist_roll = (target_state.wrist_roll - current_state.wrist_roll) * kP.wrist_roll;
+    d_state.wrist_roll = std::clamp(d_state.wrist_roll, -max_speed.wrist_roll, max_speed.wrist_roll);
+    current_state.wrist_roll += d_state.wrist_roll * dt;
+
+    current_state.end_effector = target_state.end_effector;
+    end_effector.position(current_state.end_effector);
+
+    arm.move(current_state);
+    // hal::delay(clock, 8ms);
   }
 
   return hal::success();

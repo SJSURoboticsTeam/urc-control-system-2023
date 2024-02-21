@@ -1,0 +1,100 @@
+#include <libhal-armcortex/dwt_counter.hpp>
+#include <libhal-armcortex/startup.hpp>
+#include <libhal-armcortex/system_control.hpp>
+
+#include <libhal-lpc40/can.hpp>
+#include <libhal-lpc40/clock.hpp>
+#include <libhal-lpc40/constants.hpp>
+#include <libhal-lpc40/i2c.hpp>
+#include <libhal-lpc40/uart.hpp>
+
+#include <libhal-util/steady_clock.hpp>
+#include <libhal/steady_clock.hpp>
+#include <libhal/can.hpp>
+
+#include <libhal-mpu/mpu6050.hpp>
+#include <libhal-soft/inert_drivers/inert_accelerometer.hpp>
+
+#include "../../platform-implementations/home.hpp"
+#include "../../platform-implementations/offset_servo.hpp"
+#include <libhal-rmd/mc_x.hpp>
+#include <algorithm>
+
+#include "../applications/application.hpp"
+#include "../helpers/print_offsets.hpp"
+
+namespace sjsu::arm {
+hal::status initialize_processor()
+{
+  hal::cortex_m::initialize_data_section();
+  hal::cortex_m::initialize_floating_point_unit();
+
+  return hal::success();
+}
+
+hal::result<sjsu::arm::application_framework> initialize_platform()
+{
+  using namespace std::chrono_literals;
+  using namespace hal::literals;
+  // Set the MCU to the maximum clock speed
+  HAL_CHECK(hal::lpc40::clock::maximum(12.0_MHz));
+
+  auto& clock = hal::lpc40::clock::get();
+  auto cpu_frequency = clock.get_frequency(hal::lpc40::peripheral::cpu);
+  static hal::cortex_m::dwt_counter counter(cpu_frequency);
+
+  static std::array<hal::byte, 64> receive_buffer{};
+  static auto uart0 = HAL_CHECK((hal::lpc40::uart::get(0,
+                                                       receive_buffer,
+                                                       hal::serial::settings{
+                                                         .baud_rate = 512000,
+                                                       })));
+
+  static auto i2c1 = HAL_CHECK((hal::lpc40::i2c::get(1,
+                                                     hal::i2c::settings{
+                                                       .clock_rate = 100.0_kHz,
+                                                     })));
+
+  static auto i2c2 = HAL_CHECK((hal::lpc40::i2c::get(2,
+                                                     hal::i2c::settings{
+                                                       .clock_rate = 100.0_kHz,
+                                                     })));
+
+  hal::print(uart0, "MPU INIT\n");
+  static auto elbow_mpu = HAL_CHECK(
+    hal::mpu::mpu6050::create(i2c1, hal::mpu::mpu6050::address_ground));
+  HAL_CHECK(
+    elbow_mpu.configure_full_scale(hal::mpu::mpu6050::max_acceleration::g2));
+  hal::print(uart0, "Elbow INIT\n");
+
+  static auto shoulder_mpu = HAL_CHECK(
+    hal::mpu::mpu6050::create(i2c1, hal::mpu::mpu6050::address_voltage_high));
+  HAL_CHECK(
+    shoulder_mpu.configure_full_scale(hal::mpu::mpu6050::max_acceleration::g2));
+  hal::print(uart0, "Shoulder INIT\n");
+
+  static auto rotunda_mpu = HAL_CHECK(
+    hal::mpu::mpu6050::create(i2c2, hal::mpu::mpu6050::address_voltage_high));
+  HAL_CHECK(
+    rotunda_mpu.configure_full_scale(hal::mpu::mpu6050::max_acceleration::g2));
+  hal::print(uart0, "Rot INIT\n");
+
+  auto zero_a = HAL_CHECK(rotunda_mpu.read());
+  static auto wrist_mpu =
+    HAL_CHECK(hal::soft::inert_accelerometer::create(zero_a));
+
+
+  // hal::delay(counter, 10s);  
+  return sjsu::arm::application_framework{
+
+    .rotunda_accelerometer = &rotunda_mpu,
+    .shoulder_accelerometer = &shoulder_mpu,
+    .elbow_accelerometer = &elbow_mpu,
+    .wrist_accelerometer = &wrist_mpu,
+
+    .terminal = &uart0,
+    .clock = &counter,
+    .reset = []() { hal::cortex_m::reset(); },
+  };
+}
+}  // namespace sjsu::arm

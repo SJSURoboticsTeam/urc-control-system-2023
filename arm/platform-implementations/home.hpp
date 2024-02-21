@@ -6,6 +6,12 @@
 
 using namespace std::chrono_literals;
 namespace sjsu::arm {
+inline hal::accelerometer::read_t apply_offsets(hal::accelerometer::read_t reading, float x, float y, float z)  {
+  reading.x += x;
+  reading.y += y;
+  reading.z += z;
+  return reading;
+}
 inline hal::degrees atan2_to_degrees(float y, float x)
 {
   return atan2(y, x) * 180.0f / std::numbers::pi_v<float>;
@@ -53,15 +59,18 @@ inline hal::status home(hal::accelerometer& p_rotunda_accelerometer,
   bool shoulder_homed = false, elbow_homed = false;
   while (!shoulder_homed || !elbow_homed) {
     auto rotunda_read = HAL_CHECK(p_rotunda_accelerometer.read());
+    rotunda_read = apply_offsets(rotunda_read, 0.001585, 0.052356, 0.141057 ); // ROTUNDA OFFSET
     hal::degrees rotunda_base_yz =
       atan2_to_degrees(rotunda_read.y, rotunda_read.z);  // elbow/shoulder 0
 
     auto shoulder_read = HAL_CHECK(p_shoulder_accelerometer.read());
+    shoulder_read = apply_offsets(shoulder_read, -0.056106, 0.027883, 0.106987); // SHOULDER OFFSET
     shoulder_error =
       (rotunda_base_yz - 90) -
       atan2_to_degrees(shoulder_read.y, shoulder_read.z);  // shoulder error
 
     auto elbow_read = HAL_CHECK(p_elbow_accelerometer.read());
+    elbow_read = apply_offsets(elbow_read, -0.088090, -0.054209, 0.0655); // ELBOW OFFSET
     elbow_error = (atan2_to_degrees(shoulder_read.y, shoulder_read.z) + 90) -
                   atan2_to_degrees(elbow_read.y, elbow_read.z);  // shoulder error
 
@@ -78,7 +87,7 @@ inline hal::status home(hal::accelerometer& p_rotunda_accelerometer,
       elbow_homed = true;
     }
 
-    hal::print<1024>(p_terminal, "%f \t %f\n", shoulder_speed, elbow_speed);
+    hal::print<1024>(p_terminal, "%f \t %f\n", shoulder_error, elbow_error);
     if (!shoulder_homed) {
       while(!p_shoulder_mc_x.velocity_control(shoulder_speed));
     } else {

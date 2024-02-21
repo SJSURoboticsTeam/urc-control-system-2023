@@ -61,7 +61,7 @@ hal::result<application_framework> initialize_platform()
   static auto uart0 = HAL_CHECK((hal::lpc40::uart::get(0,
                                                        recieve_buffer0,
                                                        hal::serial::settings{
-                                                         .baud_rate = 38400,
+                                                         .baud_rate = 512000,
                                                        })));
 
   // servos, we need to init all of the mc_x motors then call make_servo
@@ -142,10 +142,12 @@ static auto end_effector_servo =
                                                   "\r\n";
 
   static std::array<hal::byte, 2048> buffer{};
-  static auto helper = serial_mirror(uart1, uart0);
+  // static auto helper = serial_mirror(uart1, uart0);
 
   auto timeout = hal::create_timeout(counter, 10s);
-  static auto esp8266 = HAL_CHECK(hal::esp8266::at::create(helper, timeout));
+  static auto esp8266 = HAL_CHECK(hal::esp8266::at::create(uart1, timeout));
+
+  // static auto esp8266 = HAL_CHECK(hal::esp8266::at::create(helper, timeout));
   auto mc_timeout = hal::create_timeout(counter, 10s);
   static auto esp_mission_control =
     sjsu::arm::esp8266_mission_control::create(esp8266,
