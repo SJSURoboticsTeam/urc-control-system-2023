@@ -21,6 +21,7 @@ find_package(libhal-esp8266 REQUIRED CONFIG)
 add_executable(${PROJECT_NAME}
     main.cpp
     applications/application.cpp
+    implementations/wheel_router.cpp
     platform-implementations/ackermann_steering.cpp
     platform-implementations/drc_speed_sensor.cpp
     platform-implementations/esp8266_mission_control.cpp
