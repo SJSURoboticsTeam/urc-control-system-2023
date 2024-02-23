@@ -16,7 +16,7 @@
 
 #include "../platform-implementations/drc_speed_sensor.cpp"
 
-#include "../platform-implementations/esp8266_mission_control.cpp"
+#include "../platform-implementations/http_mission_control.cpp"
 #include "../platform-implementations/mission_control.hpp"
 #include "../applications/application.hpp"
 #include "../platform-implementations/home.hpp"
@@ -26,9 +26,10 @@
 #include "../platform-implementations/print_motor.hpp"
 #include "../platform-implementations/print_servo.hpp"
 #include "../platform-implementations/print_speed_sensor.hpp"
-#include "../platform-implementations/calibration_settings.hpp"
 
-#include "../platform-implementations/tcp_client.hpp"
+#include "settings.hpp"
+
+#include "../platform-implementations/esp_tcp_client.hpp"
 
 #define USE_MOTORS
 
@@ -243,7 +244,7 @@ hal::result<application_framework> initialize_platform()
 
   auto timeout = hal::create_timeout(counter, 10s);
   static auto esp8266 = HAL_CHECK(hal::esp8266::at::create(uart1, timeout));
-  static tcp_client client = HAL_CHECK(tcp_client::create(esp8266, ssid, password, socket_config, ip));
+  static auto client = HAL_CHECK(esp_tcp_client::create(esp8266, ssid, password, socket_config, ip));
   client.use_debug_serial(uart0);
   auto mc_timeout = hal::create_timeout(counter, 10s);
   hal::print(uart0, "Establishing connection...");
@@ -260,7 +261,7 @@ hal::result<application_framework> initialize_platform()
   //                                 ip, mc_timeout, buffer, get_request);
 
 
-  static auto esp_mission_control = HAL_CHECK(sjsu::drive::esp8266_mission_control::create(
+  static auto esp_mission_control = HAL_CHECK(sjsu::drive::http_mission_control::create(
                                   // esp8266, 
                                   client,
                                   uart0, 

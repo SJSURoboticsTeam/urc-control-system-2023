@@ -39,7 +39,7 @@ find_package(libhal-esp8266 REQUIRED CONFIG)
 add_executable(ackermann
     main.cpp
     applications/ackermann.cpp
-    platform-implementations/ackermann_steering.cpp
+    implementations/ackermann_steering.cpp
     platforms/${platform}.cpp)
 target_include_directories(ackermann PUBLIC .)
 target_compile_features(ackermann PRIVATE cxx_std_20)

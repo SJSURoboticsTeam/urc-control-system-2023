@@ -6,10 +6,11 @@
 
 #include <libhal-util/serial.hpp>
 
+#include "../implementations/tcp_client.hpp"
 
 
 namespace sjsu::drive {
-    class tcp_client {
+    class esp_tcp_client : public tcp_client {
         public:
             hal::status send(std::span<const hal::byte> bytes, hal::function_ref<hal::timeout_function> p_timeout) {
                 if(connection_status != connection_state::connection_established) {
@@ -88,12 +89,12 @@ namespace sjsu::drive {
                 return hal::success();
             };
 
-            static hal::result<tcp_client> create(hal::esp8266::at& p_esp8266,
+            static hal::result<esp_tcp_client> create(hal::esp8266::at& p_esp8266,
                     const std::string_view p_ssid,
                     const std::string_view p_password,
                     const hal::esp8266::at::socket_config& p_config,
                     const std::string_view p_ip) {
-                tcp_client client(p_esp8266, p_ssid, p_password, p_config, p_ip);
+                esp_tcp_client client(p_esp8266, p_ssid, p_password, p_config, p_ip);
                 return client;
             }
 
@@ -111,7 +112,7 @@ namespace sjsu::drive {
 
             hal::esp8266::at* m_esp8266;
 
-            tcp_client(hal::esp8266::at& p_esp8266,
+            esp_tcp_client(hal::esp8266::at& p_esp8266,
                 const std::string_view p_ssid,
                 const std::string_view p_password,
                 const hal::esp8266::at::socket_config& p_config,
@@ -132,11 +133,6 @@ namespace sjsu::drive {
 
             connection_state connection_status = connection_state::ap_disconnected;
 
-            // void debug_print(const char* fixed_msg) {
-            //     if(m_debug != nullptr) {
-            //         hal::print(*m_debug, fixed_msg);
-            //     }
-            // }
             void debug_print(std::string_view fixed_msg) {
                 if(m_debug != nullptr) {
                     hal::print(*m_debug, fixed_msg);
