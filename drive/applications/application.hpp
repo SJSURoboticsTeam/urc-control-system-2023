@@ -9,6 +9,8 @@
 #include <libhal/steady_clock.hpp>
 #include <libhal/timeout.hpp>
 
+#include "../platform-implementations/ackermann_steering.hpp"
+
 namespace sjsu::drive {
 
 struct leg
@@ -21,6 +23,7 @@ struct leg
 
 struct application_framework
 {
+  ackermann_steering* steering;
   std::span<leg*> legs;
 
   mission_control* mc;

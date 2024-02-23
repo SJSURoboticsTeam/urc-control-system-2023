@@ -197,6 +197,28 @@ hal::result<application_framework> initialize_platform()
     // extra_leg,
   };
 
+  
+  static std::array<vector2, 3> wheel_locations = {
+    vector2::from_bearing(1, -60 * std::numbers::pi / 180),
+    vector2::from_bearing(1, 60 * std::numbers::pi / 180),
+    vector2::from_bearing(1, std::numbers::pi),
+  };
+  // static std::array<vector2, 3> wheel_locations = {
+  //   vector2(-0.5, 0),
+  //   vector2(0.5, 0),
+  //   vector2(0, -std::sqrt(3/2)),
+  // };
+  // static std::array<vector2, 3> wheel_locations = {
+  //   vector2(-0.5, std::sqrt(3/2)),
+  //   vector2(0.5, std::sqrt(3/2)),
+  //   vector2(0, 0),
+  // };
+  static std::array<wheel_setting, 3> wheel_settings;
+  
+  // WE ARE UNABLE TO USE MAXIMUM ANGULAR SPEED UNLESS WE HAVE THE CORRECT SCALE FACTORS SET. 
+  static ackermann_steering steering(wheel_locations, wheel_settings, 2, 2);
+
+
   // mission control object
   static std::array<hal::byte, 8192> recieve_buffer1{};
 
@@ -250,6 +272,7 @@ hal::result<application_framework> initialize_platform()
   static auto drive_mission_control = esp_mission_control.value();
 
   return application_framework{
+    .steering = &steering,
     .legs = legs,
 
     .mc = &drive_mission_control,
