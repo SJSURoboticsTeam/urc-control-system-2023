@@ -22,6 +22,10 @@ hal::status set_wheel_state(std::span<leg*> legs, std::span<wheel_setting> setti
   HAL_CHECK(legs[0]->propulsion->power(-settings[2].wheel_speed));
   HAL_CHECK(legs[1]->propulsion->power(settings[1].wheel_speed));
   HAL_CHECK(legs[2]->propulsion->power(settings[0].wheel_speed));
+  
+  // HAL_CHECK(legs[0]->propulsion->power(0));
+  // HAL_CHECK(legs[1]->propulsion->power(0));
+  // HAL_CHECK(legs[2]->propulsion->power(0));
 
   return hal::success();
 }
@@ -80,7 +84,7 @@ hal::status application(application_framework& p_framework)
   float kP_wheel_heading = 10;
   float kP_wheel_speed = 20;
 
-  float max_d_steering_angle = 20;
+  float max_d_steering_angle = 40;
   float max_d_wheel_heading = 360;
   float max_d_wheel_speed = 50;
 
@@ -109,7 +113,7 @@ hal::status application(application_framework& p_framework)
     // The turning radius defines how fast the rover will change its heading. 
     //    It will turn the fastest at a radius 0 and it will travel straight
     //    at a radius infinity.
-    // Note: it might be more usefult to define turning radius as a "steering angle", where
+    // Note: it might be more useful to define turning radius as a "steering angle", where
     //    turning_radius = 1 / tan(steering_angle)
     //    This way 0 degrees of steeering angle corresponds to straight and 90 degrees
     //    is full turn (spin).
@@ -132,14 +136,9 @@ hal::status application(application_framework& p_framework)
       auto timeout = hal::create_timeout(clock, 100ms);
       commands = mission_control.get_command(timeout).value();
       float mission_control_dt = now - next_update;
-      
-      if(commands.mode == 'T') {
-        // target_wheel_heading += commands.wheel_heading * mission_control_dt;
-        target_steering_angle = commands.steering_angle;
-      }else {
-        target_steering_angle = commands.steering_angle;
-        target_wheel_heading = commands.wheel_heading;
-      }
+
+      target_steering_angle = commands.steering_angle;
+      target_wheel_heading = commands.wheel_heading;
       target_wheel_speed = commands.wheel_speed;
       // hal::print<128>(terminal, "\nsped : %f, %d\n", commands.wheel_speed, commands.speed);
 
@@ -152,9 +151,7 @@ hal::status application(application_framework& p_framework)
     float d_steering_angle = (target_steering_angle - current_steering_angle) * kP_steering_angle;
     float d_wheel_heading = (target_wheel_heading - current_wheel_heading) * kP_wheel_heading;
     float d_wheel_speed = (target_wheel_speed - current_wheel_speed) * kP_wheel_speed;
-    if(commands.mode == 'T') {
-      d_wheel_heading = static_cast<float>(commands.angle);
-    }
+    
     d_steering_angle = std::clamp(d_steering_angle, -max_d_steering_angle, max_d_steering_angle);
     d_wheel_heading = std::clamp(d_wheel_heading, -max_d_wheel_heading, max_d_wheel_heading);
     d_wheel_speed = std::clamp(d_wheel_speed, -max_d_wheel_speed, max_d_wheel_speed);

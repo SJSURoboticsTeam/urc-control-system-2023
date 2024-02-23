@@ -1,6 +1,6 @@
 
 
 namespace sjsu::drive {
- constexpr float angle_correction_factor = 1.3625; // ???? WHY ARE THESE MOTORS SCALED????
- 
+    // Multiply this with the desired angle to get the correct angle to steer the motors.
+    constexpr float angle_correction_factor = 1.3625; // ???? WHY ARE THESE MOTORS SCALED????
 };

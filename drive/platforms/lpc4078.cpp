@@ -28,6 +28,8 @@
 #include "../platform-implementations/print_speed_sensor.hpp"
 #include "../platform-implementations/calibration_settings.hpp"
 
+#include "../platform-implementations/tcp_client.hpp"
+
 #define USE_MOTORS
 
 #include <cmath>
@@ -228,7 +230,9 @@ hal::result<application_framework> initialize_platform()
     .domain = "192.168.0.211",
     .port = 5000,
   };
-  
+
+
+
   hal::print(uart0, "created Socket\n");
   static constexpr std::string_view get_request = "GET /drive HTTP/1.1\r\n"
                                 "Host: 192.168.0.211:5000\r\n"
@@ -239,21 +243,41 @@ hal::result<application_framework> initialize_platform()
 
   auto timeout = hal::create_timeout(counter, 10s);
   static auto esp8266 = HAL_CHECK(hal::esp8266::at::create(uart1, timeout));
+  static tcp_client client = HAL_CHECK(tcp_client::create(esp8266, ssid, password, socket_config, ip));
+  client.use_debug_serial(uart0);
   auto mc_timeout = hal::create_timeout(counter, 10s);
-  static auto esp_mission_control = sjsu::drive::esp8266_mission_control::create(esp8266, 
-                                  uart0, ssid, password, socket_config, 
-                                  ip, mc_timeout, buffer, get_request);
-  int i = 0;
-  while(esp_mission_control.has_error()) {
-    mc_timeout = hal::create_timeout(counter, 30s);
-    hal::print<128>(uart0, "Pinging the server: %d\n", i);
-    i++;
-    esp_mission_control = sjsu::drive::esp8266_mission_control::create(esp8266, 
-                                    uart0, ssid, password, socket_config, 
-                                    ip, mc_timeout, buffer, get_request);
+  hal::print(uart0, "Establishing connection...");
+  auto success = client.reestablish_connection(mc_timeout);
+  if(success) {
+    hal::print(uart0, "Connected to server.\n");
+  }else {
+    hal::print(uart0, "Failed to connect to server.\n");
   }
-  hal::print(uart0, "Found Server\n");
-  static auto drive_mission_control = esp_mission_control.value();
+
+  // auto mc_timeout = hal::create_timeout(counter, 10s);
+  // static auto esp_mission_control = sjsu::drive::esp8266_mission_control::create(esp8266, 
+  //                                 uart0, ssid, password, socket_config, 
+  //                                 ip, mc_timeout, buffer, get_request);
+
+
+  static auto esp_mission_control = HAL_CHECK(sjsu::drive::esp8266_mission_control::create(
+                                  // esp8266, 
+                                  client,
+                                  uart0, 
+                                  // ssid, password, socket_config, ip, mc_timeout, 
+                                  buffer, 
+                                  get_request));
+  int i = 0;
+  // while(esp_mission_control.has_error()) {
+  //   mc_timeout = hal::create_timeout(counter, 30s);
+  //   hal::print<128>(uart0, "Pinging the server: %d\n", i);
+  //   i++;
+  //   esp_mission_control = sjsu::drive::esp8266_mission_control::create(esp8266, 
+  //                                   uart0, ssid, password, socket_config, 
+  //                                   ip, mc_timeout, buffer, get_request);
+  // }
+  // hal::print(uart0, "Found Server\n");
+  // static auto drive_mission_control = esp_mission_control.value();
 
   return application_framework{
                               .steering = &steering,
@@ -261,7 +285,8 @@ hal::result<application_framework> initialize_platform()
                               .legs = legs,
                               #endif
                               
-                              .mc = &drive_mission_control,
+                              // .mc = &drive_mission_control,
+                              .mc = &esp_mission_control,
                               
                               .terminal = &uart0,
                               .clock = &counter,
