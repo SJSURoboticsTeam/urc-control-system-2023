@@ -153,14 +153,20 @@ void esp8266_mission_control::parse_commands()
                     expected_number_of_arguments);
   }
 
+  // Increment the message count.
+  m_commands.message_count ++; 
   
+  if(!m_commands.is_operational) {
+    m_commands.wheel_speed = 0.0;
+    return;
+  }
 
   // A hack to get the current mission control to work with the new steering.
   m_commands.wheel_speed = static_cast<float>(m_commands.speed);
   switch(m_commands.mode) {
   case 'D':
     // In drive mode, angle refers to steering angle.
-    m_commands.steering_angle = m_commands.angle;
+    m_commands.steering_angle = static_cast<float>(m_commands.angle);
     m_commands.wheel_heading = 0.0;
     break;
   case 'S':
@@ -170,13 +176,10 @@ void esp8266_mission_control::parse_commands()
     break;
   case 'T':
     // In translate mode, angle refers to wheel heading.
-    m_commands.wheel_heading = m_commands.angle;
+    m_commands.wheel_heading = static_cast<float>(m_commands.angle);
     m_commands.steering_angle = 0.0;
     break;
   }
-
-  // Increment the message count.
-  m_commands.message_count ++; 
 }
 
 esp8266_mission_control::http_header_parser_t
