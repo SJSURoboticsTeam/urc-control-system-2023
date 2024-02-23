@@ -18,7 +18,7 @@
 #include "../platform-implementations/esp8266_mission_control.cpp"
 #include "../platform-implementations/helper.hpp"
 #include "../platform-implementations/offset_servo.hpp"
-#include "../platform-implementations/helper.hpp"
+
 
 #include <libhal-lpc40/clock.hpp>
 #include <libhal-lpc40/pwm.hpp>
@@ -123,7 +123,7 @@ hal::result<application_framework> initialize_platform()
     "R0Bot1cs3250";  // change to wifi password you are using
 
   // still need to decide what we want the static IP to be
-  static constexpr std::string_view ip = "192.168.0.212";
+  static constexpr std::string_view ip = "192.168.0.212";//change to open static IP
   static constexpr auto socket_config = hal::esp8266::at::socket_config{
     .type = hal::esp8266::at::socket_type::tcp,
     .domain = "192.168.0.211",

@@ -25,7 +25,7 @@
 #include <libhal-lpc40/input_pin.hpp>
 #include <libhal-lpc40/output_pin.hpp>
 #include <libhal-lpc40/pwm.hpp>
-// #include <libhal-lpc40/system_controller.hpp> //not sure why we need this?
+//#include <libhal-lpc40/system_controller.hpp> //not sure why we need this?
 #include <libhal-lpc40/clock.hpp>
 #include <libhal-lpc40/uart.hpp>
 
@@ -49,9 +49,23 @@ hal::result<application_framework> initialize_platform()
   using namespace std::chrono_literals;
 
   // Set the MCU to the maximum clock speed
-  HAL_CHECK(hal::lpc40::clock::maximum(12.0_MHz));
+  // HAL_CHECK(hal::lpc40::clock::maximum(12.0_MHz));
 
+  // auto& clock = hal::lpc40::clock::get();
+  // auto cpu_frequency = clock.get_frequency(hal::lpc40::peripheral::cpu);
+  // static hal::cortex_m::dwt_counter counter(cpu_frequency);
+
+   // setting clock
+  HAL_CHECK(hal::lpc40::clock::maximum(12.0_MHz));
   auto& clock = hal::lpc40::clock::get();
+  // static auto i2c1 = HAL_CHECK((hal::lpc40::i2c::get(1,
+  //                                                    hal::i2c::settings{
+  //                                                      .clock_rate = 100.0_kHz,
+  //                                                    })));
+  // static auto i2c2 = HAL_CHECK((hal::lpc40::i2c::get(2,
+  //                                                    hal::i2c::settings{
+  //                                                      .clock_rate = 100.0_kHz,
+  //                                                    })));
   auto cpu_frequency = clock.get_frequency(hal::lpc40::peripheral::cpu);
   static hal::cortex_m::dwt_counter counter(cpu_frequency);
 
@@ -91,10 +105,13 @@ hal::result<application_framework> initialize_platform()
                                                   "\r\n";
 
   static std::array<hal::byte, 2048> buffer{};
-  static auto helper = serial_mirror(uart1, uart0);
+  // static auto helper = serial_mirror(uart1, uart0);
 
   auto timeout = hal::create_timeout(counter, 10s);
-  static auto esp8266 = HAL_CHECK(hal::esp8266::at::create(helper, timeout));
+  //break right here
+  static auto esp8266 = HAL_CHECK(hal::esp8266::at::create(uart1, timeout));
+  HAL_CHECK(hal::write(uart0, "created AT\n"));
+
   auto mc_timeout = hal::create_timeout(counter, 10s);
   static auto esp_mission_control =
     sjsu::science::esp8266_mission_control::create(esp8266,
@@ -125,44 +142,39 @@ hal::result<application_framework> initialize_platform()
   //  hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
   //  auto& can = HAL_CHECK((hal::lpc40::can::get<2>(can_settings)));
 
-  static auto in_pin0 =
-    HAL_CHECK(hal::lpc40::input_pin::get(1, 15, hal::input_pin::settings{}));
-  static auto in_pin1 =
-    HAL_CHECK(hal::lpc40::input_pin::get(1, 23, hal::input_pin::settings{}));
-  static auto in_pin2 =
-    HAL_CHECK(hal::lpc40::input_pin::get(1, 22, hal::input_pin::settings{}));
+  // static auto in_pin0 =
+  //   HAL_CHECK(hal::lpc40::input_pin::get(1, 15, hal::input_pin::settings{}));
+  // static auto in_pin1 =
+  //   HAL_CHECK(hal::lpc40::input_pin::get(1, 23, hal::input_pin::settings{}));
+  // static auto in_pin2 =
+  //   HAL_CHECK(hal::lpc40::input_pin::get(1, 22, hal::input_pin::settings{}));
 
-  static auto pwm_1_6 = HAL_CHECK((hal::lpc40::pwm::get(1, 6)));
-  static auto pwm_1_5 = HAL_CHECK((hal::lpc40::pwm::get(1, 5)));
+  // static auto pwm_1_6 = HAL_CHECK((hal::lpc40::pwm::get(1, 6)));
+  // static auto pwm_1_5 = HAL_CHECK((hal::lpc40::pwm::get(1, 5)));
 
-  static auto adc_4 = HAL_CHECK(hal::lpc40::adc::get(4));
-  static auto adc_5 = HAL_CHECK(hal::lpc40::adc::get(5));
+  // static auto adc_4 = HAL_CHECK(hal::lpc40::adc::get(4));
+  // static auto adc_5 = HAL_CHECK(hal::lpc40::adc::get(5));
 
-  std::array<hal::byte, 1024> receive_buffer{};
-  static auto uart1 = HAL_CHECK(hal::lpc40::uart::get(0,
-                                                      receive_buffer,
-                                                      {
-                                                        .baud_rate = 115200.0f,
-                                                      }));
+  // std::array<hal::byte, 1024> receive_buffer{};
 
-  static auto i2c = HAL_CHECK(hal::lpc40::i2c::get(2));
-  static auto can = HAL_CHECK(hal::lpc40::can::get(0));
+  // static auto i2c = HAL_CHECK(hal::lpc40::i2c::get(2));
+  // static auto can = HAL_CHECK(hal::lpc40::can::get(0));
 
   return application_framework{
     
-    .in_pin0 = &in_pin0,
-    .in_pin1 = &in_pin1,
-    .in_pin2 = &in_pin2,
-    .pwm_1_6 = &pwm_1_6,
-    .pwm_1_5 = &pwm_1_5,
-    .adc_4 = &adc_4,
-    .adc_5 = &adc_5,
+    // .in_pin0 = &in_pin0,
+    // .in_pin1 = &in_pin1,
+    // .in_pin2 = &in_pin2,
+    // .pwm_1_6 = &pwm_1_6,
+    // .pwm_1_5 = &pwm_1_5,
+    // .adc_4 = &adc_4,
+    // .adc_5 = &adc_5,
 
     .steady_clock = &counter,
     .terminal = &uart0, //uart0 is terminal
     .mc = &science_mission_control,
-    .can = &can,
-    .i2c = &i2c,
+    // .can = &can,
+    // .i2c = &i2c,
     .reset = []() { hal::cortex_m::reset(); },
   };
 };
