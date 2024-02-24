@@ -3,6 +3,7 @@
 #include "../include/drive_debug.hpp"
 #include "../include/drive_configuration.hpp"
 #include "../include/wheel_router.hpp"
+#include "../include/rules_engine.hpp"
 
 #include "application.hpp"
 
@@ -62,6 +63,10 @@ hal::status application(application_framework& p_framework)
       target.steering_angle = commands.steering_angle;
       target.wheel_heading = commands.wheel_heading;
       target.wheel_speed = commands.wheel_speed;
+
+      // Validate the target
+      target = validate_configuration(target);
+      
       configuration_updater.set_target(target);
 
       // Next update from mission control in 100 ms (0.1 s)
