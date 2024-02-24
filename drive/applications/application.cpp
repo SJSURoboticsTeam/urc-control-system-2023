@@ -1,7 +1,7 @@
 #include <libhal-util/steady_clock.hpp>
 
 #include "../include/drive_debug.hpp"
-#include "../include/drive_configuration.hpp"
+#include "../include/drive_configuration_updater.hpp"
 #include "../include/wheel_router.hpp"
 #include "../include/rules_engine.hpp"
 
