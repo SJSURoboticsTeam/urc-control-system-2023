@@ -22,7 +22,7 @@
 #include "../include/offset_servo.hpp"
 #include "../platform-implementations/helper.hpp"
 #include "../platform-implementations/home.hpp"
-
+#include "../include/settings.hpp"
 namespace sjsu::drive {
 
 hal::status initialize_processor()
@@ -163,6 +163,18 @@ hal::result<application_framework> initialize_platform()
   };
 
   HAL_CHECK(home(homing_structs, counter));
+
+  // Home position will be drive mode. This is for the ackermann steering calculations
+  // Basically all wheels should be straight.
+  left_leg_drc_offset_servo.set_offset(left_leg_drc_offset_servo.get_offset() - 30 * angle_correction_factor);
+  right_leg_drc_offset_servo.set_offset(right_leg_drc_offset_servo.get_offset() - 150 * angle_correction_factor);
+  back_leg_drc_offset_servo.set_offset(back_leg_drc_offset_servo.get_offset() - 90 * angle_correction_factor);
+
+  // Straighten the wheels. For debugging.
+  HAL_CHECK(left_leg_drc_offset_servo.position(0));
+  HAL_CHECK(right_leg_drc_offset_servo.position(0));
+  HAL_CHECK(back_leg_drc_offset_servo.position(0));
+  
   // hal::print<100>(uart0, "right offset: %f", right_home.servo->get_offset());
   // hal::print<100>(uart0, "left offset: %f", left_home.servo->get_offset());
   // hal::print<100>(uart0, "back offset: %f", back_home.servo->get_offset());
