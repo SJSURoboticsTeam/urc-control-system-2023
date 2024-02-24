@@ -24,7 +24,7 @@ hal::status application(application_framework& p_framework)
     auto& steady_clock = *p_framework.steady_clock;
     auto& uart0 = *p_framework.terminal;
     auto& i2c2 = *p_framework.i2c2;
-    auto TLA2528 = tla::tla2528(i2c2, steady_clock);
+    auto TLA2528 = tla2528::tla2528(i2c2, steady_clock);
 
     const uint8_t N = 6;
     std::array<float, N> scrambled_results = {};
@@ -39,7 +39,7 @@ hal::status application(application_framework& p_framework)
 
         auto buffer_of_results = HAL_CHECK(TLA2528.read_all());
         for(int i = 0; i < N; i++) {
-            true_degree = tla::voltage_to_degree(buffer_of_results[i], max_volt,max_deg);
+            true_degree = tla2528::voltage_to_degree(buffer_of_results[i], max_volt,max_deg);
             scrambled_results[i] = true_degree;
             // hal::print<64>(uart0, "voltage %d: %d ", i, (int)true_degree); 
         }
@@ -54,7 +54,7 @@ hal::status application(application_framework& p_framework)
         results[4] = 0;
         results[5] = 0;
 
-        HAL_CHECK(tla::send_data_to_mc(*p_framework.terminal, results));
+        HAL_CHECK(tla2528::send_data_to_mc(*p_framework.terminal, results));
     }
 }
 }

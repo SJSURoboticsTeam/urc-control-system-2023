@@ -7,7 +7,7 @@
 
 // debugging purposes
 
-namespace tla {
+namespace tla2528 {
 class tla2528
 {
 public:
@@ -155,4 +155,4 @@ private:
   hal::i2c& m_bus;
   hal::steady_clock& m_clk;
 };
-}  // namespace tla
+}  // namespace tla2528

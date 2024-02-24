@@ -30,6 +30,7 @@ find_package(libhal-util REQUIRED CONFIG)
 add_executable(${PROJECT_NAME}
     main.cpp
     applications/application.cpp
+    demos/tla2528_demo.cpp
     platforms/${platform}.cpp)
 target_include_directories(${PROJECT_NAME} PUBLIC .)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)

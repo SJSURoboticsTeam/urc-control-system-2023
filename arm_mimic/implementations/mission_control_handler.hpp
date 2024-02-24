@@ -3,7 +3,7 @@
 #include <libhal-util/serial.hpp>
 #include <cstdio>
 
-namespace tla {
+namespace tla2528 {
 
    hal::status send_data_to_mc(hal::serial &uart, std::array<float, 6> raw_data, bool is_network = false)
     {

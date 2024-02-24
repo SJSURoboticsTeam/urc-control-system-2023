@@ -1,7 +1,7 @@
 #pragma once
 #include <libhal-util/map.hpp>
 
-namespace tla {
+namespace tla2528 {
 
     float voltage_to_degree(float value, float max_voltage, float max_degree)
     {
