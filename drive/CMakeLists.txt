@@ -22,7 +22,7 @@ add_executable(${PROJECT_NAME}
     main.cpp
     applications/application.cpp
     platform-implementations/drc_speed_sensor.cpp
-    platform-implementations/esp8266_mission_control.cpp
+    platform-implementations/http_mission_control.cpp
     platform-implementations/serial_mission_control.cpp
     platform-implementations/offset_servo.cpp
     platform-implementations/esp_tcp_client.cpp

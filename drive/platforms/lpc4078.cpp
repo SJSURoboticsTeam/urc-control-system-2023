@@ -17,12 +17,12 @@
 #include "../include/drc_speed_sensor.hpp"
 
 #include "../applications/application.hpp"
-#include "../include/esp8266_mission_control.hpp"
+#include "../include/http_mission_control.hpp"
 #include "../include/mission_control.hpp"
 #include "../include/offset_servo.hpp"
 #include "../platform-implementations/helper.hpp"
 #include "../platform-implementations/home.hpp"
-
+#include "../include/esp_tcp_client.hpp"
 namespace sjsu::drive {
 
 hal::status initialize_processor()
@@ -228,26 +228,30 @@ hal::result<application_framework> initialize_platform()
 
   auto timeout = hal::create_timeout(counter, 10s);
   static auto esp8266 = HAL_CHECK(hal::esp8266::at::create(uart1, timeout));
-  auto mc_timeout = hal::create_timeout(counter, 10s);
-  esp8266_mission_control::create_t create_mission_control{
-    .esp8266 = esp8266,
-    .console = uart0,
-    .ssid = ssid,
-    .password = password,
-    .config = socket_config,
-    .ip = ip,
-    .buffer = buffer,
-    .get_request = get_request
-  };
-  static auto esp_mission_control =
-    esp8266_mission_control::create(create_mission_control, mc_timeout);
 
-  while (esp_mission_control.has_error()) {
-    mc_timeout = hal::create_timeout(counter, 30s);
-    esp_mission_control =
-      esp8266_mission_control::create(create_mission_control, mc_timeout);
+  static auto client = HAL_CHECK(esp_tcp_client::create(esp8266, ssid, password, socket_config, ip));
+  client.use_debug_serial(uart0);
+  
+  auto mc_timeout = hal::create_timeout(counter, 10s);
+  hal::print(uart0, "Establishing connection...");
+  auto success = client.reestablish_connection(mc_timeout);
+  if(success) {
+    hal::print(uart0, "Connected to server.\n");
+  }else {
+    hal::print(uart0, "Failed to connect to server.\n");
   }
-  static auto drive_mission_control = esp_mission_control.value();
+
+  http_mission_control::create_t create_mission_control{
+      .client = client,
+      .console = uart0,
+      .buffer = buffer,
+      .get_request = get_request
+  };
+  static auto http_mission_control =
+    http_mission_control::create(create_mission_control, mc_timeout);
+
+
+  static auto drive_mission_control = http_mission_control.value();
 
   return application_framework{
     .legs = legs,
