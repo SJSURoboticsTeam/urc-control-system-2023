@@ -5,14 +5,15 @@
 #include <libhal-esp8266/at.hpp>
 #include <libhal-util/units.hpp>
 
+#include <string_view>
 
 namespace sjsu::drive {
     namespace settings {
         using namespace hal::literals;
         using namespace std::chrono_literals;
 
-        constexpr int terminal_uart = 0;
-        constexpr size_t terminal_uart_buffer_size = 1024;
+        constexpr std::uint8_t terminal_uart = 0;
+        constexpr std::size_t terminal_uart_buffer_size = 1024;
         constexpr hal::serial::settings terminal_uart_settings = {
             .baud_rate = 38400
         };
@@ -60,6 +61,34 @@ namespace sjsu::drive {
             }
         };
 
+
+        constexpr std::string_view ssid = "TP-Link_FC30";
+        constexpr std::string_view password = "R0Bot1cs3250";
+
+        constexpr std::string_view drive_ip = "192.168.0.224";
+
+        constexpr std::string_view server_ip = "192.168.0.211";
+        constexpr std::uint16_t server_port = 5000;
+
+        
+        constexpr std::string_view get_request = "GET /drive HTTP/1.1\r\n"
+                                                  "Host: 192.168.0.211:5000\r\n"
+                                                  "\r\n";
+
+        constexpr std::size_t http_buffer_size = 1024;
+        constexpr hal::esp8266::at::socket_config client_config {
+            .type = hal::esp8266::at::socket_type::tcp,
+            .domain = server_ip, // Server IP
+            .port = server_port,
+        };
+
+        
+        constexpr std::uint8_t esp_uart = 1;
+        constexpr std::size_t esp_uart_buffer_size = 8192;
+        constexpr hal::serial::settings esp_uart_settings = {
+            .baud_rate = 115200
+        };
+        
     }
 
 };

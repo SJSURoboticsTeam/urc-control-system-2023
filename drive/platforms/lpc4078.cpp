@@ -196,32 +196,16 @@ hal::result<application_framework> initialize_platform()
   };
 
   // mission control object
-  static std::array<hal::byte, 8192> recieve_buffer1{};
+  static std::array<hal::byte, settings::esp_uart_buffer_size> recieve_buffer1{};
 
-  static auto uart1 = HAL_CHECK((hal::lpc40::uart::get(1,
+  static auto uart1 = HAL_CHECK((hal::lpc40::uart::get(settings::esp_uart,
                                                        recieve_buffer1,
-                                                       hal::serial::settings{
-                                                         .baud_rate = 115200,
-                                                       })));
+                                                       settings::esp_uart_settings)));
 
-  static constexpr std::string_view ssid =
-    "TP-Link_FC30";  // change to wifi name that you are using
-  static constexpr std::string_view password =
-    "R0Bot1cs3250";  // change to wifi password you are using
 
-  // still need to decide what we want the static IP to be
-  static constexpr std::string_view ip = "";
-  static constexpr auto socket_config = hal::esp8266::at::socket_config{
-    .type = hal::esp8266::at::socket_type::tcp,
-    .domain = "192.168.0.211",
-    .port = 5000,
-  };
   HAL_CHECK(hal::write(uart0, "created Socket\n"));
-  static constexpr std::string_view get_request = "GET /drive HTTP/1.1\r\n"
-                                                  "Host: 192.168.0.211:5000\r\n"
-                                                  "\r\n";
 
-  static std::array<hal::byte, 1024> buffer{};
+  static std::array<hal::byte, settings::http_buffer_size> buffer{};
   // static auto helper = serial_mirror(uart1, uart0);
 
   auto timeout = hal::create_timeout(counter, 10s);
@@ -230,12 +214,12 @@ hal::result<application_framework> initialize_platform()
   esp8266_mission_control::create_t create_mission_control{
     .esp8266 = esp8266,
     .console = uart0,
-    .ssid = ssid,
-    .password = password,
-    .config = socket_config,
-    .ip = ip,
+    .ssid = settings::ssid,
+    .password = settings::password,
+    .config = settings::client_config,
+    .ip = settings::drive_ip,
     .buffer = buffer,
-    .get_request = get_request
+    .get_request = settings::get_request
   };
   static auto esp_mission_control =
     esp8266_mission_control::create(create_mission_control, mc_timeout);
