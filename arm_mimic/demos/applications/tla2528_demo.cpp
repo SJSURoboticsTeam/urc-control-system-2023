@@ -10,19 +10,19 @@
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
 
-#include "../demos/tla2528_demo.hpp"
-#include "../implementations/tla2528.hpp"
+#include "../applications/tla2528_demo.hpp"
+#include "../../implementations/tla2528.hpp"
 // #include "../implementations/degree_manipulation.hpp"
 // #include "../implementations/mission_control_handler.hpp"
 
-namespace sjsu::tla2528_demo{
+namespace sjsu::arm_mimic{
 
 using namespace std::literals;
 
-hal::status application(sjsu::tla2528_demo::application_framework& p_framework) {
+hal::status application(sjsu::arm_mimic::application_framework& p_framework) {
 
     auto& steady_clock = *p_framework.steady_clock;
-    auto& uart0 = *p_framework.terminal;
+    // auto& uart0 = *p_framework.terminal;
     auto& i2c2 = *p_framework.i2c2;
     auto TLA2528 = tla2528::tla2528(i2c2, steady_clock);
     while (true)

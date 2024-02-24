@@ -5,7 +5,7 @@
 #include <libhal/serial.hpp>
 #include <libhal/steady_clock.hpp>
 
-namespace sjsu::tla2528_demo {
+namespace sjsu::arm_mimic {
     struct application_framework
     {
         hal::serial* terminal;
