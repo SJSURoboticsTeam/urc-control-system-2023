@@ -23,8 +23,8 @@ namespace sjsu::drive {
             .baud_rate = 1.0_MHz, 
         };
 
-        hal::rpm max_steer_speed = 5.0_rpm;
-        hal::rpm max_propulsion_speed = 100.0_rpm;
+        constexpr hal::rpm max_steer_speed = 5.0_rpm;
+        constexpr hal::rpm max_propulsion_speed = 100.0_rpm;
 
         struct pin {
             std::uint8_t port;
@@ -60,6 +60,8 @@ namespace sjsu::drive {
                 .pin = 23
             }
         };
+
+        constexpr float speed_lerp_speed = 0.1f; // LMAO this is just how fast the speed is lerped.
 
 
         constexpr std::string_view ssid = "TP-Link_FC30";
