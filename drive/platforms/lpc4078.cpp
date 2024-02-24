@@ -23,6 +23,7 @@
 #include "../platform-implementations/helper.hpp"
 #include "../platform-implementations/home.hpp"
 
+#include "../include/settings.hpp"
 namespace sjsu::drive {
 
 hal::status initialize_processor()
@@ -45,12 +46,10 @@ hal::result<application_framework> initialize_platform()
   static hal::cortex_m::dwt_counter counter(cpu_frequency);
 
   // Serial
-  static std::array<hal::byte, 1024> recieve_buffer0{};
-  static auto uart0 = HAL_CHECK((hal::lpc40::uart::get(0,
+  static std::array<hal::byte, terminal_uart_buffer_size> recieve_buffer0{};
+  static auto uart0 = HAL_CHECK((hal::lpc40::uart::get(terminal_uart,
                                                        recieve_buffer0,
-                                                       hal::serial::settings{
-                                                         .baud_rate = 38400,
-                                                       })));
+                                                       terminal_uart_settings)));
   // servos, we need to init all of the mc_x motors then call make_servo
   // in order to pass servos into the application
   static hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
