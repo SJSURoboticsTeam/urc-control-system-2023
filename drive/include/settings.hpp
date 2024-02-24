@@ -61,6 +61,8 @@ namespace sjsu::drive {
             }
         };
 
+        constexpr int max_drive_angle = 100; // degrees?
+        constexpr int max_speed = 100; // percent
         constexpr float speed_lerp_speed = 0.1f; // LMAO this is just how fast the speed is lerped.
 
 
