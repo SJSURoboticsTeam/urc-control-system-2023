@@ -24,16 +24,7 @@ namespace sjsu::science {
             hal::status revolverState(hal::degrees rotationState);
 
         public:
-            enum class positions{
-                SAMPLE_DEPOSIT=0,
-                MOLISCH_REAGENT,
-                SULFURIC_ACID,
-                BIURET_REAGENT,
-                OBSERVATION
-            };
-
-            static hal::result<revolver> create();
-                                                
+            static hal::result<revolver> create();                             
             hal::status revolverMoveVials(int vial);
     };
 }
