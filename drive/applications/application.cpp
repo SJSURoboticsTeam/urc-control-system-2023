@@ -11,6 +11,7 @@
 #include "../include/mission_control.hpp"
 #include "application.hpp"
 
+#include "../include/settings.hpp"
 namespace sjsu::drive {
 
 hal::status application(application_framework& p_framework)
@@ -38,7 +39,7 @@ hal::status application(application_framework& p_framework)
   HAL_CHECK(hal::write(terminal, "Starting control loop..."));
 
   while (true) {
-    if (loop_count == 10) {
+    if (loop_count == settings::mission_control_request_period) {
       auto timeout = hal::create_timeout(clock, 1s);
       commands = mission_control.get_command(timeout).value();
       loop_count = 0;
