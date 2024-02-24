@@ -9,7 +9,8 @@
 
 namespace sjsu::science {
 
-    class revolver {
+    class revolver 
+    {
         private:
             int m_numVials = 12;
             hal::degrees m_clockwise = hal::degrees(0.0);

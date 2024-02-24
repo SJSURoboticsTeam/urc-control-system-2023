@@ -31,18 +31,20 @@ namespace sjsu::science {
         int count = 0;
         bool hallState;
         bool hallStateDelay;
-        hal::degrees rotationState = m_clockwise; 
-
-        if (vial < 0)
+ 
+        if (vial < 0 && vial >= -m_numVials)
         {
-            vial = -vial; 
-            rotationState = m_counterclockwise;
+            vial = -vial;
+            revolverState(m_counterclockwise);
+        }
+            
+        if (vial > 0 && vial <= m_numVials )
+        {
+            revolverState(m_clockwise);
         }
 
         if (vial <= m_numVials && vial != 0)
         {
-            revolverMove(rotationState);
-
             while (count < vial) 
             {
                 hallState = input_pin_my.level().value().state;
@@ -56,7 +58,7 @@ namespace sjsu::science {
                     count = count + 1;
                 }
             }
-            
+
             revolverState(m_stop);
         }
         
