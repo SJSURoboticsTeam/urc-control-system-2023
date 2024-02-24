@@ -21,46 +21,43 @@ namespace sjsu::science {
         steady_clock_my = p_steady_clock;
     }
 
-    hal::status revolver::revolverMove(hal::degrees rotation) 
+    hal::status revolver::revolverState(hal::degrees rotationState) 
     {
-        HAL_CHECK(revolver_servo_my.position(rotation));
-    }
-
-    hal::status revolver::revolverStop()
-    {
-        HAL_CHECK(revolver_servo_my.position(hal::degrees(360.0)));
+        HAL_CHECK(revolver_servo_my.position(rotationState));
     }
 
     hal::status revolver::revolverMoveVials(int vial) 
     {
         int count = 0;
-        hal::degrees rotation = hal::degrees(0.0); //clockwise
+        bool hallState;
+        bool hallStateDelay;
+        hal::degrees rotationState = m_clockwise; 
 
         if (vial < 0)
         {
             vial = -vial; 
-            rotation = hal::degrees(180.0); //counterclockwise
+            rotationState = m_counterclockwise;
         }
 
         if (vial <= m_numVials && vial != 0)
         {
-            revolverMove(rotation);
+            revolverMove(rotationState);
 
             while (count < vial) 
             {
-                bool state = input_pin_my.level().value().state;
+                hallState = input_pin_my.level().value().state;
 
-                hal::delay(steady_clock_my, std::chrono::milliseconds(5.0));
+                hal::delay(steady_clock_my, m_delay);
 
-                bool stateDelay = input_pin_my.level().value().state;
+                hallStateDelayed = input_pin_my.level().value().state;
 
-                if (state != stateDelay)
+                if (hallState != hallStateDelay)
                 {
                     count = count + 1;
                 }
             }
-
-            revolverStop();
+            
+            revolverState(m_stop);
         }
         
     }     

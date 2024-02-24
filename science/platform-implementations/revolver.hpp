@@ -11,8 +11,11 @@ namespace sjsu::science {
 
     class revolver {
         private:
-            int m_position = 0; //vial in sample position
             int m_numVials = 12;
+            hal::degrees m_clockwise = hal::degrees(0.0);
+            hal::degrees m_counterclockwise = hal::degrees(180.0);
+            hal::degrees m_stop = hal::degrees(360.0);
+            std::chrono::milliseconds m_delay = std::chrono:milliseconds(5.0);
 
             hal::servo& revolver_servo_my;
             hal::input_pin& input_pin_my;
