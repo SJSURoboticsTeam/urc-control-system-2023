@@ -52,8 +52,7 @@ hal::result<application_framework> initialize_platform()
                                                        settings::terminal_uart_settings)));
   // servos, we need to init all of the mc_x motors then call make_servo
   // in order to pass servos into the application
-  static hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
-  static auto can = HAL_CHECK((hal::lpc40::can::get(2, can_settings)));
+  static auto can = HAL_CHECK((hal::lpc40::can::get(settings::can_bus, settings::can_settings)));
 
   static auto can_router = hal::can_router::create(can).value();
   // left leg

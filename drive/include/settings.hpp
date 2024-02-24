@@ -16,6 +16,11 @@ namespace sjsu::drive {
         constexpr hal::serial::settings terminal_uart_settings = {
             .baud_rate = 38400
         };
+        
+        constexpr int can_bus = 2;
+        constexpr hal::can::settings can_settings = {
+            .baud_rate = 1.0_MHz, 
+        };
     }
 
 };
