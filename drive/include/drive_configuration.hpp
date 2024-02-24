@@ -21,6 +21,8 @@ namespace sjsu::drive {
             drive_configuration get_current();
             drive_configuration get_target();
             drive_configuration get_delta();
+            void set_kP(drive_configuration p_kP);
+            void set_max_delta(drive_configuration p_max_delta);
         private:
             drive_configuration m_current;
             drive_configuration m_target;

@@ -27,4 +27,10 @@ namespace sjsu::drive {
     drive_configuration drive_configuration_updater::get_delta() {
         return m_delta;
     }
+    void drive_configuration_updater::set_kP(drive_configuration p_kP) {
+        m_kP = p_kP;
+    }
+    void drive_configuration_updater::set_max_delta(drive_configuration p_max_delta) {
+        m_max_delta = p_max_delta;
+    }
 }
