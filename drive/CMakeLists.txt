@@ -25,6 +25,7 @@ add_executable(${PROJECT_NAME}
     platform-implementations/esp8266_mission_control.cpp
     platform-implementations/serial_mission_control.cpp
     platform-implementations/offset_servo.cpp
+    platform-implementations/esp_tcp_client.cpp
     implementations/command_lerper.cpp
     implementations/mode_switcher.cpp
     implementations/tri_wheel_router.cpp
