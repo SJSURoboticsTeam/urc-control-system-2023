@@ -21,9 +21,7 @@ namespace sjsu::science {
             hal::input_pin& input_pin_my;
             hal::steady_clock& steady_clock_my;
 
-            hal::status revolverClockwise();
-            hal::status revolverCounterClockwise();
-            hal::status revolverStop();
+            hal::status revolverState(hal::degrees rotationState);
 
         public:
             enum class positions{
