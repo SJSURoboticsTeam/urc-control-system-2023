@@ -29,9 +29,6 @@ add_executable(${PROJECT_NAME}
     implementations/drive_debug.cpp
     implementations/wheel_router.cpp
     implementations/drive_configuration_updater.cpp
-    implementations/command_lerper.cpp
-    implementations/mode_switcher.cpp
-    implementations/tri_wheel_router.cpp
     platforms/${platform}.cpp)
 target_include_directories(${PROJECT_NAME} PUBLIC .)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)

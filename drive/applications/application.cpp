@@ -4,6 +4,7 @@
 #include "../include/drive_configuration_updater.hpp"
 #include "../include/wheel_router.hpp"
 #include "../include/rules_engine.hpp"
+#include "../include/settings.hpp"
 
 #include "application.hpp"
 
@@ -26,18 +27,9 @@ hal::status application(application_framework& p_framework)
 
 
   drive_configuration_updater configuration_updater;
-  drive_configuration kP, max_delta;
-  // These control how sensitive the system is to changes in the target.
-  kP.steering_angle = 1;
-  kP.wheel_heading = 10;
-  kP.wheel_speed = 20;
-  // These control how fast the system can react to changes in the target.
-  max_delta.steering_angle = 40;
-  max_delta.wheel_heading = 360;
-  max_delta.wheel_speed = 50;
 
-  configuration_updater.set_kP(kP);
-  configuration_updater.set_max_delta(max_delta);
+  configuration_updater.set_kP(config_kP);
+  configuration_updater.set_max_delta(config_max_delta);
 
   // Supports different leg configurations
   wheel_router wheels(legs);
