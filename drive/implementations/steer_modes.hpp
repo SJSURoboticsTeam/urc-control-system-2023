@@ -4,24 +4,16 @@
 
 #include "../dto/drive.hpp"
 #include "../include/mission_control.hpp"
-
+#include "../include/settings.hpp"
 namespace sjsu::drive {
-
-static constexpr float left_leg_drive_offset = 37;      // 41
-static constexpr float right_leg_drive_offset = 199.5;  // 200
-static constexpr float back_leg_drive_offset = 117;     // 122
-
-static constexpr float left_leg_spin_offset = 242;
-static constexpr float right_leg_spin_offset = 0;
-static constexpr float back_leg_spin_offset = 0;
 
 inline tri_wheel_router_arguments spin_steering(
   mission_control::mc_commands p_commands)
 {
   tri_wheel_router_arguments temp;
-  temp.back.angle = back_leg_spin_offset;
-  temp.left.angle = left_leg_spin_offset;
-  temp.right.angle = right_leg_spin_offset;
+  temp.back.angle = settings::back_leg_spin_offset;
+  temp.left.angle = settings::left_leg_spin_offset;
+  temp.right.angle = settings::right_leg_spin_offset;
   temp.back.speed = static_cast<float>(-p_commands.speed);
   temp.left.speed = static_cast<float>(p_commands.speed);
   temp.right.speed = static_cast<float>(-p_commands.speed);
@@ -35,11 +27,11 @@ inline tri_wheel_router_arguments translate_steering(
   tri_wheel_router_arguments steer_arguments;
 
   steer_arguments.left.angle =
-    (static_cast<float>(-p_commands.angle) + left_leg_drive_offset);
+    (static_cast<float>(-p_commands.angle) + settings::left_leg_drive_offset);
   steer_arguments.right.angle =
-    (static_cast<float>(-p_commands.angle) + right_leg_drive_offset);
+    (static_cast<float>(-p_commands.angle) + settings::right_leg_drive_offset);
   steer_arguments.back.angle =
-    (static_cast<float>(-p_commands.angle) + back_leg_drive_offset);
+    (static_cast<float>(-p_commands.angle) + settings::back_leg_drive_offset);
 
   steer_arguments.left.speed = static_cast<float>(-p_commands.speed);
   steer_arguments.right.speed = static_cast<float>(-p_commands.speed);
@@ -145,9 +137,9 @@ inline tri_wheel_router_arguments drive_steering(
   }
 
   // adding the offsets to put it into the base drive mode
-  steer_arguments.left.angle += left_leg_drive_offset;
-  steer_arguments.right.angle += right_leg_drive_offset;
-  steer_arguments.back.angle += back_leg_drive_offset;
+  steer_arguments.left.angle += settings::left_leg_drive_offset;
+  steer_arguments.right.angle += settings::right_leg_drive_offset;
+  steer_arguments.back.angle += settings::back_leg_drive_offset;
   return steer_arguments;
 }
 

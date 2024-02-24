@@ -93,6 +93,14 @@ namespace sjsu::drive {
             .baud_rate = 115200
         };
         
+        
+        constexpr float left_leg_drive_offset = 37;      // 41
+        constexpr float right_leg_drive_offset = 199.5;  // 200
+        constexpr float back_leg_drive_offset = 117;     // 122
+
+        constexpr float left_leg_spin_offset = 242;
+        constexpr float right_leg_spin_offset = 0;
+        constexpr float back_leg_spin_offset = 0;
     }
 
 };
