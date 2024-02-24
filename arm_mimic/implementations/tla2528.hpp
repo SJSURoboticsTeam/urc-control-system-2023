@@ -89,6 +89,7 @@ public:
     std::array<hal::byte, 3> write_cmd_buffer = { OpCodes::SingleRegisterWrite, GPO_VALUE, on};
 
     HAL_CHECK(hal::write(m_bus, m_mux_i2c_id, selection_cmd_buffer));
+    HAL_CHECK(hal::write(m_bus, m_mux_i2c_id, set_gpio_cmd_buffer));
     HAL_CHECK(hal::write(m_bus, m_mux_i2c_id, set_gpo_cmd_buffer));
     HAL_CHECK(hal::write(m_bus, m_mux_i2c_id, write_cmd_buffer));
 
