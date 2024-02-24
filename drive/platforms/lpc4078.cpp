@@ -58,18 +58,18 @@ hal::result<application_framework> initialize_platform()
   // left leg
 
   static auto left_leg_steer_drc =
-    HAL_CHECK(hal::rmd::drc::create(can_router, counter, 6.0, 0x141));
+    HAL_CHECK(hal::rmd::drc::create(can_router, counter, 6.0, settings::left_leg.steering_motor_id));
   static auto left_leg_drc_servo =
-    HAL_CHECK(hal::make_servo(left_leg_steer_drc, 5.0_rpm));
+    HAL_CHECK(hal::make_servo(left_leg_steer_drc, settings::max_steer_speed));
   static auto left_leg_drc_steer_speed_sensor =
     HAL_CHECK(make_speed_sensor(left_leg_steer_drc));
   auto left_leg_mag =
-    HAL_CHECK(hal::lpc40::input_pin::get(1, 22, hal::input_pin::settings{}));
+    HAL_CHECK(hal::lpc40::input_pin::get(settings::left_leg.hall.port, settings::left_leg.hall.pin, hal::input_pin::settings{}));
 
   static auto left_leg_hub_drc =
-    HAL_CHECK(hal::rmd::drc::create(can_router, counter, 6.0, 0x142));
+    HAL_CHECK(hal::rmd::drc::create(can_router, counter, 6.0, settings::left_leg.propulsion_motor_id));
   static auto left_leg_drc_motor =
-    HAL_CHECK(hal::make_motor(left_leg_hub_drc, 100.0_rpm));
+    HAL_CHECK(hal::make_motor(left_leg_hub_drc, settings::max_propulsion_speed));
   static auto left_leg_drc_hub_speed_sensor =
     HAL_CHECK(make_speed_sensor(left_leg_hub_drc));
 
@@ -85,18 +85,18 @@ hal::result<application_framework> initialize_platform()
 
   // right leg
   static auto right_leg_steer_drc =
-    HAL_CHECK(hal::rmd::drc::create(can_router, counter, 6.0, 0x143));
+    HAL_CHECK(hal::rmd::drc::create(can_router, counter, 6.0, settings::right_leg.steering_motor_id));
   static auto right_leg_drc_servo =
-    HAL_CHECK(hal::make_servo(right_leg_steer_drc, 5.0_rpm));
+    HAL_CHECK(hal::make_servo(right_leg_steer_drc, settings::max_steer_speed));
   static auto right_leg_drc_steer_speed_sensor =
     HAL_CHECK(make_speed_sensor(right_leg_steer_drc));
   auto right_leg_mag =
-    HAL_CHECK(hal::lpc40::input_pin::get(1, 15, hal::input_pin::settings{}));
+    HAL_CHECK(hal::lpc40::input_pin::get(settings::right_leg.hall.port, settings::right_leg.hall.pin, hal::input_pin::settings{}));
 
   static auto right_leg_hub_drc =
-    HAL_CHECK(hal::rmd::drc::create(can_router, counter, 6.0, 0x144));
+    HAL_CHECK(hal::rmd::drc::create(can_router, counter, 6.0, settings::right_leg.propulsion_motor_id));
   static auto right_leg_drc_motor =
-    HAL_CHECK(hal::make_motor(right_leg_hub_drc, 100.0_rpm));
+    HAL_CHECK(hal::make_motor(right_leg_hub_drc, settings::max_propulsion_speed));
   static auto right_leg_drc_hub_speed_sensor =
     HAL_CHECK(make_speed_sensor(right_leg_hub_drc));
 
@@ -111,18 +111,18 @@ hal::result<application_framework> initialize_platform()
 
   // back leg
   static auto back_leg_steer_drc =
-    HAL_CHECK(hal::rmd::drc::create(can_router, counter, 6.0, 0x145));
+    HAL_CHECK(hal::rmd::drc::create(can_router, counter, 6.0, settings::back_leg.steering_motor_id));
   static auto back_leg_drc_servo =
-    HAL_CHECK(hal::make_servo(back_leg_steer_drc, 5.0_rpm));
+    HAL_CHECK(hal::make_servo(back_leg_steer_drc, settings::max_steer_speed));
   static auto back_leg_drc_steer_speed_sensor =
     HAL_CHECK(make_speed_sensor(back_leg_steer_drc));
   auto back_leg_mag =
-    HAL_CHECK(hal::lpc40::input_pin::get(1, 23, hal::input_pin::settings{}));
+    HAL_CHECK(hal::lpc40::input_pin::get(settings::back_leg.hall.port, settings::back_leg.hall.pin, hal::input_pin::settings{}));
 
   static auto back_leg_hub_drc =
-    HAL_CHECK(hal::rmd::drc::create(can_router, counter, 6.0, 0x146));
+    HAL_CHECK(hal::rmd::drc::create(can_router, counter, 6.0, settings::back_leg.propulsion_motor_id));
   static auto back_leg_drc_motor =
-    HAL_CHECK(hal::make_motor(back_leg_hub_drc, 100.0_rpm));
+    HAL_CHECK(hal::make_motor(back_leg_hub_drc, settings::max_propulsion_speed));
   static auto back_leg_drc_hub_speed_sensor =
     HAL_CHECK(make_speed_sensor(back_leg_hub_drc));
 
