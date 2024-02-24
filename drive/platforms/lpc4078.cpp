@@ -46,10 +46,10 @@ hal::result<application_framework> initialize_platform()
   static hal::cortex_m::dwt_counter counter(cpu_frequency);
 
   // Serial
-  static std::array<hal::byte, terminal_uart_buffer_size> recieve_buffer0{};
-  static auto uart0 = HAL_CHECK((hal::lpc40::uart::get(terminal_uart,
+  static std::array<hal::byte, settings::terminal_uart_buffer_size> recieve_buffer0{};
+  static auto uart0 = HAL_CHECK((hal::lpc40::uart::get(settings::terminal_uart,
                                                        recieve_buffer0,
-                                                       terminal_uart_settings)));
+                                                       settings::terminal_uart_settings)));
   // servos, we need to init all of the mc_x motors then call make_servo
   // in order to pass servos into the application
   static hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
