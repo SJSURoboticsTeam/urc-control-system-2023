@@ -25,21 +25,23 @@ namespace sjsu::science {
     }
 
     hal::status revolver::revolverMoveVials(int vial) 
-    {
-        int count = 0;
-        bool hallState;
-        bool hallStateDelayed;
-        
-        if (vial != 0 && std::abs(vial) <= m_numVials)
+    {   
+        if (vial != 0 && ((vial > 0 && vial <= m_numVials) || (vial < 0 && -vial <= m_numVials)))
         {
+            int count = -1; // account for initial state change
+            bool hallState;
+            bool hallStateDelayed;
+            
             revolverState((vial > 0) ? m_clockwise : m_counterclockwise);
-            while (count < std::abs(vial)) 
+            vial = (vial > 0) ? vial : -vial;
+
+            while (count < vial) 
             {
                 hallState = input_pin_my.level().value().state;
                 hal::delay(steady_clock_my, m_delay);
                 hallStateDelayed = input_pin_my.level().value().state;
-            
-                if (hallState != hallStateDelayed) 
+
+                if (hallState != hallStateDelayed)
                 {
                     ++count;
                 }
@@ -47,6 +49,5 @@ namespace sjsu::science {
 
             revolverState(m_stop);
         }
-      
     }
 }     
