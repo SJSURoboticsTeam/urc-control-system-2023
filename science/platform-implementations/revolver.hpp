@@ -8,15 +8,12 @@
 #include <libhal-util/units.hpp>
 
 namespace sjsu::science {
-
     class revolver 
     {
         private:
             int m_numVials = 12;
-            hal::degrees m_clockwise = hal::degrees(0.0);
-            hal::degrees m_counterclockwise = hal::degrees(180.0);
             hal::degrees m_stop = hal::degrees(360.0);
-            std::chrono::milliseconds m_delay = std::chrono:milliseconds(5.0);
+            std::chrono::milliseconds m_delay = std::chrono::milliseconds(5);
 
             hal::servo& revolver_servo_my;
             hal::input_pin& input_pin_my;
@@ -25,7 +22,14 @@ namespace sjsu::science {
             hal::status revolverState(hal::degrees rotationState);
 
         public:
+            revolver(hal::servo& p_servo, hal::input_pin& p_input_pin, hal::steady_clock& p_steady_clock);
             static hal::result<revolver> create(hal::servo& p_servo, hal::input_pin& p_input_pin, hal::steady_clock& p_steady_clock);                             
             hal::status revolverMoveVials(int vial);
+    };
+
+    enum class Direction : hal::degrees 
+    {
+        clockwise = hal::degrees(0.0),
+        counterclockwise = hal::degrees(180.0)
     };
 }

@@ -10,15 +10,13 @@
 namespace sjsu::science {
 
     revolver::revolver(hal::servo& p_servo, hal::input_pin& p_input_pin, hal::steady_clock& p_steady_clock)
+        : revolver_servo_my(p_servo), input_pin_my(p_input_pin), steady_clock_my(p_steady_clock)
     {
-        revolver::create(p_servo, p_input_pin, p_steady_clock);
     }
-    
+
     hal::result<revolver> revolver::create(hal::servo& p_servo, hal::input_pin& p_input_pin, hal::steady_clock& p_steady_clock) 
     {
-        revolver_servo_my = p_servo;
-        input_pin_my = p_input_pin;
-        steady_clock_my = p_steady_clock;
+        return hal::result<revolver>(p_servo, p_input_pin, p_steady_clock);
     }
 
     hal::status revolver::revolverState(hal::degrees rotationState) 
@@ -30,38 +28,26 @@ namespace sjsu::science {
     {
         int count = 0;
         bool hallState;
-        bool hallStateDelay;
- 
-        if (vial < 0 && vial >= -m_numVials)
-        {
-            vial = -vial;
-            revolverState(m_counterclockwise);
-        }
-            
-        if (vial > 0 && vial <= m_numVials )
-        {
-            revolverState(m_clockwise);
-        }
-
-        if (vial <= m_numVials && vial != 0)
-        {
-            while (count < vial) 
-            {
-                hallState = input_pin_my.level().value().state;
-
-                hal::delay(steady_clock_my, m_delay);
-
-                hallStateDelayed = input_pin_my.level().value().state;
-
-                if (hallState != hallStateDelay)
-                {
-                    count = count + 1;
-                }
-            }
-
-            revolverState(m_stop);
-        }
+        bool hallStateDelayed;
         
-    }     
+        if (vial != 0 && std::abs(vial) <= m_numVials)
+        {
+            Direction direction = (vial > 0) ? m_clockwise : m_counterclockwise;
+            revolverState(direction);
+        }
 
-}
+        while (count < std::abs(vial)) 
+        {
+            hallState = input_pin_my.level().value().state;
+            hal::delay(steady_clock_my, m_delay);
+            hallStateDelayed = input_pin_my.level().value().state;
+            
+            if (hallState != hallStateDelayed) 
+            {
+                ++count;
+            }
+        }
+
+        revolverState(m_stop);
+    }
+}     
