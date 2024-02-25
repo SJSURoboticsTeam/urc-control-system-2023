@@ -37,6 +37,8 @@ struct application_framework
   hal::adc* adc_4;
   hal::adc* adc_5;
 
+  hal::servo* revolver_servo;
+
   hal::steady_clock* steady_clock;
   hal::serial* terminal;
   mission_control* mc;
