@@ -85,6 +85,12 @@ hal::result<application_framework> initialize_platform()
 
   static auto i2c = HAL_CHECK(hal::lpc40::i2c::get(2));
 
+  auto deionized_water_pump = HAL_CHECK(hal::lpc40::output_pin::get(1, 10, hal::output_pin::settings{}));
+  auto sample_pump = HAL_CHECK(hal::lpc40::output_pin::get(1, 28, hal::output_pin::settings{}));
+  auto molisch_reagent_pump = HAL_CHECK(hal::lpc40::output_pin::get(1, 20, hal::output_pin::settings{}));
+  auto sulfuric_acid_pump = HAL_CHECK(hal::lpc40::output_pin::get(1, 19, hal::output_pin::settings{}));
+  auto biuret_reagent = HAL_CHECK(hal::lpc40::output_pin::get(1, 9, hal::output_pin::settings{}));
+
   return application_framework{
     .terminal = &uart0,
     .can = &can,
@@ -98,7 +104,13 @@ hal::result<application_framework> initialize_platform()
     .esp = &uart1,
     .i2c = &i2c,
     .steady_clock = &counter,
+    .deionized_water_pump = &deionized_water_pump,
+    .sample_pump = &sample_pump,
+    .molisch_reagent_pump = &molisch_reagent_pump,
+    .sulfuric_acid_pump = &sulfuric_acid_pump,
+    .biuret_reagent = &biuret_reagent,
     .reset = []() { hal::cortex_m::reset(); },
+
   };
 };
 }  // namespace sjsu::science

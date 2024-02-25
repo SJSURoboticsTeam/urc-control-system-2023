@@ -6,7 +6,7 @@ namespace sjsu::science {
     class pump_manager {
         private:
             
-            std::array<hal::output_pin&,5> m_pumps;
+            std::array<hal::output_pin*,5> m_pumps;
             hal::steady_clock& m_clock;
             pump_manager(
                 hal::steady_clock& p_clock,

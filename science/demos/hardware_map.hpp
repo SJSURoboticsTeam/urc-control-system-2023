@@ -19,6 +19,7 @@
 #include <libhal/functional.hpp>
 #include <libhal/i2c.hpp>
 #include <libhal/input_pin.hpp>
+#include <libhal/output_pin.hpp>
 #include <libhal/pwm.hpp>
 #include <libhal/serial.hpp>
 #include <libhal/steady_clock.hpp>
@@ -38,7 +39,13 @@ struct application_framework
   hal::serial* esp;
   hal::i2c* i2c;
   hal::steady_clock* steady_clock;
+  hal::output_pin* deionized_water_pump;
+  hal::output_pin* sample_pump;
+  hal::output_pin* molisch_reagent_pump;
+  hal::output_pin* sulfuric_acid_pump;
+  hal::output_pin* biuret_reagent;
   hal::callback<void()> reset;
+
 };
 
 // Application function must be implemented by one of the compilation units
