@@ -32,22 +32,21 @@ namespace sjsu::science {
         
         if (vial != 0 && std::abs(vial) <= m_numVials)
         {
-            Direction direction = (vial > 0) ? m_clockwise : m_counterclockwise;
-            revolverState(direction);
-        }
-
-        while (count < std::abs(vial)) 
-        {
-            hallState = input_pin_my.level().value().state;
-            hal::delay(steady_clock_my, m_delay);
-            hallStateDelayed = input_pin_my.level().value().state;
-            
-            if (hallState != hallStateDelayed) 
+            revolverState((vial > 0) ? m_clockwise : m_counterclockwise);
+            while (count < std::abs(vial)) 
             {
-                ++count;
+                hallState = input_pin_my.level().value().state;
+                hal::delay(steady_clock_my, m_delay);
+                hallStateDelayed = input_pin_my.level().value().state;
+            
+                if (hallState != hallStateDelayed) 
+                {
+                    ++count;
+                }
             }
-        }
 
-        revolverState(m_stop);
+            revolverState(m_stop);
+        }
+      
     }
 }     

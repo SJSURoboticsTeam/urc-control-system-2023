@@ -8,10 +8,34 @@
 #include <libhal-util/units.hpp>
 
 namespace sjsu::science {
+    // Class:
+    //      private:
+    //              member variables
+    //              reference types of objects required for class
+    //              member functions aka methods
+    //      public:
+    //              empty dummy constructor, but the reference types of objects will be assigned to the inputs in .cpp 
+    //              static create method with hal::result wrapper
+    //              member functions aka methods
+
+    // Encapsulation:
+    //      1. Header File
+    //              a. Private = Implementation Details
+    //              b. Public = Interface
+    //      2. CPP File - Implementation, Actual
+    //      3. Dummy Constructor + Create to Separate:
+    //              a. Object Creation into Memory
+    //              b. Initialization Logic + Error Handling
+    //                  i. Error Handling is standardized via HAL
+    //      4. application_framework - struct that acts as interface for application.cpp to access lpc4078 hardware
+    //      5. application.cpp - Main application logic that interfaces with microcontrollers / higher-level modules
+    //              - The implementation of more basic sensors / actuators managed by the microcontroller 
     class revolver 
     {
         private:
             int m_numVials = 12;
+            hal::degrees m_clockwise = hal::degrees(0.0);
+            hal::degrees m_counterclockwise = hal::degrees(180.0);
             hal::degrees m_stop = hal::degrees(360.0);
             std::chrono::milliseconds m_delay = std::chrono::milliseconds(5);
 
@@ -25,11 +49,5 @@ namespace sjsu::science {
             revolver(hal::servo& p_servo, hal::input_pin& p_input_pin, hal::steady_clock& p_steady_clock);
             static hal::result<revolver> create(hal::servo& p_servo, hal::input_pin& p_input_pin, hal::steady_clock& p_steady_clock);                             
             hal::status revolverMoveVials(int vial);
-    };
-
-    enum class Direction : hal::degrees 
-    {
-        clockwise = hal::degrees(0.0),
-        counterclockwise = hal::degrees(180.0)
     };
 }
