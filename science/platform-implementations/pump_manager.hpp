@@ -1,12 +1,15 @@
 #include <libhal/output_pin.hpp>
+#include <libhal-util/steady_clock.hpp>
 
 namespace sjsu::science {
 
     class pump_manager {
         private:
             
-            std::array<hal::output_pin&,5> m_pumps;
+            std::array<hal::output_pin*,5> m_pumps;
+            hal::steady_clock& m_clock;
             pump_manager(
+                hal::steady_clock& p_clock,
                 hal::output_pin& p_deionized_water_pump, 
                 hal::output_pin& p_sample_pump, 
                 hal::output_pin& p_molisch_reagent_pump, 
@@ -23,6 +26,7 @@ namespace sjsu::science {
                 BIURET_REAGENT
             };
             static hal::result<pump_manager> create(
+                hal::steady_clock& p_clock,
                 hal::output_pin& p_deionized_water_pump, 
                 hal::output_pin& p_sample_pump, 
                 hal::output_pin& p_molisch_reagent_pump, 
