@@ -6,7 +6,7 @@ namespace sjsu::drive {
 inline mission_control::mc_commands validate_commands(
   mission_control::mc_commands p_commands)
 {
-  static constexpr int kMaxSpeed = 100;
+  static constexpr int kMaxSpeed = 200;
   static constexpr int kMaxAngle = 12;
 
   if (p_commands.mode == 'D') {
