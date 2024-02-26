@@ -25,6 +25,8 @@ public:
         return impl_get_command(p_timeout);
     }
 
+    void set_feedback(mc_feedback a) {};
+
 private:
 
     print_mission_control(hal::serial& p_console) : m_console(&p_console) 

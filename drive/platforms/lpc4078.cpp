@@ -22,10 +22,6 @@
 #include "../platform-implementations/home.hpp"
 #include "../platform-implementations/offset_servo.hpp"
 #include "../platform-implementations/helper.hpp"
-#include "../platform-implementations/print_mission_control.hpp"
-#include "../platform-implementations/print_motor.hpp"
-#include "../platform-implementations/print_servo.hpp"
-#include "../platform-implementations/print_speed_sensor.hpp"
 #include "../platform-implementations/calibration_settings.hpp"
 
 #include "../platform-implementations/tcp_client.hpp"
@@ -71,7 +67,10 @@ hal::result<application_framework> initialize_platform()
 
   #ifdef USE_MOTORS
 
-  constexpr hal::rpm max_steering_rpm = 20;
+  constexpr hal::rpm max_steering_rpm = 20.0_rpm;
+  // constexpr hal::rpm max_speed = 200.0_rpm;
+  constexpr hal::rpm max_speed = 100.0_rpm;
+
   constexpr float angle_correction_factor = 1.3625; // ???? WHY ARE THESE MOTORS SCALED????
 
   hal::print(uart0, "Initializing Left Leg\n");
@@ -81,7 +80,7 @@ hal::result<application_framework> initialize_platform()
   auto left_leg_mag = HAL_CHECK(hal::lpc40::input_pin::get(1, 22, hal::input_pin::settings{}));
 
   static auto left_leg_hub_drc = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 6.0, 0x142));
-  static auto left_leg_drc_motor = HAL_CHECK(hal::make_motor(left_leg_hub_drc, 100.0_rpm));
+  static auto left_leg_drc_motor = HAL_CHECK(hal::make_motor(left_leg_hub_drc, max_speed));
   static auto left_leg_drc_hub_speed_sensor = HAL_CHECK(make_speed_sensor(left_leg_hub_drc));
   
   static auto left_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(left_leg_drc_servo, 0.0f));
@@ -99,7 +98,7 @@ hal::result<application_framework> initialize_platform()
   auto right_leg_mag = HAL_CHECK(hal::lpc40::input_pin::get(1, 15, hal::input_pin::settings{}));
 
   static auto right_leg_hub_drc = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 6.0, 0x144));
-  static auto right_leg_drc_motor = HAL_CHECK(hal::make_motor(right_leg_hub_drc, 100.0_rpm));
+  static auto right_leg_drc_motor = HAL_CHECK(hal::make_motor(right_leg_hub_drc, max_speed));
   static auto right_leg_drc_hub_speed_sensor = HAL_CHECK(make_speed_sensor(right_leg_hub_drc));
 
   static auto right_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(right_leg_drc_servo, 0.0f));
@@ -116,7 +115,7 @@ hal::result<application_framework> initialize_platform()
   auto back_leg_mag = HAL_CHECK(hal::lpc40::input_pin::get(1, 23, hal::input_pin::settings{}));
 
   static auto back_leg_hub_drc = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 6.0, 0x146));
-  static auto back_leg_drc_motor = HAL_CHECK(hal::make_motor(back_leg_hub_drc, 100.0_rpm));
+  static auto back_leg_drc_motor = HAL_CHECK(hal::make_motor(back_leg_hub_drc, max_speed));
   static auto back_leg_drc_hub_speed_sensor = HAL_CHECK(make_speed_sensor(back_leg_hub_drc));
 
   static auto back_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(back_leg_drc_servo, 0.0f));

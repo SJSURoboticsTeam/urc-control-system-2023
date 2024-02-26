@@ -80,7 +80,7 @@ hal::status application(application_framework& p_framework)
 
   HAL_CHECK(hal::write(terminal, "Starting control loop...\n"));
   
-  float kP_steering_angle = 1;
+  float kP_steering_angle = 10;
   float kP_wheel_heading = 10;
   float kP_wheel_speed = 20;
 
@@ -143,7 +143,7 @@ hal::status application(application_framework& p_framework)
       // hal::print<128>(terminal, "\nsped : %f, %d\n", commands.wheel_speed, commands.speed);
 
       // target_steering_angle *= -1;
-      next_update = now + 0.1;
+      next_update = now + 0.01;
       // loop_count=0;
     }
     // loop_count ++;
@@ -165,9 +165,40 @@ hal::status application(application_framework& p_framework)
     float turning_radius = 1 / std::tan(current_steering_angle * std::numbers::pi / 180);
     auto wheel_settings = steering.calculate_wheel_settings(turning_radius, current_wheel_heading, current_wheel_speed / 100);
     // print_wheel_settings(terminal, wheel_settings);
-    
+
     set_wheel_state(legs, wheel_settings);
     
+    mission_control.set_feedback({
+      .dt=dt,
+      .current_wheel_speed=current_wheel_speed,
+      .current_steering_angle=current_steering_angle,
+      .current_wheel_heading=current_wheel_heading,
+
+      .delta_wheel_speed=d_wheel_speed,
+      .delta_steering_angle=d_steering_angle,
+      .delta_wheel_heading=d_wheel_heading,
+
+      .fl={
+        .steering={
+          .speed=legs[0]->steer_speed_sensor->read().value().speed
+        },
+        .propulsion={
+          .speed=legs[0]->propulsion_speed_sensor->read().value().speed
+
+        },
+        .requested_steering_angle=wheel_settings[0].angle,
+        .requested_propulsion_speed=wheel_settings[0].wheel_speed,
+      },
+      .fr={
+        .requested_steering_angle=wheel_settings[1].angle,
+        .requested_propulsion_speed=wheel_settings[1].wheel_speed,
+      },
+      .b={
+        .requested_steering_angle=wheel_settings[2].angle,
+        .requested_propulsion_speed=wheel_settings[2].wheel_speed,
+      }
+    });
+
     // HAL_CHECK(legs[0]->steer->position(wheel_settings[0].angle * angle_correction_factor));
     // HAL_CHECK(legs[1]->steer->position(wheel_settings[1].angle * angle_correction_factor));
     // HAL_CHECK(legs[2]->steer->position(wheel_settings[2].angle * angle_correction_factor));

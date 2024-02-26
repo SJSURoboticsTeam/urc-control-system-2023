@@ -16,10 +16,51 @@ static constexpr char kGETRequestFormat[] =
   "drive?heartbeat_count=%d&is_operational=%d&wheel_orientation=%d&drive_mode=%"
   "c&speed=%d&angle=%d";
 
+static constexpr char* get_request_format = "GET /drive?"
+  "dt=%.6f&"
+  "current_wheel_speed=%.2f&current_steering_angle=%.2f&current_wheel_heading=%.2f&"
+  "delta_wheel_speed=%.2f&delta_steering_angle=%.2f&delta_wheel_heading=%.2f&"
+  "fl_steering_angle=%.4f&fl_steering_angle=%.4f&fl_steering_current=%.4f&"
+  "fl_propulsion_angle=%.4f&fl_propulsion_angle=%.4f&fl_propulsion_current=%.4f&"
+  "fl_requested_steering_angle=%.2f&fl_requested_propulsion_speed=%.2f"
+  "fr_steering_angle=%.4f&fr_steering_angle=%.4f&fr_steering_current=%.4f&"
+  "fr_propulsion_angle=%.4f&fr_propulsion_angle=%.4f&fr_propulsion_current=%.4f&"
+  "fr_requested_steering_angle=%.2f&fr_requested_propulsion_speed=%.2f"
+  "b_steering_angle=%.4f&b_steering_angle=%.4f&b_steering_current=%.4f&"
+  "b_propulsion_angle=%.4f&b_propulsion_angle=%.4f&b_propulsion_current=%.4f&"
+  "b_requested_steering_angle=%.2f&b_requested_propulsion_speed=%.2f"
+  " HTTP/1.1\r\nHost: 192.168.0.211:5000\r\nConnection:keep-alive\r\n\r\n";
 
 class mission_control
 {
   public:
+  struct mc_feedback {
+    float dt = 0.0f, mc_ping = 0.0;
+
+    float current_wheel_speed = 0.0;
+    float current_steering_angle = 0.0;
+    float current_wheel_heading = 0.0;
+
+    float delta_wheel_speed = 0.0;
+    float delta_steering_angle = 0.0;
+    float delta_wheel_heading = 0.0;
+
+    struct motor_feedback {
+      float angle = 0.0f;
+      float speed = 0.0f;
+      float current = 0.0f;
+    };
+    struct leg_feedback {
+      motor_feedback steering;
+      motor_feedback propulsion;
+      float requested_steering_angle = 0.0;
+      float requested_propulsion_speed = 0.0;
+    }; 
+
+    leg_feedback fl, fr, b;
+  };
+
+  virtual void set_feedback(mc_feedback p_feedback) = 0;
   struct mc_commands
   {
     char mode = 'D';

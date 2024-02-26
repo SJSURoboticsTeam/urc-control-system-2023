@@ -46,7 +46,12 @@ public:
     return esp_mission_control;
   }
 
+  void set_feedback(mc_feedback p_feedback) {
+    m_feedback = p_feedback;
+  }
+
 private:
+  mc_feedback m_feedback;
   esp8266_mission_control(
                           tcp_client& p_client,
                           // hal::esp8266::at& p_esp8266,
@@ -71,6 +76,86 @@ private:
     , m_http_header_parser(new_http_header_parser())
   {
     m_buffer_len = 0;
+  }
+  /*
+  
+  struct mc_feedback {
+    float current_wheel_speed = 0.0;
+    float current_steering_angle = 0.0;
+    float current_wheel_heading = 0.0;
+
+    float delta_wheel_speed = 0.0;
+    float delta_steering_angle = 0.0;
+    float delta_wheel_heading = 0.0;
+
+    struct motor_feedback {
+      float angle = 0.0f;
+      float speed = 0.0f;
+      float current = 0.0f;
+    };
+    struct leg_feedback {
+      motor_feedback steering;
+      motor_feedback propulsion;
+      float requested_steering_angle = 0.0;
+      float requested_propulsion_speed = 0.0;
+    }; 
+
+    leg_feedback fl, fr, b;
+    float dt, mc_ping;
+  };*/
+
+  hal::status send_feedback(hal::function_ref<hal::timeout_function> p_timeout) {
+      // auto status = m_client->send(hal::as_bytes(m_get_request), p_timeout);
+    // constexpr std::string_view endpoint = "GET /drive?";
+    // constexpr std::string_view endpoint_rest = " HTTP/1.1\r\nHost: 192.168.0.211:5000\r\nConnection:keep-alive\r\n\r\n";
+    // m_client->send(hal::as_bytes(endpoint), p_timeout);
+    char buffer[1024];
+    // constexpr std::string_view bruh = "a=c";
+    size_t n = snprintf(buffer, sizeof(buffer), get_request_format, 
+      m_feedback.dt,
+
+      m_feedback.current_wheel_speed,
+      m_feedback.current_steering_angle,
+      m_feedback.current_wheel_heading,
+
+      m_feedback.delta_wheel_speed,
+      m_feedback.delta_steering_angle,
+      m_feedback.delta_wheel_heading,
+
+
+      m_feedback.fl.steering.angle,
+      m_feedback.fl.steering.speed,
+      m_feedback.fl.steering.current,
+      m_feedback.fl.propulsion.angle,
+      m_feedback.fl.propulsion.speed,
+      m_feedback.fl.propulsion.current,
+      m_feedback.fl.requested_steering_angle,
+      m_feedback.fl.requested_propulsion_speed,
+
+      m_feedback.fr.steering.angle,
+      m_feedback.fr.steering.speed,
+      m_feedback.fr.steering.current,
+      m_feedback.fr.propulsion.angle,
+      m_feedback.fr.propulsion.speed,
+      m_feedback.fr.propulsion.current,
+      m_feedback.fr.requested_steering_angle,
+      m_feedback.fr.requested_propulsion_speed,
+
+      m_feedback.b.steering.angle,
+      m_feedback.b.steering.speed,
+      m_feedback.b.steering.current,
+      m_feedback.b.propulsion.angle,
+      m_feedback.b.propulsion.speed,
+      m_feedback.b.propulsion.current,
+      m_feedback.b.requested_steering_angle,
+      m_feedback.b.requested_propulsion_speed
+    );
+    hal::print<2313>(*m_console, "%s\n", buffer);
+    std::span<hal::byte> bytes{reinterpret_cast<hal::byte*>(std::addressof(buffer)), n}; 
+    m_client->send(bytes, p_timeout);
+
+    // m_client->send(hal::as_bytes(endpoint_rest), p_timeout);
+    return hal::success();
   }
 
   hal::result<mc_commands> impl_get_command(
@@ -103,7 +188,8 @@ private:
 
       // Send out HTTP GET request
 
-      auto status = m_client->send(hal::as_bytes(m_get_request), p_timeout);
+      // auto status = m_client->send(hal::as_bytes(m_get_request), p_timeout);
+        auto status = send_feedback(p_timeout);
         // m_esp8266->server_write(hal::as_bytes(m_get_request), p_timeout);
 
       if (!status) {
@@ -215,17 +301,6 @@ private:
 
     // Increment the message count.
     m_commands.message_count ++; 
-
-    // hal::print<200>(*m_console,
-    //                   "HB: %d\t, IO %d\t, WO: %d\t, DM: %c\t, Speed: %d\n, Angle: %d\n",
-    //                   commands.heartbeat_count,
-    //                   commands.is_operational,
-    //                   commands.wheel_orientation,
-    //                   commands.mode,
-    //                   commands.speed,
-    //                   commands.angle
-    //                   );
-    // m_commands = commands;
   }
 
 
@@ -234,82 +309,6 @@ private:
     return std::string_view(reinterpret_cast<const char*>(p_span.data()),
                             p_span.size());
   }
-
-  // enum class connection_state
-  // {
-  //   check_ap_connection,
-  //   connecting_to_ap,
-  //   set_ip_address,
-  //   check_server_connection,
-  //   connecting_to_server,
-  //   connection_established,
-  // };
-
-  // [[nodiscard]] hal::status establish_connection(hal::timeout auto& p_timeout)
-  // {
-  //   connection_state state = connection_state::check_ap_connection;
-
-  //   while (state != connection_state::connection_established) {
-  //     switch (state) {
-  //       case connection_state::check_ap_connection:
-  //         hal::print(*m_console, "Checking if AP \"");
-  //         hal::print(*m_console, m_ssid);
-  //         hal::print(*m_console, "\" is connected... ");
-  //         if (HAL_CHECK(m_esp8266->is_connected_to_ap(p_timeout))) {
-  //           state = connection_state::check_server_connection;
-  //           hal::print(*m_console, "Connected!\n");
-  //         } else {
-  //           state = connection_state::connecting_to_ap;
-  //           hal::print(*m_console, "NOT Connected!\n");
-  //         }
-  //         break;
-  //       case connection_state::connecting_to_ap:
-  //         hal::print(*m_console, "Connecting to AP: \"");
-  //         hal::print(*m_console, m_ssid);
-  //         hal::print(*m_console, "\" ...\n");
-  //         HAL_CHECK(m_esp8266->connect_to_ap(m_ssid, m_password, p_timeout));
-  //         state = connection_state::set_ip_address;
-  //         break;
-  //       case connection_state::set_ip_address:
-  //         if (!m_ip.empty()) {
-  //           hal::print(*m_console, "Setting IP Address to: ");
-  //           hal::print(*m_console, m_ip);
-  //           hal::print(*m_console, " ...\n");
-  //           HAL_CHECK(m_esp8266->set_ip_address(m_ip, p_timeout));
-  //         }
-  //         state = connection_state::check_server_connection;
-  //         break;
-  //       case connection_state::check_server_connection:
-  //         hal::print(*m_console, "Checking if server \"");
-  //         hal::print(*m_console, m_config.domain);
-  //         hal::print(*m_console, "\" is connected... \n");
-  //         if (HAL_CHECK(m_esp8266->is_connected_to_server(p_timeout))) {
-  //           state = connection_state::connection_established;
-  //           hal::print(*m_console, "Connected!\n");
-  //         } else {
-  //           state = connection_state::connecting_to_server;
-  //           hal::print(*m_console, "NOT Connected!\n");
-  //         }
-  //         break;
-  //       case connection_state::connecting_to_server:
-  //         hal::print(*m_console, "Connecting to server: \"");
-  //         hal::print(*m_console, m_config.domain);
-  //         hal::print(*m_console, "\" ...\n");
-  //         HAL_CHECK(m_esp8266->connect_to_server(m_config, p_timeout));
-  //         hal::print(*m_console, "connected\n");
-  //         state = connection_state::check_server_connection;
-  //         break;
-  //       case connection_state::connection_established:
-  //         // Do nothing, allow next iteration to break while loop
-  //         hal::print(*m_console, "Succesfully Connected.");
-  //         break;
-  //       default:
-  //         state = connection_state::connecting_to_ap;
-  //     }
-  //   }
-
-  //   return hal::success();
-  // }
 
   struct http_header_parser_t
   {
