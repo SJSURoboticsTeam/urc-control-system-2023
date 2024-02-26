@@ -17,6 +17,8 @@
 #include <libhal-armcortex/startup.hpp>
 #include <libhal-armcortex/system_control.hpp>
 
+#include <libhal-rmd/mc_x.hpp>
+
 #include <libhal-lpc40/adc.hpp>
 #include <libhal-lpc40/can.hpp>
 #include <libhal-lpc40/constants.hpp>
@@ -138,27 +140,37 @@ hal::result<application_framework> initialize_platform()
   }
   static auto science_mission_control = esp_mission_control.value();
 
+  static hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
+  static auto can = HAL_CHECK((hal::lpc40::can::get(2, can_settings)));
+
+  static auto can_router = hal::can_router::create(can).value();
+
+  static auto mixing_mc_x =
+    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x141));
+  static auto mixing_servo =
+    HAL_CHECK(hal::make_servo(mixing_mc_x ,2.0_rpm));
+
   // Don't think we need can for the science applications thus far
   //  hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
   //  auto& can = HAL_CHECK((hal::lpc40::can::get<2>(can_settings)));
 
-  static auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c,0b100'0000)); 
-  static auto pwm0 = pca9685.get_pwm_channel<3>(); 
-  static auto revolver_settings = hal::soft::rc_servo::settings
-    {
-      .min_angle = hal::degrees(0.0),
-      .max_angle = hal::degrees(180.0),
-      .min_microseconds = 1000,
-      .max_microseconds = 2000,
-    };
+  // static auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c,0b100'0000)); 
+  // static auto pwm0 = pca9685.get_pwm_channel<3>(); 
+  // static auto revolver_settings = hal::soft::rc_servo::settings
+  //   {
+  //     .min_angle = hal::degrees(0.0),
+  //     .max_angle = hal::degrees(180.0),
+  //     .min_microseconds = 1000,
+  //     .max_microseconds = 2000,
+  //   };
 
-    static auto revolver_servo =
-      HAL_CHECK(hal::soft::rc_servo::create(pwm0, rotunda_science_settings));
+  //   static auto revolver_servo =
+  //     HAL_CHECK(hal::soft::rc_servo::create(pwm0, rotunda_science_settings));
     
-    static auto in_pin2 =
-      HAL_CHECK(hal::lpc40::input_pin::get(1, 22));
+  //   static auto in_pin2 =
+  //     HAL_CHECK(hal::lpc40::input_pin::get(1, 22));
 
-    static auto revolver = HAL_CHECK(sjsu::science::revolver::create(revolver_servo, in_pin2, steady_clock));
+  //   static auto revolver = HAL_CHECK(sjsu::science::revolver::create(revolver_servo, in_pin2, steady_clock));
 
   // static auto in_pin0 =
   //   HAL_CHECK(hal::lpc40::input_pin::get(1, 15, hal::input_pin::settings{}));
@@ -179,18 +191,19 @@ hal::result<application_framework> initialize_platform()
   // static auto can = HAL_CHECK(hal::lpc40::can::get(0));
 
   return application_framework{
+    .mixing_servo = &mixing_servo,
     
     // .in_pin0 = &in_pin0,
     // .in_pin1 = &in_pin1,
-    .in_pin2 = &in_pin2, //hall effect sensor
+    // .in_pin2 = &in_pin2, //hall effect sensor
     // .pwm_1_6 = &pwm_1_6,
     // .pwm_1_5 = &pwm_1_5,
     // .adc_4 = &adc_4,
     // .adc_5 = &adc_5,
 
-    .revolver_servo = &revolver_servo,
+    // .revolver_servo = &revolver_servo,
     .steady_clock = &counter,
-    .revolver = &revolver,
+    // .revolver = &revolver,
     .terminal = &uart0, //uart0 is terminal
     .mc = &science_mission_control,
     // .can = &can,

@@ -66,7 +66,7 @@ public:
     hal::result<scd40_read_data> read();
     hal::status stop();
     hal::result<scd40_settings> get_settings();
-    hal::status set_settings( settings setting);
+    hal::status set_settings( settings );
 };
 
 } // namespace science

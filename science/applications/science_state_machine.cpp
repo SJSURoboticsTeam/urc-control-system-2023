@@ -1,33 +1,32 @@
 #include "science_state_machine.hpp"
 #include <libhal/servo.hpp> 
+#
 namespace sjsu::science{
-    hal::result<science_states> science_state_machine::run_state_machine(science_states state){
-        switch(current_state){
+
+     science_state_machine(application_framework& application) : hardware(application){}
+
+     static hal::result<science_state_machine> science_state_machine::create(application_framework& p_application){
+        science_state_machine science_state_machine(p_application);
+        return science_state_machine;
+     }
+
+    hal::status science_state_machine::run_state_machine(science_state_machine::science_states state){
+        switch(state){
             case science_state_machine::science_states::GET_SAMPLES:
-                pump_dio_water();
                 mix_solution();
-                pump_sample(); 
-                revolverMoveVials(1); // move to vial 2
-                pump_sample();
-                current_state= science_states::MOLISCH_TEST;
+                // pump_sample(); 
+                // move_sample();
+                // pump_sample();
+                // move_sample();
                 break; 
             case science_state_machine::science_states::MOLISCH_TEST:
-                pump_reagents(1);
-                current_position = vial2_position::MOLISCH; 
-                revolverMoveVials(2); //move vial 1 to camera/color sensor 
-                current_position= vial2_position::BIURET; 
-                if(read_color_sensor_purple()){
-                    current_state= science_states::BIURET_TEST;
-                }
-                else{
-                    current_state= science_states::GET_SAMPLES;
-                }
+                // pump_sample(); 
+                // move_sample();
+                // pump_sample();
+                // move_sample();
                 break;
             case science_state_machine::science_states::BIURET_TEST:
-                pump_reagents(2); // pump into vial 2
-                revolverMoveVials(1); // rotate to camera/color_sensor 
-                current_position= vial2_position::CAMERA;
-                current_state= science_states::RESET;
+                // pump_sample();
                 break;
             case science_state_machine::science_states::RESET:
                 // if((vial2_position-2)<0){
@@ -36,15 +35,21 @@ namespace sjsu::science{
                 // else{
                 //     revolverMoveVials(-(vial2_position-2));
                 // }
-                current_state= science_states::GET_SAMPLES;
+                // current_state= science_states::GET_SAMPLES;
                 break; 
         }
-        return state; 
         
     }
+
+    hal::status science_state_machine::mix_solution(){
+        HAL_CHECK(hardware.mixing_servo.velocity_control(10.0_rpm));
+        hal::delay(hardware.clock, 5000ms);
+        return hal::success();
+    }
+
     hal::status science_state_machine::containment_reset(){
         turn_off_pumps(); 
-        state=science_states::GET_SAMPLES; 
+        // state=science_states::GET_SAMPLES; 
     }
 }
 

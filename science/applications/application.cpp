@@ -11,29 +11,27 @@ hal::status application(application_framework& p_framework)
   
   // auto& in_pin0 = *p_framework.in_pin0;
   // auto& in_pin1 = *p_framework.in_pin1;
-  auto& in_pin2 = *p_framework.in_pin2;
+  // auto& in_pin2 = *p_framework.in_pin2;
   // auto& pwm_1_6 = *p_framework.pwm_1_6;
   // auto& pwm_1_5 = *p_framework.pwm_1_5;
   // auto& adc_4 = *p_framework.adc_4;
   // auto& adc_5 = *p_framework.adc_5;
+  auto& mixing_servo = *p_framework.mixing_servo;
 
   auto& clock = *p_framework.steady_clock;
   auto& terminal = *p_framework.terminal;
   auto& mission_control = *(p_framework.mc);
-  auto& revolver_servo = *p_framework.revolver_servo;
   auto& in_pin2 = *p_framework.in_pin2;
   auto& steady_clock = *p_framework.steady_clock;
-  auto& revolver = *p_framework.revolver
+  // auto& revolver = *p_framework.revolver;
 
   // auto& can = *p_framework.can;
   // auto& i2c = *p_framework.i2c;
 
-  auto loop_count = 0;
+  // auto loop_count = 0;
  
   // auto& myScienceRobot = *p_framework.myScienceRobot;
   sjsu::science::mission_control::mc_commands commands;
-
-
 
   while (true) {
     // Print message
