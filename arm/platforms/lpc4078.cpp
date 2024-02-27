@@ -207,6 +207,14 @@ static auto end_effector_servo =
   hal::delay(counter, 1s);
   
   return application_framework{
+    .feedback = {
+      .rotunda = &rotunda_mc_x,
+      .shoulder = &shoulder_mc_x,
+      .elbow = &elbow_mc_x,
+      .wrist_left = &left_wrist_mc_x,
+      .wrist_right = &right_wrist_mc_x,
+    },
+
     .rotunda_servo = &rotunda_servo,
     .shoulder_servo = &shoulder_servo,
     .elbow_servo = &elbow_servo,

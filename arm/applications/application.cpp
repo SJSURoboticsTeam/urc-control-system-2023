@@ -16,6 +16,7 @@ hal::status application(sjsu::arm::application_framework& p_framework)
   using namespace std::chrono_literals;
   using namespace hal::literals;
 
+  auto& feedback_getter = p_framework.feedback;
   auto& terminal = *p_framework.terminal;
   auto& clock = *p_framework.clock;
   auto& rotunda_servo = *p_framework.rotunda_servo;
@@ -77,7 +78,12 @@ hal::status application(sjsu::arm::application_framework& p_framework)
     then = now;
 
     if(next_update < now) {
-      auto timeout = hal::create_timeout(clock, 100ms);
+      auto timeout = hal::create_timeout(clock, 1s);
+      
+      auto feedback = feedback_getter.get_feedback();
+      feedback.dt = dt;
+      mission_control.set_feedback(feedback);
+
       commands = mission_control.get_command(timeout).value();
       
       target_state.elbow = static_cast<float>(commands.elbow_angle) / precision_multiplier;
@@ -86,7 +92,7 @@ hal::status application(sjsu::arm::application_framework& p_framework)
       target_state.wrist_pitch = static_cast<float>(commands.wrist_pitch_angle) / precision_multiplier;
       target_state.wrist_roll = static_cast<float>(commands.wrist_roll_angle) / precision_multiplier;
       target_state.end_effector = static_cast<float>(commands.rr9_angle);
-      next_update = now + 0.1;
+      // next_update = static_cast<float>(clock.uptime().ticks) / clock.frequency().operating_frequency + 0.1;
     }
     // commands = validate_commands(commands);
     // commands = speed_control.lerp(commands);
@@ -116,6 +122,7 @@ hal::status application(sjsu::arm::application_framework& p_framework)
     end_effector.position(current_state.end_effector);
 
     arm.move(current_state);
+
     // hal::delay(clock, 8ms);
   }
 

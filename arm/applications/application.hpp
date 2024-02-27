@@ -6,12 +6,15 @@
 #include <libhal/timeout.hpp>
 #include <libhal/accelerometer.hpp>
 
+#include "../platform-implementations/feedback_getter.hpp"
 #include "../platform-implementations/mission_control.hpp"
 #include "../platform-implementations/offset_servo.hpp"
 
 namespace sjsu::arm {
 struct application_framework
 {
+  feedback_getter feedback;
+
   hal::servo* rotunda_servo;
   hal::servo* shoulder_servo;
   hal::servo* elbow_servo;
@@ -23,7 +26,7 @@ struct application_framework
   hal::accelerometer* shoulder_accelerometer;
   hal::accelerometer* elbow_accelerometer;
   hal::accelerometer* wrist_accelerometer;
-  
+
   // hal::servo* end_effector;
   hal::serial* terminal;
   mission_control* mc;
