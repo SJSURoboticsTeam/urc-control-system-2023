@@ -69,9 +69,9 @@ hal::result<application_framework> initialize_platform()
 
   constexpr hal::rpm max_steering_rpm = 20.0_rpm;
   // constexpr hal::rpm max_speed = 200.0_rpm;
-  constexpr hal::rpm max_speed = 100.0_rpm;
+  constexpr hal::rpm max_speed = 200.0_rpm;
 
-  constexpr float angle_correction_factor = 1.3625; // ???? WHY ARE THESE MOTORS SCALED????
+  // constexpr float angle_correction_factor = 1.3625; // ???? WHY ARE THESE MOTORS SCALED????
 
   hal::print(uart0, "Initializing Left Leg\n");
   static auto left_leg_steer_drc = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 6.0, 0x141));
@@ -279,6 +279,17 @@ hal::result<application_framework> initialize_platform()
   // static auto drive_mission_control = esp_mission_control.value();
 
   return application_framework{
+      .fb_getter={
+        .fl_steer=&left_leg_steer_drc,
+        .fr_steer=&right_leg_steer_drc,
+        .b_steer=&back_leg_steer_drc,
+        .fl_prop=&left_leg_hub_drc,
+        .fr_prop=&right_leg_hub_drc,
+        .b_prop=&back_leg_hub_drc,
+        .fl_offset=left_leg_drc_offset_servo.get_offset(),
+        .fr_offset=right_leg_drc_offset_servo.get_offset(),
+        .b_offset=back_leg_drc_offset_servo.get_offset(),
+      },
                               .steering = &steering,
                               #ifdef USE_MOTORS
                               .legs = legs,

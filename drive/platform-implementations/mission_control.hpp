@@ -16,18 +16,18 @@ static constexpr char kGETRequestFormat[] =
   "drive?heartbeat_count=%d&is_operational=%d&wheel_orientation=%d&drive_mode=%"
   "c&speed=%d&angle=%d";
 
-static constexpr char* get_request_format = "GET /drive?"
+static constexpr const char* get_request_format = "GET /drive?"
   "dt=%.6f&"
   "current_wheel_speed=%.2f&current_steering_angle=%.2f&current_wheel_heading=%.2f&"
   "delta_wheel_speed=%.2f&delta_steering_angle=%.2f&delta_wheel_heading=%.2f&"
-  "fl_steering_angle=%.4f&fl_steering_angle=%.4f&fl_steering_current=%.4f&"
-  "fl_propulsion_angle=%.4f&fl_propulsion_angle=%.4f&fl_propulsion_current=%.4f&"
-  "fl_requested_steering_angle=%.2f&fl_requested_propulsion_speed=%.2f"
-  "fr_steering_angle=%.4f&fr_steering_angle=%.4f&fr_steering_current=%.4f&"
-  "fr_propulsion_angle=%.4f&fr_propulsion_angle=%.4f&fr_propulsion_current=%.4f&"
-  "fr_requested_steering_angle=%.2f&fr_requested_propulsion_speed=%.2f"
-  "b_steering_angle=%.4f&b_steering_angle=%.4f&b_steering_current=%.4f&"
-  "b_propulsion_angle=%.4f&b_propulsion_angle=%.4f&b_propulsion_current=%.4f&"
+  "fl_steering_angle=%.4f&fl_steering_speed=%.4f&fl_steering_current=%.4f&"
+  "fl_propulsion_angle=%.4f&fl_propulsion_speed=%.4f&fl_propulsion_current=%.4f&"
+  "fl_requested_steering_angle=%.2f&fl_requested_propulsion_speed=%.2f&"
+  "fr_steering_angle=%.4f&fr_steering_speed=%.4f&fr_steering_current=%.4f&"
+  "fr_propulsion_angle=%.4f&fr_propulsion_speed=%.4f&fr_propulsion_current=%.4f&"
+  "fr_requested_steering_angle=%.2f&fr_requested_propulsion_speed=%.2f&"
+  "b_steering_angle=%.4f&b_steering_speed=%.4f&b_steering_current=%.4f&"
+  "b_propulsion_angle=%.4f&b_propulsion_speed=%.4f&b_propulsion_current=%.4f&"
   "b_requested_steering_angle=%.2f&b_requested_propulsion_speed=%.2f"
   " HTTP/1.1\r\nHost: 192.168.0.211:5000\r\nConnection:keep-alive\r\n\r\n";
 

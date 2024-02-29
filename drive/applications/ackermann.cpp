@@ -64,6 +64,7 @@ hal::status application(application_framework& p_framework)
   auto& terminal = *p_framework.terminal;
   auto& clock = *p_framework.clock;
   auto& mission_control = *p_framework.mc;
+  auto& fb_getter = p_framework.fb_getter;
   // auto loop_count = 0;
 
 
@@ -133,7 +134,7 @@ hal::status application(application_framework& p_framework)
     //    correctly moving from forwards to spin to reverse.
 
     if(next_update < now) {
-      auto timeout = hal::create_timeout(clock, 100ms);
+      auto timeout = hal::create_timeout(clock, 1s);
       commands = mission_control.get_command(timeout).value();
       float mission_control_dt = now - next_update;
 
@@ -143,9 +144,10 @@ hal::status application(application_framework& p_framework)
       // hal::print<128>(terminal, "\nsped : %f, %d\n", commands.wheel_speed, commands.speed);
 
       // target_steering_angle *= -1;
-      next_update = now + 0.01;
+      next_update = now + 0.1;
       // loop_count=0;
     }
+    dt = std::clamp(dt, -0.1f, 0.1f);
     // loop_count ++;
 
     float d_steering_angle = (target_steering_angle - current_steering_angle) * kP_steering_angle;
@@ -167,37 +169,25 @@ hal::status application(application_framework& p_framework)
     // print_wheel_settings(terminal, wheel_settings);
 
     set_wheel_state(legs, wheel_settings);
+    auto feedback = fb_getter.get_feedback();
     
-    mission_control.set_feedback({
-      .dt=dt,
-      .current_wheel_speed=current_wheel_speed,
-      .current_steering_angle=current_steering_angle,
-      .current_wheel_heading=current_wheel_heading,
+    feedback.dt=dt;
+    feedback.current_wheel_speed=current_wheel_speed;
+    feedback.current_steering_angle=current_steering_angle;
+    feedback.current_wheel_heading=current_wheel_heading;
 
-      .delta_wheel_speed=d_wheel_speed,
-      .delta_steering_angle=d_steering_angle,
-      .delta_wheel_heading=d_wheel_heading,
+    feedback.delta_wheel_speed=d_wheel_speed;
+    feedback.delta_steering_angle=d_steering_angle;
+    feedback.delta_wheel_heading=d_wheel_heading;
 
-      .fl={
-        .steering={
-          .speed=legs[0]->steer_speed_sensor->read().value().speed
-        },
-        .propulsion={
-          .speed=legs[0]->propulsion_speed_sensor->read().value().speed
+    feedback.fl.requested_propulsion_speed = wheel_settings[0].wheel_speed;
+    feedback.fl.requested_steering_angle = wheel_settings[0].angle;
+    feedback.fr.requested_propulsion_speed = wheel_settings[1].wheel_speed;
+    feedback.fr.requested_steering_angle = wheel_settings[1].angle;
+    feedback.b.requested_propulsion_speed = wheel_settings[2].wheel_speed;
+    feedback.b.requested_steering_angle = wheel_settings[2].angle;
 
-        },
-        .requested_steering_angle=wheel_settings[0].angle,
-        .requested_propulsion_speed=wheel_settings[0].wheel_speed,
-      },
-      .fr={
-        .requested_steering_angle=wheel_settings[1].angle,
-        .requested_propulsion_speed=wheel_settings[1].wheel_speed,
-      },
-      .b={
-        .requested_steering_angle=wheel_settings[2].angle,
-        .requested_propulsion_speed=wheel_settings[2].wheel_speed,
-      }
-    });
+    mission_control.set_feedback(feedback);
 
     // HAL_CHECK(legs[0]->steer->position(wheel_settings[0].angle * angle_correction_factor));
     // HAL_CHECK(legs[1]->steer->position(wheel_settings[1].angle * angle_correction_factor));
