@@ -20,6 +20,8 @@ private:
 
     hal::status driver_position_speed(hal::degrees p_position, hal::rpm p_speed);
 
+    hal::degrees m_offset;
+    position_speed_servo* m_servo;
 };
 
 }

@@ -7,7 +7,7 @@
 namespace sjsu::drive {
 class drc_position_speed_servo : public position_speed_servo {
     public:
-        inline hal::result<drc_position_speed_servo> make_position_speed_servo(hal::rmd::drc& p_drc, hal::rpm p_max_speed) {
+        static inline hal::result<drc_position_speed_servo> make_position_speed_servo(hal::rmd::drc& p_drc, hal::rpm p_max_speed) {
             drc_position_speed_servo servo(p_drc, p_max_speed);
             return servo;
         }

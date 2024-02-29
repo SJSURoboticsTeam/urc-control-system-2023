@@ -23,7 +23,8 @@
 #include "../platform-implementations/offset_servo.hpp"
 #include "../platform-implementations/helper.hpp"
 #include "../platform-implementations/calibration_settings.hpp"
-
+#include "../platform-implementations/drc_position_speed_servo.hpp"
+#include "../platform-implementations/position_speed_servo_offset.hpp"
 #include "../platform-implementations/tcp_client.hpp"
 
 #define USE_MOTORS
@@ -75,7 +76,7 @@ hal::result<application_framework> initialize_platform()
 
   hal::print(uart0, "Initializing Left Leg\n");
   static auto left_leg_steer_drc = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 6.0, 0x141));
-  static auto left_leg_drc_servo = HAL_CHECK(hal::make_servo(left_leg_steer_drc, max_steering_rpm));
+  static auto left_leg_drc_servo = HAL_CHECK(drc_position_speed_servo::make_position_speed_servo(left_leg_steer_drc, max_steering_rpm));
   static auto left_leg_drc_steer_speed_sensor = HAL_CHECK(make_speed_sensor(left_leg_steer_drc));
   auto left_leg_mag = HAL_CHECK(hal::lpc40::input_pin::get(1, 22, hal::input_pin::settings{}));
 
@@ -83,7 +84,7 @@ hal::result<application_framework> initialize_platform()
   static auto left_leg_drc_motor = HAL_CHECK(hal::make_motor(left_leg_hub_drc, max_speed));
   static auto left_leg_drc_hub_speed_sensor = HAL_CHECK(make_speed_sensor(left_leg_hub_drc));
   
-  static auto left_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(left_leg_drc_servo, 0.0f));
+  static auto left_leg_drc_offset_servo = HAL_CHECK(position_speed_offset_servo::create(left_leg_drc_servo, 0.0f));
 
   static auto left_home = homing{&left_leg_drc_offset_servo, &left_leg_mag, false};
   // static auto left_leg_drc_speed_sensor = HAL_CHECK(print_speed_sensor::make_speed_sensor(uart0));
@@ -93,7 +94,7 @@ hal::result<application_framework> initialize_platform()
   hal::print(uart0, "Initializing Right Leg\n");
   // right leg
   static auto right_leg_steer_drc = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 6.0, 0x143));
-  static auto right_leg_drc_servo = HAL_CHECK(hal::make_servo(right_leg_steer_drc, max_steering_rpm));
+  static auto right_leg_drc_servo = HAL_CHECK(drc_position_speed_servo::make_position_speed_servo(right_leg_steer_drc, max_steering_rpm));
   static auto right_leg_drc_steer_speed_sensor = HAL_CHECK(make_speed_sensor(right_leg_steer_drc));
   auto right_leg_mag = HAL_CHECK(hal::lpc40::input_pin::get(1, 15, hal::input_pin::settings{}));
 
@@ -101,7 +102,7 @@ hal::result<application_framework> initialize_platform()
   static auto right_leg_drc_motor = HAL_CHECK(hal::make_motor(right_leg_hub_drc, max_speed));
   static auto right_leg_drc_hub_speed_sensor = HAL_CHECK(make_speed_sensor(right_leg_hub_drc));
 
-  static auto right_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(right_leg_drc_servo, 0.0f));
+  static auto right_leg_drc_offset_servo = HAL_CHECK(position_speed_offset_servo::create(right_leg_drc_servo, 0.0f));
   static auto right_home = homing{&right_leg_drc_offset_servo, &right_leg_mag, false};
   // static auto right_leg_drc_speed_sensor = HAL_CHECK(print_speed_sensor::make_speed_sensor(uart0));
   // static auto right_leg_drc_offset_servo  = HAL_CHECK(print_servo::create(uart0));
@@ -110,7 +111,7 @@ hal::result<application_framework> initialize_platform()
   hal::print(uart0, "Initializing Back Leg\n");
   // back leg
   static auto back_leg_steer_drc = HAL_CHECK(hal::rmd::drc::create(can_router, counter, 6.0, 0x145));
-  static auto back_leg_drc_servo = HAL_CHECK(hal::make_servo(back_leg_steer_drc, max_steering_rpm));
+  static auto back_leg_drc_servo = HAL_CHECK(drc_position_speed_servo::make_position_speed_servo(back_leg_steer_drc, max_steering_rpm));
   static auto back_leg_drc_steer_speed_sensor = HAL_CHECK(make_speed_sensor(back_leg_steer_drc));
   auto back_leg_mag = HAL_CHECK(hal::lpc40::input_pin::get(1, 23, hal::input_pin::settings{}));
 
@@ -118,7 +119,7 @@ hal::result<application_framework> initialize_platform()
   static auto back_leg_drc_motor = HAL_CHECK(hal::make_motor(back_leg_hub_drc, max_speed));
   static auto back_leg_drc_hub_speed_sensor = HAL_CHECK(make_speed_sensor(back_leg_hub_drc));
 
-  static auto back_leg_drc_offset_servo = HAL_CHECK(offset_servo::create(back_leg_drc_servo, 0.0f));
+  static auto back_leg_drc_offset_servo = HAL_CHECK(position_speed_offset_servo::create(back_leg_drc_servo, 0.0f));
   static auto back_home = homing{&back_leg_drc_offset_servo, &back_leg_mag, false};
 
   // static auto back_leg_drc_speed_sensor = HAL_CHECK(print_speed_sensor::make_speed_sensor(uart0));
@@ -152,9 +153,9 @@ hal::result<application_framework> initialize_platform()
   right_leg_drc_offset_servo.set_offset(right_leg_drc_offset_servo.get_offset() - 150 * angle_correction_factor);
   back_leg_drc_offset_servo.set_offset(back_leg_drc_offset_servo.get_offset() - 90 * angle_correction_factor);
 
-  HAL_CHECK(left_leg_drc_offset_servo.position(0));
-  HAL_CHECK(right_leg_drc_offset_servo.position(0));
-  HAL_CHECK(back_leg_drc_offset_servo.position(0));
+  HAL_CHECK(left_leg_drc_offset_servo.position_speed(0, max_steering_rpm));
+  HAL_CHECK(right_leg_drc_offset_servo.position_speed(0, max_steering_rpm));
+  HAL_CHECK(back_leg_drc_offset_servo.position_speed(0, max_steering_rpm));
   // hal::delay(counter, 5s);
   // hal::print<100>(uart0, "right offset: %f", right_home.servo->get_offset());
   // hal::print<100>(uart0, "left offset: %f", left_home.servo->get_offset());

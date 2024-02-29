@@ -6,11 +6,11 @@
 #include <libhal/input_pin.hpp>
 #include <libhal-util/units.hpp>
 #include "offset_servo.hpp"
-
+#include "position_speed_servo_offset.hpp"
 namespace sjsu::drive
 {
 struct homing {
-  offset_servo* servo;
+  position_speed_offset_servo* servo;
   hal::input_pin* magnet;
   bool homed = false;
 };
@@ -25,7 +25,7 @@ inline hal::status home(std::span<homing*> p_homing_structs,
 
     // bool going_to_60 = false;
     for (int i = 0; i < p_homing_structs.size(); i++) {
-        HAL_CHECK(p_homing_structs[i]->servo->position(0.0_deg));
+        HAL_CHECK(p_homing_structs[i]->servo->position_speed(0.0_deg, 20));
     }
 
     // max time needed to move to 0 from anywhere at 2 rpms
@@ -58,7 +58,7 @@ inline hal::status home(std::span<homing*> p_homing_structs,
                 } 
                 auto new_offset = p_homing_structs[i]->servo->get_offset() + 1.0_deg;
                 p_homing_structs[i]->servo->set_offset(new_offset);
-                HAL_CHECK(p_homing_structs[i]->servo->position(0.0_deg));
+                HAL_CHECK(p_homing_structs[i]->servo->position_speed(0.0_deg, 0.16667 * 1.0 / 0.01));
             }
         }
         hal::delay(p_counter, 10ms);

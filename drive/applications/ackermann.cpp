@@ -15,10 +15,10 @@ void print_wheel_settings(hal::serial& serial, std::span<wheel_setting> settings
     settings[2].wheel_speed);
 }
 
-hal::status set_wheel_state(std::span<leg*> legs, std::span<wheel_setting> settings) {
-  HAL_CHECK(legs[0]->steer->position(settings[0].angle * angle_correction_factor));
-  HAL_CHECK(legs[1]->steer->position(settings[1].angle * angle_correction_factor));
-  HAL_CHECK(legs[2]->steer->position(settings[2].angle * angle_correction_factor));
+hal::status set_wheel_state(std::span<leg*> legs, std::span<wheel_setting> settings, std::span<float> rpms) {
+  HAL_CHECK(legs[0]->steer->position_speed(settings[0].angle * angle_correction_factor, rpms[0]));
+  HAL_CHECK(legs[1]->steer->position_speed(settings[1].angle * angle_correction_factor, rpms[1]));
+  HAL_CHECK(legs[2]->steer->position_speed(settings[2].angle * angle_correction_factor, rpms[2]));
   HAL_CHECK(legs[0]->propulsion->power(-settings[2].wheel_speed));
   HAL_CHECK(legs[1]->propulsion->power(settings[1].wheel_speed));
   HAL_CHECK(legs[2]->propulsion->power(settings[0].wheel_speed));
@@ -97,6 +97,8 @@ hal::status application(application_framework& p_framework)
   float target_wheel_heading = 0.0;
   float target_wheel_speed = 0.0;
 
+  std::array<float, 3> wheel_angles = { 0.0, 0.0, 0.0 };
+
   // auto wheel_settings = steering.calculate_wheel_settings(1/ std::tan(60 * std::numbers::pi / 180), 0, 0.1);
   // set_wheel_state(legs, wheel_settings);
   // debug_stop(terminal);
@@ -167,8 +169,16 @@ hal::status application(application_framework& p_framework)
     float turning_radius = 1 / std::tan(current_steering_angle * std::numbers::pi / 180);
     auto wheel_settings = steering.calculate_wheel_settings(turning_radius, current_wheel_heading, current_wheel_speed / 100);
     // print_wheel_settings(terminal, wheel_settings);
+    std::array<float,3> rpms;
+    constexpr float DPS_TO_RPM = 0.1666;
+    for(size_t i = 0; i < 3; i ++) {
+      rpms[i] = std::abs(wheel_settings[i].angle - wheel_angles[i]) / dt;
+    }
 
-    set_wheel_state(legs, wheel_settings);
+    set_wheel_state(legs, wheel_settings, rpms);
+    for(size_t i = 0; i < 3; i ++) {
+      wheel_angles[i] = wheel_settings[i].angle;
+    }
     auto feedback = fb_getter.get_feedback();
     
     feedback.dt=dt;

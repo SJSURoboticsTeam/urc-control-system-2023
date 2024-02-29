@@ -10,11 +10,12 @@
 #include "../platform-implementations/mission_control.hpp"
 #include "../platform-implementations/offset_servo.hpp"
 #include "../platform-implementations/ackermann_steering.hpp"
+#include "../platform-implementations/position_speed_servo.hpp"
 #include "../platform-implementations/feedback_getter.hpp"
 namespace sjsu::drive {
 
 struct leg {
-  hal::servo* steer;
+  position_speed_servo* steer;
   hal::motor* propulsion;
   speed_sensor* steer_speed_sensor;
   speed_sensor* propulsion_speed_sensor;
