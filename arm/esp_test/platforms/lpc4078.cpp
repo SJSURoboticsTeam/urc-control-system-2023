@@ -30,13 +30,13 @@ hal::status initialize_processor()
 bool attempt_connect_query(hal::esp8266::at& esp8266, hal::serial& serial, hal::steady_clock& clock, hal::time_duration duration) {
   auto connect_result = esp8266.is_connected_to_ap(hal::create_timeout(clock, duration));
   if(!connect_result) {
-    hal::print(serial, "\"esp8266::s_connected_to_ap\" timed out\n");
+    hal::print(serial, "\"esp8266::is_connected_to_ap\" timed out\n");
   }else {
     if(connect_result.value()) {
       hal::print(serial, "ESP is connected\n");
       return true;
     }
-    hal::print(serial, "ESP is not connected");
+    hal::print(serial, "ESP is not connected\n");
   }
   return false;
 }
@@ -93,16 +93,25 @@ hal::result<sjsu::arm::application_framework> initialize_platform()
   static auto esp8266 = HAL_CHECK(hal::esp8266::at::create(uart1, hal::create_timeout(counter, 1s)));
 
   attempt_connect_query(esp8266, uart0, counter, 1s);
-
-  float start = counter.uptime().ticks / counter.frequency().operating_frequency;
-  auto result = esp8266.connect_to_ap(ssid, password, hal::create_timeout(counter, 1s));
-  float end = counter.uptime().ticks / counter.frequency().operating_frequency;
-  float elapsed = end - start;
-  if(!result) {
-    hal::print(uart0, "\"esp8266::connect_to_ap()\" failed.\n");
-  }else {
-    hal::print<128>(uart0, "Successfully connected to router. Took %f seconds.\n", elapsed);
+  
+  {
+    float start = counter.uptime().ticks / counter.frequency().operating_frequency;
+    auto result = esp8266.connect_to_ap(ssid, password, hal::create_timeout(counter, 1s));
+    float end = counter.uptime().ticks / counter.frequency().operating_frequency;
+    float elapsed = end - start;
+    if(!result) {
+      hal::print(uart0, "\"esp8266::connect_to_ap()\" failed.\n");
+    }else {
+      hal::print<128>(uart0, "Successfully connected to router. Took %f seconds.\n", elapsed);
+    }
   }
+  while(1) {
+
+    attempt_connect_query(esp8266, uart0, counter, 10ms);
+    hal::delay(counter, 10ms);
+  }
+
+
 
   return sjsu::arm::application_framework{
 
