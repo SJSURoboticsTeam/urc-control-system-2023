@@ -9,9 +9,13 @@ hal::status application(application_framework& p_framework)
 {
   using namespace std::literals;
   
-  // auto& in_pin0 = *p_framework.in_pin0;
-  // auto& in_pin1 = *p_framework.in_pin1;
-  // auto& in_pin2 = *p_framework.in_pin2;
+  auto& in_deionized_water_pump_pin = *p_framework.in_deionized_water_pump_pin;
+  auto& in_sample_pump_pin = *p_framework.in_sample_pump_pin;
+  auto& molisch_pump_pin = *p_framework.molisch_pump_pin;
+  auto& in_sulfuric_acid_pin = *p_framework.in_sulfuric_acid_pin;
+  auto& in_biuret_pump_pin = *p_framework.in_biuret_pump_pin;
+
+
   // auto& pwm_1_6 = *p_framework.pwm_1_6;
   // auto& pwm_1_5 = *p_framework.pwm_1_5;
   // auto& adc_4 = *p_framework.adc_4;
