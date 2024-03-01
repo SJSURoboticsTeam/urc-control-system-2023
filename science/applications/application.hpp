@@ -29,9 +29,12 @@
 namespace sjsu::science {
 struct application_framework
 {
-  hal::input_pin* in_pin0;
-  hal::input_pin* in_pin1;
-  hal::input_pin* in_pin2;
+  hal::input_pin* in_deionized_water_pump_pin;
+  hal::input_pin* in_sample_pump_pin;
+  hal::input_pin* molisch_pump_pin;
+  hal::input_pin* in_sulfuric_acid_pin;
+  hal::input_pin* in_biuret_pump_pin;
+
   hal::pwm* pwm_1_6;
   hal::pwm* pwm_1_5;
   hal::adc* adc_4;

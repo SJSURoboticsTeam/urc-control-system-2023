@@ -172,12 +172,17 @@ hal::result<application_framework> initialize_platform()
 
   //   static auto revolver = HAL_CHECK(sjsu::science::revolver::create(revolver_servo, in_pin2, steady_clock));
 
-  // static auto in_pin0 =
-  //   HAL_CHECK(hal::lpc40::input_pin::get(1, 15, hal::input_pin::settings{}));
-  // static auto in_pin1 =
-  //   HAL_CHECK(hal::lpc40::input_pin::get(1, 23, hal::input_pin::settings{}));
-  // static auto in_pin2 =
-  //   HAL_CHECK(hal::lpc40::input_pin::get(1, 22, hal::input_pin::settings{}));
+  static auto in_deionized_water_pump_pin =
+    HAL_CHECK(hal::lpc40::input_pin::get(1, 15, hal::input_pin::settings{}));
+  static auto in_sample_pump_pin =
+    HAL_CHECK(hal::lpc40::input_pin::get(1, 23, hal::input_pin::settings{}));
+  static auto molisch_pump_pin =
+    HAL_CHECK(hal::lpc40::input_pin::get(1, 22, hal::input_pin::settings{}));
+  static auto in_sulfuric_acid_pin =
+    HAL_CHECK(hal::lpc40::input_pin::get(1, 21, hal::input_pin::settings{}));
+  static auto in_biuret_pump_pin =
+    HAL_CHECK(hal::lpc40::input_pin::get(1, 20, hal::input_pin::settings{}));
+
 
   // static auto pwm_1_6 = HAL_CHECK((hal::lpc40::pwm::get(1, 6)));
   // static auto pwm_1_5 = HAL_CHECK((hal::lpc40::pwm::get(1, 5)));
@@ -193,7 +198,11 @@ hal::result<application_framework> initialize_platform()
   return application_framework{
     .mixing_servo = &mixing_servo,
     
-    // .in_pin0 = &in_pin0,
+    .in_deionized_water_pump_pin= &in_deionized_water_pump_pin,
+    .in_sample_pump_pin= &in_sample_pump_pin,
+    .in_molisch_pump_pin= &in_molisch_pump_pin,
+    .in_sulfuric_acid_pin= &in_sulfuric_acid_pin,
+    .in_biuret_pump_pin= &in_biuret_pump_pin,
     // .in_pin1 = &in_pin1,
     // .in_pin2 = &in_pin2, //hall effect sensor
     // .pwm_1_6 = &pwm_1_6,
