@@ -61,7 +61,7 @@ namespace sjsu::science
                 std::chrono::milliseconds m_delay = std::chrono::milliseconds(std::stoi(result.data()));
 
                 HAL_CHECK(rotunda_science_my.position((vial > 0) ? m_clockwise : m_counterclockwise));
-                hal::print<1024>(terminal, "User Inputted: %s\n",readings.data);
+                hal::print<1024>(terminal, "User Inputted Delay: %s\n",readings.data);
                 hal::print<1024>(terminal, "Revolver Start, Moving %d Vials\n", vial);
                 vial = (vial > 0) ? vial : -vial;
 
@@ -79,7 +79,7 @@ namespace sjsu::science
                 }
                 
                 HAL_CHECK(rotunda_science_my.position(m_stop));
-                hal::print<1024>(terminal, "Revolver Stop");
+                hal::print<1024>(terminal, "Revolver Stop\n");
                 
                 count = -1;
                 result = std::string_view();
