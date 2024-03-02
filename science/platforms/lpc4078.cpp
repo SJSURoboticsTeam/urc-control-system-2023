@@ -33,6 +33,7 @@
 
 #include <libhal-util/units.hpp>
 #include "../platform-implementations/esp8266_mission_control.cpp"
+#include "../platform-implementations/pump_manager.hpp"
 #include "../platform-implementations/helper.hpp"
 
 #include "../applications/application.hpp"
@@ -173,15 +174,23 @@ hal::result<application_framework> initialize_platform()
   //   static auto revolver = HAL_CHECK(sjsu::science::revolver::create(revolver_servo, in_pin2, steady_clock));
 
   static auto in_deionized_water_pump_pin =
-    HAL_CHECK(hal::lpc40::input_pin::get(1, 15, hal::input_pin::settings{}));
+    HAL_CHECK(hal::lpc40::output_pin::get(1, 15, hal::output_pin::settings{}));
   static auto in_sample_pump_pin =
-    HAL_CHECK(hal::lpc40::input_pin::get(1, 23, hal::input_pin::settings{}));
-  static auto molisch_pump_pin =
-    HAL_CHECK(hal::lpc40::input_pin::get(1, 22, hal::input_pin::settings{}));
+    HAL_CHECK(hal::lpc40::output_pin::get(1, 23, hal::output_pin::settings{}));
+  static auto in_molisch_pump_pin =
+    HAL_CHECK(hal::lpc40::output_pin::get(1, 22, hal::output_pin::settings{}));
   static auto in_sulfuric_acid_pin =
-    HAL_CHECK(hal::lpc40::input_pin::get(1, 21, hal::input_pin::settings{}));
+    HAL_CHECK(hal::lpc40::output_pin::get(1, 21, hal::output_pin::settings{}));
   static auto in_biuret_pump_pin =
-    HAL_CHECK(hal::lpc40::input_pin::get(1, 20, hal::input_pin::settings{}));
+    HAL_CHECK(hal::lpc40::output_pin::get(1, 20, hal::output_pin::settings{}));
+
+  static auto pump_controller = HAL_CHECK(pump_manager::create(
+    counter, 
+    in_deionized_water_pump_pin,
+    in_sample_pump_pin, 
+    in_molisch_pump_pin,
+    in_sulfuric_acid_pin,
+    in_biuret_pump_pin));
 
 
   // static auto pwm_1_6 = HAL_CHECK((hal::lpc40::pwm::get(1, 6)));
@@ -196,19 +205,20 @@ hal::result<application_framework> initialize_platform()
   // static auto can = HAL_CHECK(hal::lpc40::can::get(0));
 
   return application_framework{
-    .mixing_servo = &mixing_servo,
     
-    .in_deionized_water_pump_pin= &in_deionized_water_pump_pin,
-    .in_sample_pump_pin= &in_sample_pump_pin,
-    .in_molisch_pump_pin= &in_molisch_pump_pin,
-    .in_sulfuric_acid_pin= &in_sulfuric_acid_pin,
-    .in_biuret_pump_pin= &in_biuret_pump_pin,
+    // .in_deionized_water_pump_pin = &in_deionized_water_pump_pin,
+    // .in_sample_pump_pin= &in_sample_pump_pin,
+    // .in_molisch_pump_pin= &in_molisch_pump_pin,
+    // .in_sulfuric_acid_pin= &in_sulfuric_acid_pin,
+    // .in_biuret_pump_pin= &in_biuret_pump_pin,
+    .pump_controller = &pump_controller,
     // .in_pin1 = &in_pin1,
     // .in_pin2 = &in_pin2, //hall effect sensor
     // .pwm_1_6 = &pwm_1_6,
     // .pwm_1_5 = &pwm_1_5,
     // .adc_4 = &adc_4,
     // .adc_5 = &adc_5,
+    .mixing_servo = &mixing_servo,
 
     // .revolver_servo = &revolver_servo,
     .steady_clock = &counter,

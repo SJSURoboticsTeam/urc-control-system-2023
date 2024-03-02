@@ -1,3 +1,4 @@
+#pragma once
 #include <libhal/output_pin.hpp>
 #include <libhal-util/steady_clock.hpp>
 

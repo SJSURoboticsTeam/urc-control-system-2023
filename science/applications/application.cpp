@@ -9,12 +9,13 @@ hal::status application(application_framework& p_framework)
 {
   using namespace std::literals;
   
-  auto& in_deionized_water_pump_pin = *p_framework.in_deionized_water_pump_pin;
-  auto& in_sample_pump_pin = *p_framework.in_sample_pump_pin;
-  auto& molisch_pump_pin = *p_framework.molisch_pump_pin;
-  auto& in_sulfuric_acid_pin = *p_framework.in_sulfuric_acid_pin;
-  auto& in_biuret_pump_pin = *p_framework.in_biuret_pump_pin;
-
+  // auto& in_deionized_water_pump_pin = *p_framework.in_deionized_water_pump_pin;
+  // auto& in_sample_pump_pin = *p_framework.in_sample_pump_pin;
+  // auto& in_molisch_pump_pin = *p_framework.in_molisch_pump_pin;
+  // auto& in_sulfuric_acid_pin = *p_framework.in_sulfuric_acid_pin;
+  // auto& in_biuret_pump_pin = *p_framework.in_biuret_pump_pin;
+  auto& pump_controller = *(p_framework.pump_controller);
+  
 
   // auto& pwm_1_6 = *p_framework.pwm_1_6;
   // auto& pwm_1_5 = *p_framework.pwm_1_5;
@@ -25,7 +26,6 @@ hal::status application(application_framework& p_framework)
   auto& clock = *p_framework.steady_clock;
   auto& terminal = *p_framework.terminal;
   auto& mission_control = *(p_framework.mc);
-  auto& in_pin2 = *p_framework.in_pin2;
   auto& steady_clock = *p_framework.steady_clock;
   // auto& revolver = *p_framework.revolver;
 

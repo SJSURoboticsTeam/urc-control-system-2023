@@ -24,29 +24,31 @@
 #include <libhal/steady_clock.hpp>
 
 #include "../platform-implementations/mission_control.hpp"
+#include "../platform-implementations/pump_manager.hpp"
 
 
 namespace sjsu::science {
 struct application_framework
 {
-  hal::input_pin* in_deionized_water_pump_pin;
-  hal::input_pin* in_sample_pump_pin;
-  hal::input_pin* molisch_pump_pin;
-  hal::input_pin* in_sulfuric_acid_pin;
-  hal::input_pin* in_biuret_pump_pin;
+  // hal::input_pin* in_deionized_water_pump_pin;
+  // hal::input_pin* in_sample_pump_pin;
+  // hal::input_pin* in_molisch_pump_pin;
+  // hal::input_pin* in_sulfuric_acid_pin;
+  // hal::input_pin* in_biuret_pump_pin;
+  pump_manager* pump_controller;
 
-  hal::pwm* pwm_1_6;
-  hal::pwm* pwm_1_5;
-  hal::adc* adc_4;
-  hal::adc* adc_5;
+  // hal::pwm* pwm_1_6;
+  // hal::pwm* pwm_1_5;
+  // hal::adc* adc_4;
+  // hal::adc* adc_5;
 
   hal::servo* mixing_servo;
 
   hal::steady_clock* steady_clock;
   hal::serial* terminal;
   mission_control* mc;
-  hal::can* can;
-  hal::i2c* i2c;
+  // hal::can* can;
+  // hal::i2c* i2c;
   hal::callback<void()> reset;
 };
 

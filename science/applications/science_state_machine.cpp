@@ -41,6 +41,10 @@ namespace sjsu::science{
         
     }
 
+    hal::status science_state_machine::pump_sample(auto pump)(){
+        
+    }
+
     hal::status science_state_machine::mix_solution(){
         HAL_CHECK(hardware.mixing_servo.velocity_control(10.0_rpm));
         hal::delay(hardware.clock, 5000ms);
