@@ -14,7 +14,7 @@ namespace sjsu::science{
         switch(state){
             case science_state_machine::science_states::GET_SAMPLES:
                 mix_solution();
-                pump_sample(hardware.DEIONIZED_WATER);
+                turn_on_pump(hardware.DEIONIZED_WATER);
                 // pump_sample(); 
                 // move_sample();
                 // pump_sample();
@@ -42,7 +42,7 @@ namespace sjsu::science{
         
     }
 
-    hal::status science_state_machine::pump_sample( auto pump)(){
+    hal::status science_state_machine::turn_on_pump( auto pump)(){
         
     }
 
