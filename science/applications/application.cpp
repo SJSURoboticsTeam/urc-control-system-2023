@@ -2,7 +2,8 @@
 #include <libhal-util/steady_clock.hpp>
 #include <libhal/steady_clock.hpp>
 
-#include "application.hpp"
+#include "../applications/application.hpp"
+#include "../platform-implementations/science_state_machine.hpp"
 namespace sjsu::science {
 
 hal::status application(application_framework& p_framework)
@@ -35,14 +36,22 @@ hal::status application(application_framework& p_framework)
   // auto loop_count = 0;
  
   // auto& myScienceRobot = *p_framework.myScienceRobot;
-  sjsu::science::mission_control::mc_commands commands;
+  mission_control::mc_commands commands;
+  auto state_machine = HAL_CHECK(science_state_machine::create( p_framework));
 
   while (true) {
     // Print message
     hal::print(terminal, "Hello, World\n");
     auto timeout = hal::create_timeout(clock, 2s);
     commands = mission_control.get_command(timeout).value();
-    commands.print(&terminal);    
+    commands.print(&terminal); 
+    if(commands.sample_recieved == 1)  {
+
+      while(commands.pause_play == 0){
+
+
+      }
+    } 
 
   }
 }

@@ -1,5 +1,8 @@
 #pragma once
-#include "application.hpp"
+#include "../applications/application.hpp"
+#include <libhal/servo.hpp>
+#include <libhal/units.hpp>
+
 
 namespace sjsu::science{
     class science_state_machine{
@@ -25,7 +28,7 @@ namespace sjsu::science{
         hal::status run_state_machine(science_states current_state);
 
         hal::status mix_solution();
-        hal::status turn_on_pump(auto pump);
+        hal::status turn_on_pump(auto pump, hal::time_duration duration);
         hal::status move_sample(int position);
         hal::status containment_reset(); 
         // hal::status turn_off_pumps();   
