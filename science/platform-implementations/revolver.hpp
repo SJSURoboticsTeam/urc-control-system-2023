@@ -26,8 +26,8 @@ namespace sjsu::science
             hal::status revolverState(hal::degrees rotationState);
 
         public:
-            revolver(hal::servo& p_servo, hal::input_pin& p_input_pin, hal::steady_clock& p_steady_clock, hal::serial p_terminal);
-            static hal::result<revolver> create(hal::servo& p_servo, hal::input_pin& p_input_pin, hal::steady_clock& p_steady_clock, hal::serial p_terminal);                             
+            revolver(hal::servo& p_servo, hal::input_pin& p_input_pin, hal::steady_clock& p_steady_clock, hal::serial& p_terminal);
+            static hal::result<revolver> create(hal::servo& p_servo, hal::input_pin& p_input_pin, hal::steady_clock& p_steady_clock, hal::serial& p_terminal);                             
             hal::status revolverMoveVials(int vial);
     };
 }
