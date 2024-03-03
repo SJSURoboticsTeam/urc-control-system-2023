@@ -7,29 +7,8 @@
 #include <libhal-lpc40/input_pin.hpp>
 #include <libhal-util/units.hpp>
 
-namespace sjsu::science {
-    // Class:
-    //      private:
-    //              member variables
-    //              reference types of objects required for class
-    //              member functions aka methods
-    //      public:
-    //              empty dummy constructor, but the reference types of objects will be assigned to the inputs in .cpp 
-    //              static create method with hal::result wrapper
-    //              member functions aka methods
-
-    // Encapsulation:
-    //      1. Header File
-    //              a. Private = Implementation Details
-    //              b. Public = Interface
-    //      2. CPP File - Implementation, Actual
-    //      3. Dummy Constructor + Create to Separate:
-    //              a. Object Creation into Memory
-    //              b. Initialization Logic + Error Handling
-    //                  i. Error Handling is standardized via HAL
-    //      4. application_framework - struct that acts as interface for application.cpp to access lpc4078 hardware
-    //      5. application.cpp - Main application logic that interfaces with microcontrollers / higher-level modules
-    //              - The implementation of more basic sensors / actuators managed by the microcontroller 
+namespace sjsu::science 
+{
     class revolver 
     {
         private:
@@ -47,8 +26,8 @@ namespace sjsu::science {
             hal::status revolverState(hal::degrees rotationState);
 
         public:
-            revolver(hal::servo& p_servo, hal::input_pin& p_input_pin, hal::steady_clock& p_steady_clock, hal::terminal terminal_my);
-            static hal::result<revolver> create(hal::servo& p_servo, hal::input_pin& p_input_pin, hal::steady_clock& p_steady_clock);                             
+            revolver(hal::servo& p_servo, hal::input_pin& p_input_pin, hal::steady_clock& p_steady_clock, hal::serial p_terminal);
+            static hal::result<revolver> create(hal::servo& p_servo, hal::input_pin& p_input_pin, hal::steady_clock& p_steady_clock, hal::serial p_terminal);                             
             hal::status revolverMoveVials(int vial);
     };
 }
