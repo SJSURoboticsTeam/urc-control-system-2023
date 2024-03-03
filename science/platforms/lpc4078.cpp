@@ -203,7 +203,7 @@ hal::result<application_framework> initialize_platform()
 
   // static auto i2c = HAL_CHECK(hal::lpc40::i2c::get(2));
   // static auto can = HAL_CHECK(hal::lpc40::can::get(0));
-
+  
   return application_framework{
     
     // .in_deionized_water_pump_pin = &in_deionized_water_pump_pin,
