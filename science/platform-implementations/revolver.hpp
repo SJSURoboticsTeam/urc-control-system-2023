@@ -42,11 +42,12 @@ namespace sjsu::science {
             hal::servo& revolver_servo_my;
             hal::input_pin& input_pin_my;
             hal::steady_clock& steady_clock_my;
+            hal::serial& terminal_my;
 
             hal::status revolverState(hal::degrees rotationState);
 
         public:
-            revolver(hal::servo& p_servo, hal::input_pin& p_input_pin, hal::steady_clock& p_steady_clock);
+            revolver(hal::servo& p_servo, hal::input_pin& p_input_pin, hal::steady_clock& p_steady_clock, hal::terminal terminal_my);
             static hal::result<revolver> create(hal::servo& p_servo, hal::input_pin& p_input_pin, hal::steady_clock& p_steady_clock);                             
             hal::status revolverMoveVials(int vial);
     };
