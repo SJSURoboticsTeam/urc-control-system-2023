@@ -195,7 +195,8 @@ hal::result<application_framework> initialize_platform()
     in_molisch_pump_pin,
     in_sulfuric_acid_pin,
     in_biuret_pump_pin));
-
+    
+//Mixing servo
   static auto i2c = HAL_CHECK(hal::lpc40::i2c::get(2));
   static auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c, 0b100'0000)); 
   static auto pwm0 = pca9685.get_pwm_channel<0>(); 
@@ -208,14 +209,16 @@ hal::result<application_framework> initialize_platform()
 
   static auto mixing_servo = HAL_CHECK(hal::soft::rc_servo::create(pwm0, servo_settings));
 
+//Creating Revolver
   static auto i2c_2 = HAL_CHECK(hal::lpc40::i2c::get(3));
   static auto pca9685_2 = HAL_CHECK(hal::pca::pca9685::create(i2c_2, 0b100'0000)); 
   static auto pwm1 = pca9685_2.get_pwm_channel<1>(); 
   auto revolver_servo_settings = hal::soft::rc_servo::settings{
-    .min_angle = 0.0_deg,
-    .max_angle = 360.0_deg,
-    .min_microseconds = 500,
-    .max_microseconds = 2500,
+      .min_angle = hal::degrees(0.0),
+      .max_angle = hal::degrees(180.0),
+      .min_microseconds = 1000,
+      .max_microseconds = 2000,
+    };
   }; 
 
   static auto revolving_servo = HAL_CHECK(hal::soft::rc_servo::create(pwm1, revolver_servo_settings));

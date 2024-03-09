@@ -16,8 +16,8 @@ namespace sjsu::science {
     //              member variables
     //              reference types of objects required for class
     //              member functions aka methods
-    //      public:
     //              empty dummy constructor, but the reference types of objects will be assigned to the inputs in .cpp 
+    //      public:
     //              static create method with hal::result wrapper
     //              member functions aka methods
 
