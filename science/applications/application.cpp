@@ -1,9 +1,6 @@
-#include <libhal-util/serial.hpp>
-#include <libhal-util/steady_clock.hpp>
-#include <libhal/steady_clock.hpp>
-
 #include "../applications/application.hpp"
 #include "../platform-implementations/science_state_machine.hpp"
+
 namespace sjsu::science {
 
 hal::status application(application_framework& p_framework)
@@ -23,6 +20,7 @@ hal::status application(application_framework& p_framework)
   // auto& adc_4 = *p_framework.adc_4;
   // auto& adc_5 = *p_framework.adc_5;
   auto& mixing_servo = *p_framework.mixing_servo;
+  auto& revolver_controller = *p_framework.revolver_controller;
 
   auto& clock = *p_framework.steady_clock;
   auto& terminal = *p_framework.terminal;

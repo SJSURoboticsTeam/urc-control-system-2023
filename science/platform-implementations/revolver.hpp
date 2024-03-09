@@ -44,9 +44,9 @@ namespace sjsu::science {
             hal::steady_clock& steady_clock_my;
 
             hal::status revolverState(hal::degrees rotationState);
+            revolver(hal::servo& p_servo, hal::input_pin& p_input_pin, hal::steady_clock& p_steady_clock);
 
         public:
-            revolver(hal::servo& p_servo, hal::input_pin& p_input_pin, hal::steady_clock& p_steady_clock);
             static hal::result<revolver> create(hal::servo& p_servo, hal::input_pin& p_input_pin, hal::steady_clock& p_steady_clock);                             
             hal::status revolverMoveVials(int vial);
     };

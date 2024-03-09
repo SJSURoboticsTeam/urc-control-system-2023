@@ -1,4 +1,3 @@
-#pragma once
 #include "revolver.hpp"
 #include <libhal-util/steady_clock.hpp>
 #include <libhal-lpc40/clock.hpp>
@@ -16,12 +15,14 @@ namespace sjsu::science {
 
     hal::result<revolver> revolver::create(hal::servo& p_servo, hal::input_pin& p_input_pin, hal::steady_clock& p_steady_clock) 
     {
-        return hal::result<revolver>(p_servo, p_input_pin, p_steady_clock);
+        revolver revolver(p_servo, p_input_pin, p_steady_clock);
+        return revolver;
     }
 
     hal::status revolver::revolverState(hal::degrees rotationState) 
     {
         HAL_CHECK(revolver_servo_my.position(rotationState));
+        return hal::success();
     }
 
     hal::status revolver::revolverMoveVials(int vial) 
@@ -30,7 +31,7 @@ namespace sjsu::science {
         {
             int count = -1; // account for initial state change
             bool hallState;
-            bool hallStateDelayed;
+            bool hallStateDelayed;l
             
             revolverState((vial > 0) ? m_clockwise : m_counterclockwise);
             vial = (vial > 0) ? vial : -vial;
@@ -49,5 +50,6 @@ namespace sjsu::science {
 
             revolverState(m_stop);
         }
+        return hal::success();
     }
 }     

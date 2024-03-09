@@ -25,7 +25,7 @@
 
 #include "../platform-implementations/mission_control.hpp"
 #include "../platform-implementations/pump_manager.hpp"
-
+#include "../platform-implementations/revolver.hpp"
 
 
 namespace sjsu::science {
@@ -44,6 +44,7 @@ struct application_framework
   // hal::adc* adc_5;
 
   hal::servo* mixing_servo;
+  revolver* revolver_controller;
 
   hal::steady_clock* steady_clock;
   hal::serial* terminal;
