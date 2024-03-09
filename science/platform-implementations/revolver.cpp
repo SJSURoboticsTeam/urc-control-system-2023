@@ -1,11 +1,6 @@
 #include "revolver.hpp"
-#include <libhal-util/steady_clock.hpp>
-#include <libhal-lpc40/clock.hpp>
-#include <libhal-soft/rc_servo.hpp>
-#include <libhal-lpc40/pwm.hpp>
-#include <libhal-pca/pca9685.hpp>
-#include <libhal-lpc40/input_pin.hpp>
-#include <libhal-util/units.hpp>
+
+
 namespace sjsu::science {
 
     revolver::revolver(hal::servo& p_servo, hal::input_pin& p_input_pin, hal::steady_clock& p_steady_clock, hal::serial& p_terminal)
@@ -15,9 +10,8 @@ namespace sjsu::science {
 
     hal::result<revolver> revolver::create(hal::servo& p_servo, hal::input_pin& p_input_pin, hal::steady_clock& p_steady_clock, hal::serial& p_terminal) 
     {
-        revolver revolver(p_servo, p_input_pin, p_steady_clock);
+        revolver revolver(p_servo, p_input_pin, p_steady_clock, p_terminal);
         return revolver;
-        return revolver(p_servo, p_input_pin, p_steady_clock, p_terminal);
     }
 
     hal::status revolver::revolverState(hal::degrees rotationState) 
@@ -32,7 +26,7 @@ namespace sjsu::science {
         {
             int count = -1; // account for initial state change
             bool hallState;
-            bool hallStateDelayed;l
+            bool hallStateDelayed;
             
             revolverState((vial > 0) ? m_clockwise : m_counterclockwise);
             vial = (vial > 0) ? vial : -vial;
@@ -53,7 +47,7 @@ namespace sjsu::science {
         }
         else
         {
-            hal::print<1024>(terminal, "Vials can only be moved from %d to %d", -m_numVials, m_numVials);
+            hal::print<1024>(terminal_my, "Vials can only be moved from %d to %d", -m_numVials, m_numVials);
         }
         
         return hal::success();
