@@ -1,11 +1,12 @@
 #include "science_state_machine.hpp"
-#include <libhal/servo.hpp> 
-#
+
+using namespace std::chrono_literals;
+
 namespace sjsu::science{
 
-     science_state_machine(application_framework& application) : hardware(application){}
+    science_state_machine::science_state_machine(application_framework& application) : hardware(application){}
 
-     static hal::result<science_state_machine> science_state_machine::create(application_framework& p_application){
+    hal::result<science_state_machine> science_state_machine::create(application_framework& p_application){
         science_state_machine science_state_machine(p_application);
         return science_state_machine;
      }
@@ -14,7 +15,7 @@ namespace sjsu::science{
         switch(state){
             case science_state_machine::science_states::GET_SAMPLES:
                 mix_solution();
-                pump_sample(hardware.pump_controller::pumps::DEIONIZED_WATER, 500ms);
+                turn_on_pump(pump_manager::pumps::DEIONIZED_WATER, 5000ms);
                 // pump_sample(); 
                 // move_sample();
                 // pump_sample();
@@ -39,24 +40,25 @@ namespace sjsu::science{
                 // current_state= science_states::GET_SAMPLES;
                 break; 
         }
+        return hal::success();
         
     }
 
-    hal::status science_state_machine::pump_sample(auto pump, hal::time_duration duration)(){
-
-        hardware.pump_controller.pump(pump, duration);
-    }
-
-    hal::status science_state_machine::mix_solution(){
-        HAL_CHECK(hardware.mixing_servo.velocity_control(10.0_rpm));
-        hal::delay(hardware.clock, 5000ms);
+    hal::status science_state_machine::turn_on_pump( auto pump, hal::time_duration time){
+        auto pump_controller = *hardware.pump_controller;
+        pump_controller.pump(pump, time);
         return hal::success();
     }
 
-    hal::status science_state_machine::containment_reset(){
-        turn_off_pumps(); 
-        // state=science_states::GET_SAMPLES; 
+    
+
+    hal::status science_state_machine::mix_solution(){
+        // hardware.mixing_servo.velocity_control(10.0 rpm);
+        // hal::delay(hardware.steady_clock, 5000ms);
+        return hal::success();
     }
+
+  
 }
 
 

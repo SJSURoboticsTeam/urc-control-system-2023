@@ -20,6 +20,7 @@ add_executable(${PROJECT_NAME}
     main.cpp
     applications/application.cpp
     platform-implementations/pump_manager.cpp
+    platform-implementations/science_state_machine.cpp
     platforms/${platform}.cpp)
 target_include_directories(${PROJECT_NAME} PUBLIC .)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
