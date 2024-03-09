@@ -18,6 +18,8 @@
 #include <libhal-armcortex/system_control.hpp>
 
 #include <libhal-rmd/mc_x.hpp>
+#include <libhal-soft/rc_servo.hpp>
+#include <libhal-pca/pca9685.hpp>
 
 #include <libhal-lpc40/adc.hpp>
 #include <libhal-lpc40/can.hpp>
@@ -34,9 +36,11 @@
 #include <libhal-util/units.hpp>
 #include "../platform-implementations/esp8266_mission_control.cpp"
 #include "../platform-implementations/pump_manager.hpp"
+#include "../platform-implementations/revolver.hpp"
 #include "../platform-implementations/helper.hpp"
 
 #include "../applications/application.hpp"
+
 namespace sjsu::science {
 hal::status initialize_processor()
 {
@@ -146,10 +150,10 @@ hal::result<application_framework> initialize_platform()
 
   static auto can_router = hal::can_router::create(can).value();
 
-  static auto mixing_mc_x =
-    HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x141));
-  static auto mixing_servo =
-    HAL_CHECK(hal::make_servo(mixing_mc_x ,2.0_rpm));
+  // static auto mixing_mc_x =
+  //   HAL_CHECK(hal::rmd::mc_x::create(can_router, counter, 36.0, 0x141));
+  // static auto mixing_servo =
+  //   HAL_CHECK(hal::make_servo(mixing_mc_x ,2.0_rpm));
 
   // Don't think we need can for the science applications thus far
   //  hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
@@ -192,6 +196,35 @@ hal::result<application_framework> initialize_platform()
     in_sulfuric_acid_pin,
     in_biuret_pump_pin));
 
+  static auto i2c = HAL_CHECK(hal::lpc40::i2c::get(2));
+  static auto pca9685 = HAL_CHECK(hal::pca::pca9685::create(i2c, 0b100'0000)); 
+  static auto pwm0 = pca9685.get_pwm_channel<0>(); 
+  auto servo_settings = hal::soft::rc_servo::settings{
+    .min_angle = 0.0_deg,
+    .max_angle = 360.0_deg,
+    .min_microseconds = 500,
+    .max_microseconds = 2500,
+  }; 
+
+  static auto mixing_servo = HAL_CHECK(hal::soft::rc_servo::create(pwm0, servo_settings));
+
+  static auto i2c_2 = HAL_CHECK(hal::lpc40::i2c::get(3));
+  static auto pca9685_2 = HAL_CHECK(hal::pca::pca9685::create(i2c_2, 0b100'0000)); 
+  static auto pwm1 = pca9685_2.get_pwm_channel<1>(); 
+  auto revolver_servo_settings = hal::soft::rc_servo::settings{
+    .min_angle = 0.0_deg,
+    .max_angle = 360.0_deg,
+    .min_microseconds = 500,
+    .max_microseconds = 2500,
+  }; 
+
+  static auto revolving_servo = HAL_CHECK(hal::soft::rc_servo::create(pwm1, revolver_servo_settings));
+
+  static auto revolver_pin =
+    HAL_CHECK(hal::lpc40::input_pin::get(1, 15, hal::input_pin::settings{}));
+
+  static auto revolver_controller = HAL_CHECK(revolver::create(revolving_servo, revolver_pin, counter, uart0));
+
 
   // static auto pwm_1_6 = HAL_CHECK((hal::lpc40::pwm::get(1, 6)));
   // static auto pwm_1_5 = HAL_CHECK((hal::lpc40::pwm::get(1, 5)));
@@ -199,7 +232,7 @@ hal::result<application_framework> initialize_platform()
   // static auto adc_4 = HAL_CHECK(hal::lpc40::adc::get(4));
   // static auto adc_5 = HAL_CHECK(hal::lpc40::adc::get(5));
 
-  // std::array<hal::byte, 1024> receive_buffer{};
+  // std::array<hal::byte, 1024> recei4ve_buffer{};
 
   // static auto i2c = HAL_CHECK(hal::lpc40::i2c::get(2));
   // static auto can = HAL_CHECK(hal::lpc40::can::get(0));
@@ -219,6 +252,7 @@ hal::result<application_framework> initialize_platform()
     // .adc_4 = &adc_4,
     // .adc_5 = &adc_5,
     .mixing_servo = &mixing_servo,
+    .revolver_controller = &revolver_controller,
 
     // .revolver_servo = &revolver_servo,
     .steady_clock = &counter,
