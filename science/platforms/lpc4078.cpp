@@ -40,6 +40,7 @@
 #include "../platform-implementations/helper.hpp"
 
 #include "../applications/application.hpp"
+
 namespace sjsu::science {
 hal::status initialize_processor()
 {
@@ -222,7 +223,7 @@ hal::result<application_framework> initialize_platform()
   static auto revolver_pin =
     HAL_CHECK(hal::lpc40::input_pin::get(1, 15, hal::input_pin::settings{}));
 
-  static auto revolver_controller = HAL_CHECK(revolver::create(revolving_servo, revolver_pin, counter));
+  static auto revolver_controller = HAL_CHECK(revolver::create(revolving_servo, revolver_pin, counter, uart0));
 
 
   // static auto pwm_1_6 = HAL_CHECK((hal::lpc40::pwm::get(1, 6)));

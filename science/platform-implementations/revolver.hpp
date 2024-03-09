@@ -6,6 +6,9 @@
 #include <libhal-pca/pca9685.hpp>
 #include <libhal-lpc40/input_pin.hpp>
 #include <libhal-util/units.hpp>
+#include <libhal-util/serial.hpp>
+#include <libhal-lpc40/uart.hpp>
+
 
 namespace sjsu::science {
     // Class:
@@ -45,10 +48,10 @@ namespace sjsu::science {
             hal::serial& terminal_my;
 
             hal::status revolverState(hal::degrees rotationState);
-            revolver(hal::servo& p_servo, hal::input_pin& p_input_pin, hal::steady_clock& p_steady_clock);
+            revolver(hal::servo& p_servo, hal::input_pin& p_input_pin, hal::steady_clock& p_steady_clock, hal::serial& p_terminal);
 
         public:
-            static hal::result<revolver> create(hal::servo& p_servo, hal::input_pin& p_input_pin, hal::steady_clock& p_steady_clock);                             
+            static hal::result<revolver> create(hal::servo& p_servo, hal::input_pin& p_input_pin, hal::steady_clock& p_steady_clock, hal::serial& p_terminal);                             
             hal::status revolverMoveVials(int vial);
     };
 }
