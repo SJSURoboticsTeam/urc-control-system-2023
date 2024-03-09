@@ -58,6 +58,11 @@ namespace sjsu::science{
         return hal::success();
     }
 
+    hal::status science_state_machine::move_sample(int position){
+        auto revolver_controller = *hardware.revolver_controller; 
+        revolver_controller.revolverMoveVials(position);
+        return hal::success(); 
+    }
   
 }
 
