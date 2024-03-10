@@ -39,7 +39,7 @@ namespace sjsu::science {
             int m_numVials = 12;
             hal::degrees m_clockwise = hal::degrees(0.0);
             hal::degrees m_counterclockwise = hal::degrees(180.0);
-            hal::degrees m_stop = hal::degrees(360.0);
+            hal::degrees m_stop = hal::degrees(90.0);
             std::chrono::milliseconds m_delay = std::chrono::milliseconds(5);
 
             hal::servo& revolver_servo_my;
