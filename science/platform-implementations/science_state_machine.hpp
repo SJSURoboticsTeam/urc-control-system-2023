@@ -9,7 +9,8 @@ namespace sjsu::science{
         private:
         science_state_machine(application_framework& p_application);
         application_framework& hardware;
-        int position;
+        int m_count;
+        int num_vials_left;
 
         public:
         enum class science_states{

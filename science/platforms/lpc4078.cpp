@@ -219,9 +219,7 @@ hal::result<application_framework> initialize_platform()
       .min_microseconds = 1000,
       .max_microseconds = 2000,
     };
-  }; 
-
-  static auto revolving_servo = HAL_CHECK(hal::soft::rc_servo::create(pwm1, revolver_servo_settings));
+   static auto revolving_servo = HAL_CHECK(hal::soft::rc_servo::create(pwm1, revolver_servo_settings));
 
   static auto revolver_pin =
     HAL_CHECK(hal::lpc40::input_pin::get(1, 15, hal::input_pin::settings{}));
@@ -265,6 +263,6 @@ hal::result<application_framework> initialize_platform()
     // .can = &can,
     // .i2c = &i2c,
     .reset = []() { hal::cortex_m::reset(); },
-  };
+  }; 
 };
 }  // namespace sjsu::science
