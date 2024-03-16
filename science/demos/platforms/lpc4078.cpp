@@ -85,7 +85,7 @@ hal::result<application_framework> initialize_platform()
 
   static auto i2c = HAL_CHECK(hal::lpc40::i2c::get(2));
 
-  auto deionized_water_pump = HAL_CHECK(hal::lpc40::output_pin::get(1, 10, hal::output_pin::settings{}));
+  auto deionized_water_pump = HAL_CHECK(hal::lpc40::output_pin::get(1, 19, hal::output_pin::settings{}));
   auto sample_pump = HAL_CHECK(hal::lpc40::output_pin::get(1, 28, hal::output_pin::settings{}));
   auto molisch_reagent_pump = HAL_CHECK(hal::lpc40::output_pin::get(1, 20, hal::output_pin::settings{}));
   auto sulfuric_acid_pump = HAL_CHECK(hal::lpc40::output_pin::get(1, 19, hal::output_pin::settings{}));

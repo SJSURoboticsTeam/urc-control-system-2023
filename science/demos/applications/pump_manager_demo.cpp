@@ -17,6 +17,7 @@ hal::status application(application_framework& p_framework)
 {
   // configure drivers
   auto& clock = *p_framework.steady_clock;
+  auto& terminal = *p_framework.terminal;
   
   auto pump_manager = HAL_CHECK(pump_manager::create(
     clock,
@@ -28,8 +29,8 @@ hal::status application(application_framework& p_framework)
     ));
 
     while(true){
+        hal::print<64>(terminal, "hello i am working");
         pump_manager.pump(pump_manager::pumps::DEIONIZED_WATER, 1000ms);
-        pump_manager.pump(pump_manager::pumps::BIURET_REAGENT, 2000ms);
     }
 
   return hal::success();
