@@ -178,7 +178,7 @@ hal::result<application_framework> initialize_platform()
   //   static auto revolver = HAL_CHECK(sjsu::science::revolver::create(revolver_servo, in_pin2, steady_clock));
 
   static auto in_deionized_water_pump_pin =
-    HAL_CHECK(hal::lpc40::output_pin::get(1, 15, hal::output_pin::settings{}));
+    HAL_CHECK(hal::lpc40::output_pin::get(1, 19, hal::output_pin::settings{}));
   static auto in_sample_pump_pin =
     HAL_CHECK(hal::lpc40::output_pin::get(1, 23, hal::output_pin::settings{}));
   static auto in_molisch_pump_pin =
