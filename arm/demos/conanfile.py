@@ -14,16 +14,16 @@ class application(ConanFile):
 
     def requirements(self):
         # Application requirements
-        self.requires("libhal/[2.2.0]")
         self.requires("libhal-util/[^3.0.0]")
-        self.requires("libhal-rmd/[^3.0.0]")
-        self.requires("libhal-soft/[^3.0.2]")
-        self.requires("libhal-esp8266/[^2.0.1]")
-        self.requires("libhal-mpu/[2.0.0]")
+        self.requires("libhal-rmd/[3.0.0]")
+        self.requires("libhal-soft/[3.0.1]")
+        self.requires("libhal-esp8266/[2.0.1]")
+        self.requires("libhal-mpu/2.0.0")
+        self.requires("libhal/[2.2.0]")
 
         # List of supported platforms
         if str(self.options.platform).startswith("lpc40"):
-            self.requires("libhal-lpc40/[^2.1.6]")
+            self.requires("libhal-lpc40/[^2.0.0]")
         else:
             raise ConanInvalidConfiguration(
                 f"The platform '{str(self.options.platform)}' is not"
