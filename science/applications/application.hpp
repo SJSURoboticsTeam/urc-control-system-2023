@@ -59,5 +59,6 @@ struct application_framework
 hal::status initialize_processor();
 hal::result<application_framework> initialize_platform();
 hal::status application(application_framework& p_framework);
+hal
 
 }  // namespace sjsu::science

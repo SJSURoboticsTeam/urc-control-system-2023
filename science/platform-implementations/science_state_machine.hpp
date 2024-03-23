@@ -32,7 +32,9 @@ namespace sjsu::science{
         hal::status mix_solution();
         hal::status turn_on_pump(auto pump, hal::time_duration duration);
         hal::status move_sample(int position);
-        hal::status containment_reset(); 
+        hal::status containment_reset();
+        
+        hal::result<int> get_num_vials_left (int vials);
         // hal::status turn_off_pumps();   
 
     };

@@ -69,6 +69,12 @@ namespace sjsu::science{
         revolver_controller.revolverMoveVials(position);
         return hal::success(); 
     }
+
+    hal::result<int> science_state_machine::get_num_vials_left (){
+        return num_vials_left; 
+    }
+
+    hal::status num_vials_left
   
 }
 
