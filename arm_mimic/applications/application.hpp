@@ -14,7 +14,6 @@ namespace sjsu::arm_mimic {
         hal::callback<void()> reset;
     };
 
-    hal::status initialize_processor(); 
-    hal::result<application_framework> initialize_platform();
-    hal::status application(application_framework& p_framework);
+    application_framework initialize_platform();
+    void application(application_framework& p_framework);
 } // namespace sjsu::arm_mimic

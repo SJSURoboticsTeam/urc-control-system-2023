@@ -17,14 +17,16 @@ public:
   {
   }
 
-  hal::result<uint16_t> read_one(hal::byte channel)
+  uint16_t read_one(hal::byte channel)
   {
     using namespace std::literals;
 
     if (channel > 7) {
-      return hal::new_error(
-        "Invalid channel\n");  // TODO: switch to an error number,
-                               // strings take up too much space
+      // TODO(#): add error handling later
+
+      // return hal::new_error(
+      //   "Invalid channel\n");  // TODO: switch to an error number,
+      // strings take up too much space
     }
     std::array<hal::byte, 2> data_buffer;
     std::array<hal::byte, 3> selection_cmd_buffer = {
@@ -34,9 +36,9 @@ public:
     };
     std::array<hal::byte, 1> read_cmd_buffer = { OpCodes::SingleRegisterRead };
 
-    HAL_CHECK(hal::write(m_bus, m_mux_i2c_id, selection_cmd_buffer));
-    HAL_CHECK(hal::write(m_bus, m_mux_i2c_id, read_cmd_buffer));
-    HAL_CHECK(hal::read(m_bus, m_mux_i2c_id, data_buffer));
+    hal::write(m_bus, m_mux_i2c_id, selection_cmd_buffer);
+    hal::write(m_bus, m_mux_i2c_id, read_cmd_buffer);
+    hal::read(m_bus, m_mux_i2c_id, data_buffer);
     hal::delay(m_clk, 1ms);
 
     uint16_t data = (data_buffer[0] << 4) | (data_buffer[1] >> 4);
@@ -49,21 +51,21 @@ public:
 
     // p_input_range = std::make_pair<float, float>(0.0, 4000.0);
     // p_output_range = std::make_pair<float, float>(0,0, 360.0);
-    
+
     // auto mapped_data = constexpr float hal::map (
     //   data, // modifies data directly?
     //   p_input_range /*something something gotta check*/ ,
-    //   p_output_range /*potentiometer range*/  
-    // ) 
+    //   p_output_range /*potentiometer range*/
+    // )
     // return mapped_data;
   };
 
   // TODO: Improve code, more testing
-  hal::result<std::array<int, 8>> read_all()
+  std::array<int, 8> read_all()
   {
     std::array<int, 8> result = {};
     for (int i = 0; i < 8; i++) {
-      result[i] = HAL_CHECK(read_one(i));
+      result[i] = read_one(i);
     }
 
     return result;
