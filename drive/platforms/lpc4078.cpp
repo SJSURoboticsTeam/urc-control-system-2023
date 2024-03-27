@@ -124,7 +124,7 @@ hal::result<application_framework> initialize_platform()
   static auto back_leg_hub_drc =
     HAL_CHECK(hal::rmd::drc::create(can_router, counter, 6.0, 0x146));
   static auto back_leg_drc_motor =
-    HAL_CHECK(hal::make_motor(back_leg_hub_drc, 100.0_rpm));
+    HAL_CHECK(hal::make_motor(back_leg_hub_drc, 100.0_rpm)); // THIS WHEEL IS REVERSED
   static auto back_leg_drc_hub_speed_sensor =
     HAL_CHECK(make_speed_sensor(back_leg_hub_drc));
 
@@ -168,7 +168,7 @@ hal::result<application_framework> initialize_platform()
   // Basically all wheels should be straight.
   left_leg_drc_offset_servo.set_offset(left_leg_drc_offset_servo.get_offset() - 30 * angle_correction_factor);
   right_leg_drc_offset_servo.set_offset(right_leg_drc_offset_servo.get_offset() - 150 * angle_correction_factor);
-  back_leg_drc_offset_servo.set_offset(back_leg_drc_offset_servo.get_offset() - 90 * angle_correction_factor);
+  back_leg_drc_offset_servo.set_offset(back_leg_drc_offset_servo.get_offset() + 90 * angle_correction_factor);
 
   // Straighten the wheels. For debugging.
   HAL_CHECK(left_leg_drc_offset_servo.position(0));

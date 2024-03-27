@@ -47,7 +47,7 @@ hal::status application(application_framework& p_framework)
 
     if (next_update < now) {
       // Time out in 10 ms
-      auto timeout = hal::create_timeout(clock, 10ms);
+      auto timeout = hal::create_timeout(clock, 1s);
       auto commands = mission_control.get_command(timeout).value();
 
       // Create a new target and set the updater to go to the new target
@@ -62,6 +62,7 @@ hal::status application(application_framework& p_framework)
       configuration_updater.set_target(target);
 
       // Next update from mission control in 100 ms (0.1 s)
+      float now = static_cast<float>(clock.uptime().ticks) / clock.frequency().operating_frequency;
       next_update = now + 0.1;
     }
 
