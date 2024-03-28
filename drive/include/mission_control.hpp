@@ -30,6 +30,8 @@ public:
     int heartbeat_count = 0;
     
     // Stuff needed for ackermann steering
+    // This is to keep backwards compatibility with the current
+    // mission control setup. This should be changed later.
     int message_count = 0;
     float wheel_speed = 0.0;
     float steering_angle = 0.0;
