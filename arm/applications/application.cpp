@@ -1,6 +1,7 @@
 #include <libhal-util/serial.hpp>
 #include <libhal-util/steady_clock.hpp>
 #include <libhal/steady_clock.hpp>
+#include <libhal/timeout.hpp>
 
 #include "../implementations/joint_router.hpp"
 #include "../implementations/rules_engine.hpp"
@@ -10,7 +11,7 @@
 
 namespace sjsu::arm {
 
-hal::status application(sjsu::arm::application_framework& p_framework)
+void application(sjsu::arm::application_framework& p_framework)
 {
 
   using namespace std::chrono_literals;
@@ -50,13 +51,13 @@ hal::status application(sjsu::arm::application_framework& p_framework)
   sjsu::arm::mission_control::mc_commands commands;
   speed_control speed_control;
 
-  HAL_CHECK(hal::write(terminal, "Starting control loop..."));
+  hal::write(terminal, "Starting control loop...", hal::never_timeout());
   hal::delay(clock, 1000ms);
 
   while (true) {
     if (loop_count == 10) {
       auto timeout = hal::create_timeout(clock, 100ms);
-      commands = mission_control.get_command(timeout).value();
+      commands = mission_control.get_command(timeout);
       loop_count = 0;
     }
     loop_count++;
@@ -67,7 +68,5 @@ hal::status application(sjsu::arm::application_framework& p_framework)
     arm.move(commands);
     hal::delay(clock, 8ms);
   }
-
-  return hal::success();
 }
 }  // namespace sjsu::arm

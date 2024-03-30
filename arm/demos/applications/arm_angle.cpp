@@ -7,7 +7,7 @@
 
 namespace sjsu::arm {
 
-hal::status application(sjsu::arm::application_framework& p_framework)
+void application(sjsu::arm::application_framework& p_framework)
 {
 
   using namespace std::chrono_literals;
@@ -22,19 +22,18 @@ hal::status application(sjsu::arm::application_framework& p_framework)
 
   while(true)
   {
-    auto s = HAL_CHECK(shoulder_a.read());
+    auto s = shoulder_a.read();
     hal::print<128>(terminal, "shoulder: %fdeg\n", atan2_d(s.y, s.z));
     hal::delay(clock, 10ms);
 
-    auto e = HAL_CHECK(elbow_a.read());
+    auto e = elbow_a.read();
     hal::print<128>(terminal, "elbow: %fdeg\n", atan2_d(e.y, e.z));
     hal::delay(clock, 10ms);
 
-    auto r = HAL_CHECK(rotunda_a.read());
+    auto r = rotunda_a.read();
     hal::print<128>(terminal, "rotunda: %fdeg\n\n", atan2_d(r.y, r.z));
     hal::delay(clock, 1s);
   }
 
-  return hal::success();
 }
 }  // namespace sjsu::arm

@@ -4,7 +4,7 @@
 
 namespace sjsu::arm {
 
-inline hal::status print_arm(offset_servo& rotunda,
+inline void print_arm(offset_servo& rotunda,
                              offset_servo& shoulder,
                              offset_servo& elbow,
                              offset_servo& lwrist,
@@ -19,6 +19,5 @@ inline hal::status print_arm(offset_servo& rotunda,
                    elbow.get_offset(),
                    lwrist.get_offset(),
                    rwrist.get_offset());
-  return hal::success();
 }
 }  // namespace sjsu::arm

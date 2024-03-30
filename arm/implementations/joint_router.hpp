@@ -1,12 +1,12 @@
 #pragma once
 #include <libhal-util/units.hpp>
-#include <libhal/servo.hpp>
 #include <libhal/accelerometer.hpp>
+#include <libhal/servo.hpp>
 
 #include "../platform-implementations/mission_control.hpp"
 
-static constexpr float shoulder_gear_ratio = 65.0f/30.0f;
-static constexpr float elbow_gear_ratio = 40.0f/30.0f;
+static constexpr float shoulder_gear_ratio = 65.0f / 30.0f;
+static constexpr float elbow_gear_ratio = 40.0f / 30.0f;
 
 namespace sjsu::arm {
 class joint_router
@@ -33,23 +33,30 @@ public:
   {
   }
 
-  hal::result<mission_control::mc_commands> move(
-    mission_control::mc_commands p_arguments)
+  /**
+   * @brief move and control the servos
+   * 
+   * @param p_arguments arm join arguments
+   * @return mission_control::mc_commands 
+   */
+  mission_control::mc_commands move(mission_control::mc_commands p_arguments)
   {
 
-    HAL_CHECK(
-      m_rotunda_servo.position(static_cast<float>(p_arguments.rotunda_angle)));
+    m_rotunda_servo.position(static_cast<float>(p_arguments.rotunda_angle));
 
-    HAL_CHECK(
-      m_shoulder_servo.position(static_cast<float>(-p_arguments.shoulder_angle * shoulder_gear_ratio)));
+    m_shoulder_servo.position(
+      static_cast<float>(-p_arguments.shoulder_angle * shoulder_gear_ratio));
 
-    HAL_CHECK(m_elbow_servo.position(static_cast<float>(p_arguments.elbow_angle * elbow_gear_ratio)));
+    m_elbow_servo.position(
+      static_cast<float>(p_arguments.elbow_angle * elbow_gear_ratio));
 
-    int left_wrist_angle = (p_arguments.wrist_roll_angle) + (p_arguments.wrist_pitch_angle);
-    HAL_CHECK(m_left_wrist_servo.position(static_cast<float>(left_wrist_angle)));
+    int left_wrist_angle =
+      (p_arguments.wrist_roll_angle) + (p_arguments.wrist_pitch_angle);
+    m_left_wrist_servo.position(static_cast<float>(left_wrist_angle));
 
-    int right_wrist_angle = (p_arguments.wrist_roll_angle) - (p_arguments.wrist_pitch_angle);
-    HAL_CHECK(m_right_wrist_servo.position(static_cast<float>((right_wrist_angle))));
+    int right_wrist_angle =
+      (p_arguments.wrist_roll_angle) - (p_arguments.wrist_pitch_angle);
+    m_right_wrist_servo.position(static_cast<float>((right_wrist_angle)));
 
     return p_arguments;
   }

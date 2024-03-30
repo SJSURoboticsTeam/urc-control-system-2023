@@ -10,6 +10,12 @@ namespace sjsu::arm {
 // static constexpr int kMinWristPitchAngle = -90;
 // static constexpr int kMaxWristPitchAngle = 90;
 
+/**
+ * @brief clamp our mc commands to valid values 
+ * 
+ * @param commands 
+ * @return mission_control::mc_commands 
+ */
 inline mission_control::mc_commands validate_commands(
   mission_control::mc_commands commands)
 {

@@ -32,8 +32,8 @@ struct application_framework
 
 // Application function must be implemented by one of the compilation units
 // (.cpp) files.
-hal::status initialize_processor();
-hal::result<application_framework> initialize_platform();
-hal::status application(application_framework& p_framework);
+void initialize_processor();
+application_framework initialize_platform();
+void application(application_framework& p_framework);
 
 }  // namespace sjsu::arm

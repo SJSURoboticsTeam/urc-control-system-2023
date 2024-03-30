@@ -1,8 +1,8 @@
-#pragma once
-
 #include "mission_control.hpp"
 #include <array>
 #include <cinttypes>
+#include <cstdint>
+#include <libhal/error.hpp>
 #include <string_view>
 
 #include <libhal-esp8266/at.hpp>
@@ -17,32 +17,6 @@ namespace sjsu::arm {
 class esp8266_mission_control : public mission_control
 {
 public:
-  static hal::result<esp8266_mission_control> create(
-    hal::esp8266::at& p_esp8266,
-    hal::serial& p_console,
-    const std::string_view p_ssid,
-    const std::string_view p_password,
-    const hal::esp8266::at::socket_config& p_config,
-    const std::string_view p_ip,
-    hal::timeout auto& p_timeout,
-    std::span<hal::byte> p_buffer,
-    std::string_view p_get_request)
-  {
-    esp8266_mission_control esp_mission_control =
-      esp8266_mission_control(p_esp8266,
-                              p_console,
-                              p_ssid,
-                              p_password,
-                              p_config,
-                              p_ip,
-                              p_buffer,
-                              p_get_request);
-    HAL_CHECK(esp_mission_control.establish_connection(p_timeout));
-
-    return esp_mission_control;
-  }
-
-private:
   esp8266_mission_control(hal::esp8266::at& p_esp8266,
                           hal::serial& p_console,
                           const std::string_view p_ssid,
@@ -50,7 +24,8 @@ private:
                           const hal::esp8266::at::socket_config& p_config,
                           const std::string_view p_ip,
                           std::span<hal::byte> p_buffer,
-                          std::string_view p_get_request)
+                          std::string_view p_get_request,
+                          hal::timeout auto& p_timeout)
     : m_esp8266(&p_esp8266)
     , m_console(&p_console)
     , m_ssid(p_ssid)
@@ -63,20 +38,23 @@ private:
     , m_http_header_parser(new_http_header_parser())
   {
     m_buffer_len = 0;
+    this->establish_connection(p_timeout);
   }
 
-  hal::result<mc_commands> impl_get_command(
+private:
+  mc_commands impl_get_command(
     hal::function_ref<hal::timeout_function> p_timeout) override
   {
     using namespace std::literals;
 
-    // auto dumfuck = HAL_CHECK(m_esp8266->is_connected_to_server(p_timeout));
+    // auto dumfuck = m_esp8266->is_connected_to_server(p_timeout));
     if (m_write_error) {
       hal::print(*m_console, "Reconnecting...\n");
       // Wait 1s before attempting to reconnect
 
-      auto result = establish_connection(p_timeout);
-      if (!result) {
+      try {
+      establish_connection(p_timeout);
+      } catch (const hal::timed_out&) {
         hal::print(*m_console, "Failure!!!\n");
         return m_commands;
       }
@@ -92,22 +70,20 @@ private:
     if (m_read_complete) {
 
       // Send out HTTP GET request
-
+      try {
       auto status =
         m_esp8266->server_write(hal::as_bytes(m_get_request), p_timeout);
-
-      if (!status) {
+      } catch (const hal::timed_out&) {
         hal::print(*m_console, "\nFailed to write to server!\n");
         hal::print(*m_console, m_get_request);
         m_write_error = true;
         return m_commands;
       }
-
       m_missed_read = 0;
       m_read_complete = false;
       m_header_finished = false;
     }
-    auto received = HAL_CHECK(m_esp8266->server_read(m_buffer)).data;
+    auto received = m_esp8266->server_read(m_buffer);
     auto remainder = received | m_http_header_parser.find_header_start |
                      m_http_header_parser.find_content_length |
                      m_http_header_parser.parse_content_length |
@@ -134,7 +110,7 @@ private:
       auto tmp = m_content_length - m_buffer_len;
       auto byte_to_read = std::min((size_t)tmp, remainder.size());
 
-      for (int i = 0; i < byte_to_read; i++) {
+      for (uint32_t i = 0; i < byte_to_read; i++) {
         m_command_buffer[m_buffer_len + i] = remainder[i];
       }
       m_buffer_len += byte_to_read;
@@ -215,7 +191,7 @@ private:
     connection_established,
   };
 
-  [[nodiscard]] hal::status establish_connection(hal::timeout auto& p_timeout)
+  void establish_connection(hal::timeout auto& p_timeout)
   {
     connection_state state = connection_state::check_ap_connection;
 
@@ -225,7 +201,7 @@ private:
           hal::print(*m_console, "Checking if AP \"");
           hal::print(*m_console, m_ssid);
           hal::print(*m_console, "\" is connected... ");
-          if (HAL_CHECK(m_esp8266->is_connected_to_ap(p_timeout))) {
+          if (m_esp8266->is_connected_to_ap(p_timeout)) {
             state = connection_state::check_server_connection;
             hal::print(*m_console, "Connected!\n");
           } else {
@@ -237,7 +213,7 @@ private:
           hal::print(*m_console, "Connecting to AP: \"");
           hal::print(*m_console, m_ssid);
           hal::print(*m_console, "\" ...\n");
-          HAL_CHECK(m_esp8266->connect_to_ap(m_ssid, m_password, p_timeout));
+          m_esp8266->connect_to_ap(m_ssid, m_password, p_timeout);
           state = connection_state::set_ip_address;
           break;
         case connection_state::set_ip_address:
@@ -245,7 +221,7 @@ private:
             hal::print(*m_console, "Setting IP Address to: ");
             hal::print(*m_console, m_ip);
             hal::print(*m_console, " ...\n");
-            HAL_CHECK(m_esp8266->set_ip_address(m_ip, p_timeout));
+            m_esp8266->set_ip_address(m_ip, p_timeout);
           }
           state = connection_state::check_server_connection;
           break;
@@ -253,7 +229,7 @@ private:
           hal::print(*m_console, "Checking if server \"");
           hal::print(*m_console, m_config.domain);
           hal::print(*m_console, "\" is connected... \n");
-          if (HAL_CHECK(m_esp8266->is_connected_to_server(p_timeout))) {
+          if (m_esp8266->is_connected_to_server(p_timeout)) {
             state = connection_state::connection_established;
             hal::print(*m_console, "Connected!\n");
           } else {
@@ -265,7 +241,7 @@ private:
           hal::print(*m_console, "Connecting to server: \"");
           hal::print(*m_console, m_config.domain);
           hal::print(*m_console, "\" ...\n");
-          HAL_CHECK(m_esp8266->connect_to_server(m_config, p_timeout));
+          m_esp8266->connect_to_server(m_config, p_timeout);
           hal::print(*m_console, "connected\n");
           state = connection_state::check_server_connection;
           break;
@@ -277,8 +253,6 @@ private:
           state = connection_state::connecting_to_ap;
       }
     }
-
-    return hal::success();
   }
 
   struct http_header_parser_t
@@ -302,7 +276,6 @@ private:
     };
   }
 
-  mc_commands m_commands{};
   hal::esp8266::at* m_esp8266;
   hal::serial* m_console;
   std::string_view m_ssid;
@@ -310,14 +283,15 @@ private:
   const hal::esp8266::at::socket_config& m_config;
   std::string_view m_ip;
   std::span<hal::byte> m_buffer;
-  std::array<hal::byte, 128> m_command_buffer;
   std::string_view m_get_request;
+  hal::stream_fill m_fill_payload;
   http_header_parser_t m_http_header_parser;
+  std::array<hal::byte, 128> m_command_buffer;
   size_t m_buffer_len;
+  mc_commands m_commands{};
   bool m_write_error = false;
   bool m_header_finished = false;
   bool m_read_complete = true;
-  hal::stream_fill m_fill_payload;
   size_t m_content_length;
   std::uint32_t m_missed_read = 0;
 };
