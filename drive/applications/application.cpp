@@ -28,8 +28,8 @@ hal::status application(application_framework& p_framework)
 
   drive_configuration_updater configuration_updater;
 
-  configuration_updater.set_kP(config_kP);
-  configuration_updater.set_max_delta(config_max_delta);
+  configuration_updater.set_sensitivity(config_sensitivity);
+  configuration_updater.set_max_rate(config_max_delta);
 
   // Supports different leg configurations
   wheel_router wheels(legs);

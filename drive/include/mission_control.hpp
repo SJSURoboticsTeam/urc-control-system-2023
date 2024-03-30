@@ -32,9 +32,21 @@ public:
     // Stuff needed for ackermann steering
     // This is to keep backwards compatibility with the current
     // mission control setup. This should be changed later.
+    /**
+     * @brief This should increment every time a new message is recieved
+     */
     int message_count = 0;
+    /**
+     * @brief Wheel speed command sent from mission control.
+     */
     float wheel_speed = 0.0;
+    /**
+     * @brief Steering angle command sent from mission control.
+     */
     float steering_angle = 0.0;
+    /**
+     * @brief Wheel heading command sent from mission control.
+     */
     float wheel_heading = 0.0;
 
     hal::status print(hal::serial* terminal)

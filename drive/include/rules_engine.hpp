@@ -8,8 +8,8 @@ namespace sjsu::drive {
  * 
  * @note It is possible to have any steering angle or wheel heading, since the steering function is continous.
  * 
- * @param p_config 
- * @return drive_configuration 
+ * @param p_config The drive configuration sent by mission control or needs to be validated.
+ * @return A new drive configuration, with all the rule checks applied.
  */
 inline drive_configuration validate_configuration(drive_configuration p_config)
 {

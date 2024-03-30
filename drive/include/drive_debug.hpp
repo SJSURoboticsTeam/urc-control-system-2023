@@ -5,17 +5,17 @@
 
 namespace sjsu::drive {
     /**
-     * @brief Print wheel settings. Assumes tri wheel configuration
+     * @brief Print wheel settings. Assumes the tri-wheel configuration
      * 
-     * @param serial 
-     * @param settings 
+     * @param console Console to print
+     * @param settings The wheel settings calculated for each leg of the tri-wheel
      */
-    void print_wheel_settings(hal::serial& serial, std::span<wheel_setting> settings);
+    void print_wheel_settings(hal::serial& console, std::span<wheel_setting> settings);
     /**
      * @brief Does a few tests on the ackermann steering math. Read serial output to confirm these are correct.
      * 
-     * @param serial 
-     * @param steering 
+     * @param console Console to print
+     * @param steering The steering manager to test.
      */
-    void test_steering_math(hal::serial& serial, ackermann_steering steering);
+    void test_steering_math(hal::serial& console, ackermann_steering steering);
 }  // namespace sjsu::drive
