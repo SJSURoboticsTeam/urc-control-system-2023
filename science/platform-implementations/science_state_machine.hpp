@@ -34,7 +34,7 @@ namespace sjsu::science{
         hal::status move_sample(int position);
         hal::status containment_reset();
         
-        hal::result<int> get_num_vials_left (int vials);
+        hal::result<int> get_num_vials_left ();
         // hal::status turn_off_pumps();   
 
     };
