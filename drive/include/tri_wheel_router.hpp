@@ -16,10 +16,10 @@ class tri_wheel_router
 public:
   tri_wheel_router(leg& p_back, leg& p_right, leg& p_left);
 
-  hal::status move(tri_wheel_router_arguments p_tri_wheel_arguments,
+  void move(tri_wheel_router_arguments p_tri_wheel_arguments,
                    hal::steady_clock& p_clock);
 
-  hal::result<motor_feedback> get_motor_feedback();
+  motor_feedback get_motor_feedback();
 
 private:
   // member variables

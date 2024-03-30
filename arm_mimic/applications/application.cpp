@@ -56,9 +56,10 @@ void application(application_framework& p_framework)
       results[4] = 0;
       results[5] = 0;
 
-    //   tla::send_data_to_mc(*p_framework.terminal, results);
+      //   tla::send_data_to_mc(*p_framework.terminal, results);
     }
   } catch (...) {
+    
     hal::halt();
   }
 }

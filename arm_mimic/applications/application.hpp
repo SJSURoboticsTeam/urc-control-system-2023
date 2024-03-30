@@ -6,14 +6,14 @@
 #include <libhal/steady_clock.hpp>
 
 namespace sjsu::arm_mimic {
-    struct application_framework
-    {
-        hal::serial* terminal;
-        hal::i2c* i2c2;
-        hal::steady_clock* steady_clock;
-        hal::callback<void()> reset;
-    };
+struct application_framework
+{
+  hal::serial* terminal;
+  hal::i2c* i2c2;
+  hal::steady_clock* steady_clock;
+  hal::callback<void()> reset;
+};
 
-    application_framework initialize_platform();
-    void application(application_framework& p_framework);
-} // namespace sjsu::arm_mimic
+application_framework initialize_platform();
+void application(application_framework& p_framework);
+}  // namespace sjsu::arm_mimic

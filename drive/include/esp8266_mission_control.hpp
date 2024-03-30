@@ -74,14 +74,14 @@ private:
                           std::span<hal::byte> p_buffer,
                           std::string_view p_get_request);
 
-  hal::result<mission_control::mc_commands> impl_get_command(
+  mission_control::mc_commands impl_get_command(
     hal::function_ref<hal::timeout_function> p_timeout) override;
 
   void parse_commands();
 
   std::string_view to_string_view(std::span<const hal::byte> p_span);
 
-  hal::status establish_connection(
+  void establish_connection(
     hal::function_ref<hal::timeout_function> p_timeout);
 
   http_header_parser_t new_http_header_parser();

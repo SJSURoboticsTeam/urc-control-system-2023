@@ -1,0 +1,19 @@
+If:
+  PathMatch: arm_mimic/.*
+  CompileFlags:
+    CompilationDatabase: arm_mimic
+If:
+  PathMatch: arm/.*
+  CompileFlags:
+    CompilationDatabase: arm
+If:
+  PathMatch: drive/.*
+  CompileFlags:
+    CompilationDatabase: drive
+If:
+  PathMatch: science/.*
+  CompileFlags:
+    CompilationDatabase: science
+Else:
+  CompileFlags:
+    CompilationDatabase: .

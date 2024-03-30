@@ -24,7 +24,7 @@ private:
 
   void parse_commands(std::string_view p_commands_json);
 
-  hal::result<mission_control::mc_commands> impl_get_command(
+  mission_control::mc_commands> impl_get_command(
     hal::function_ref<hal::timeout_function> p_timeout) override;
 
   hal::serial& m_console;

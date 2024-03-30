@@ -13,7 +13,7 @@ struct motor_feedback
   float right_drive_speed = 5.0;
   float back_drive_speed = 5.0;
 
-  hal::status Print(hal::serial& terminal)
+  void Print(hal::serial& terminal)
   {
     hal::print<50>(
       terminal,
@@ -25,7 +25,6 @@ struct motor_feedback
       static_cast<float>(left_drive_speed),
       static_cast<float>(right_drive_speed),
       static_cast<float>(back_drive_speed));
-    return hal::success();
   }
 };
 

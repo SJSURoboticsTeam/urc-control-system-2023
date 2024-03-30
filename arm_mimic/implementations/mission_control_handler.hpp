@@ -19,6 +19,7 @@ namespace tla {
             // TODO(#): add error handling later
             // return hal::safe_throw("Not implemented");
             //
+            // hal::safe_throw(hal::no_such_device(0x68, this));
         }
 
     }
