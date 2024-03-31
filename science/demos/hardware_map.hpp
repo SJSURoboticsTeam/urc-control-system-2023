@@ -23,6 +23,7 @@
 #include <libhal/pwm.hpp>
 #include <libhal/serial.hpp>
 #include <libhal/steady_clock.hpp>
+#include "../platform-implementations/mission_control.hpp"
 
 namespace sjsu::science {
 struct application_framework
@@ -36,7 +37,7 @@ struct application_framework
   hal::pwm* pwm_1_5;
   hal::adc* adc_4;
   hal::adc* adc_5;
-  hal::serial* esp;
+  // hal::serial* esp;
   hal::i2c* i2c;
   hal::steady_clock* steady_clock;
   hal::output_pin* deionized_water_pump;
@@ -44,6 +45,7 @@ struct application_framework
   hal::output_pin* molisch_reagent_pump;
   hal::output_pin* sulfuric_acid_pump;
   hal::output_pin* biuret_reagent;
+  mission_control* mc;
   hal::callback<void()> reset;
 
 };

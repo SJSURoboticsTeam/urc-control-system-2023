@@ -25,6 +25,7 @@ libhal_build_demos(
   color_sensor_demo
   led_strip_demo
   pump_manager_demo
+  esp8266_demo
 
   SOURCES
   ../platform-implementations/scd40.cpp
@@ -32,12 +33,16 @@ libhal_build_demos(
   ../platform-implementations/soil_sensor_sht21.cpp
   ../platform-implementations/color_sensor_opt4048.cpp
   ../platform-implementations/pump_manager.cpp
+  ../platform-implementations/esp8266_mission_control.cpp
+  
 
   PACKAGES
   libhal-lpc40
   libhal-util
+  libhal-esp8266
 
   LINK_LIBRARIES
   libhal::lpc40
   libhal::util
+  libhal::esp8266
 )

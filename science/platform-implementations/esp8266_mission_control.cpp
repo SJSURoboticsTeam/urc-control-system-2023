@@ -1,5 +1,3 @@
-#pragma once
-
 #include "mission_control.hpp"
 #include <array>
 #include <cinttypes>
@@ -134,7 +132,7 @@ private:
       auto tmp = m_content_length - m_buffer_len;
       auto byte_to_read = std::min((size_t)tmp, remainder.size());
 
-      for (int i = 0; i < byte_to_read; i++) {
+      for (int i = 0; i < (int) byte_to_read; i++) {
         m_command_buffer[m_buffer_len + i] = remainder[i];
       }
       m_buffer_len += byte_to_read;
@@ -302,14 +300,14 @@ private:
   const hal::esp8266::at::socket_config& m_config;
   std::string_view m_ip;
   std::span<hal::byte> m_buffer;
-  std::array<hal::byte, 128> m_command_buffer;
   std::string_view m_get_request;
+  hal::stream_fill m_fill_payload;
+  std::array<hal::byte, 128> m_command_buffer;
   http_header_parser_t m_http_header_parser;
   size_t m_buffer_len;
   bool m_write_error = false;
   bool m_header_finished = false;
   bool m_read_complete = true;
-  hal::stream_fill m_fill_payload;
   size_t m_content_length;
   std::uint32_t m_missed_read = 0;
 };
