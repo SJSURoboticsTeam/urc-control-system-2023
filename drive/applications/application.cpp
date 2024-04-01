@@ -35,12 +35,12 @@ void application(application_framework& p_framework)
   sjsu::drive::command_lerper lerp;
 
   hal::delay(clock, 1000ms);
-  hal::write(terminal, "Starting control loop...");
+  hal::write(terminal, "Starting control loop...", hal::never_timeout());
 
   while (true) {
     if (loop_count == 10) {
       auto timeout = hal::create_timeout(clock, 1s);
-      commands = mission_control.get_command(timeout).value();
+      commands = mission_control.get_command(timeout);
       loop_count = 0;
     }
     loop_count++;
@@ -53,7 +53,7 @@ void application(application_framework& p_framework)
     commands.speed = lerp.lerp(commands.speed);
 
     arguments = sjsu::drive::select_mode(commands);
-    tri_wheel.move(arguments, clock);
+    tri_wheel.move(arguments);
     hal::delay(clock, 8ms);
   }
 

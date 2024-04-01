@@ -19,15 +19,14 @@ tri_wheel_router::tri_wheel_router(leg& p_back, leg& p_right, leg& p_left)
 }
 
 void tri_wheel_router::move(
-  tri_wheel_router_arguments p_tri_wheel_arguments,
-  hal::steady_clock& p_clock)
+  tri_wheel_router_arguments p_tri_wheel_arguments)
 {
   m_left.steer->position(-p_tri_wheel_arguments.left.angle);
   m_left.propulsion->power(p_tri_wheel_arguments.left.speed / 100);
 
   m_right.steer->position(-p_tri_wheel_arguments.right.angle);
   
-    m_right.propulsion->power(-p_tri_wheel_arguments.right.speed / 100);
+  m_right.propulsion->power(-p_tri_wheel_arguments.right.speed / 100);
 
   m_back.steer->position(-p_tri_wheel_arguments.back.angle);
   m_back.propulsion->power(p_tri_wheel_arguments.back.speed / 100);

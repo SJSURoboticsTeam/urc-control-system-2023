@@ -17,6 +17,14 @@ namespace sjsu::drive {
 class esp8266_mission_control : public mission_control
 {
 public:
+esp8266_mission_control(hal::esp8266::at& p_esp8266,
+                          hal::serial& p_console,
+                          const std::string_view p_ssid,
+                          const std::string_view p_password,
+                          const hal::esp8266::at::socket_config& p_config,
+                          const std::string_view p_ip,
+                          std::span<hal::byte> p_buffer,
+                          std::string_view p_get_request);
   struct create_t
   {
     hal::esp8266::at& esp8266;
@@ -47,32 +55,9 @@ public:
     connection_established,
   };
 
-  [[nodiscard]] static hal::result<esp8266_mission_control> create(
-    create_t p_create,
-    hal::timeout auto& p_timeout)
-  {
-    esp8266_mission_control esp_mission_control(p_create.esp8266,
-                                                p_create.console,
-                                                p_create.ssid,
-                                                p_create.password,
-                                                p_create.config,
-                                                p_create.ip,
-                                                p_create.buffer,
-                                                p_create.get_request);
-    HAL_CHECK(esp_mission_control.establish_connection(p_timeout));
-
-    return esp_mission_control;
-  }
 
 private:
-  esp8266_mission_control(hal::esp8266::at& p_esp8266,
-                          hal::serial& p_console,
-                          const std::string_view p_ssid,
-                          const std::string_view p_password,
-                          const hal::esp8266::at::socket_config& p_config,
-                          const std::string_view p_ip,
-                          std::span<hal::byte> p_buffer,
-                          std::string_view p_get_request);
+  
 
   mission_control::mc_commands impl_get_command(
     hal::function_ref<hal::timeout_function> p_timeout) override;
@@ -86,24 +71,25 @@ private:
 
   http_header_parser_t new_http_header_parser();
 
-  mc_commands m_commands{};
-  http_header_parser_t m_http_header_parser;
-  hal::stream_fill m_fill_payload;
-  const hal::esp8266::at::socket_config& m_config;
   hal::esp8266::at* m_esp8266;
   hal::serial* m_console;
   std::string_view m_ssid;
   std::string_view m_password;
-  std::string_view m_get_request;
+  const hal::esp8266::at::socket_config& m_config;
   std::string_view m_ip;
   std::span<hal::byte> m_buffer;
+  std::string_view m_get_request;
+  hal::stream_fill m_fill_payload;
+  http_header_parser_t m_http_header_parser;
   std::array<hal::byte, 128> m_command_buffer;
   size_t m_buffer_len;
-  size_t m_content_length;
+  mc_commands m_commands{};
   bool m_write_error = false;
   bool m_header_finished = false;
   bool m_read_complete = true;
+  size_t m_content_length;
   std::uint32_t m_missed_read = 0;
+
 };
 
 }  // namespace sjsu::drive

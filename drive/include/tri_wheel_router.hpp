@@ -16,8 +16,7 @@ class tri_wheel_router
 public:
   tri_wheel_router(leg& p_back, leg& p_right, leg& p_left);
 
-  void move(tri_wheel_router_arguments p_tri_wheel_arguments,
-                   hal::steady_clock& p_clock);
+  void move(tri_wheel_router_arguments p_tri_wheel_arguments);
 
   motor_feedback get_motor_feedback();
 

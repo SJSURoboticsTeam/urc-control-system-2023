@@ -39,7 +39,7 @@ serial_mission_control::impl_get_command(
   hal::function_ref<hal::timeout_function> p_timeout)
 {
   std::array<hal::byte, 8192> buffer{};
-  auto received = HAL_CHECK(m_console.read(buffer)).data;
+  auto received = m_console.read(buffer).data;
   if (received.size() != 0) {
     auto response = std::string_view(
       reinterpret_cast<const char*>(received.data()), received.size());

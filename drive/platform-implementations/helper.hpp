@@ -14,6 +14,7 @@
 
 #pragma once
 
+#include <libhal/timeout.hpp>
 #include <string_view>
 
 #include <libhal-util/serial.hpp>
@@ -45,26 +46,26 @@ public:
 
   write_t driver_write(std::span<const hal::byte> p_data) override
   {
-    hal::write(*m_mirror, "WRITE:[");
+    hal::write(*m_mirror, "WRITE:[", hal::never_timeout());
     m_mirror->write(p_data);
-    hal::write(*m_mirror, "]\n");
+    hal::write(*m_mirror, "]\n", hal::never_timeout());
     return m_primary->write(p_data);
   }
 
-  hal::result<read_t> driver_read(std::span<hal::byte> p_data) override
+  read_t driver_read(std::span<hal::byte> p_data) override
   {
     auto result = m_primary->read(p_data);
 
-    if (result.has_value() && result.value().data.size() != 0) {
-      HAL_CHECK(m_mirror->write(p_data));
+    if (result.data.size() != 0) {
+      m_mirror->write(p_data);
     }
 
     return result;
   }
 
-  hal::result<hal::serial::flush_t> driver_flush() override
+  void driver_flush() override
   {
-    return m_primary->flush();
+    m_primary->flush();
   }
 
 private:

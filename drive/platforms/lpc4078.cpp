@@ -193,21 +193,21 @@ application_framework initialize_platform()
     .domain = "192.168.0.211",
     .port = 5000,
   };
-  hal::write(uart0, "created Socket\n");
+  hal::write(uart0, "created Socket\n", hal::never_timeout());
   static constexpr std::string_view get_request = "GET /drive HTTP/1.1\r\n"
                                                   "Host: 192.168.0.211:5000\r\n"
                                                   "\r\n";
 
   static std::array<hal::byte, 1024> buffer{};
-  // static auto helper = serial_mirror(uart1, uart0);
+  static auto helper = serial_mirror(uart1, uart0);
 
   auto timeout = hal::create_timeout(counter, 10s);
   hal::esp8266::at esp8266(helper, timeout);
-  sjsu::arm::esp8266_mission_control* drive_mission_control = nullptr;
+  esp8266_mission_control* drive_mission_control = nullptr;
   while (true) {
     try {
-      auto mc_timeout = hal::create_timeout(counter, 10s);
-      static sjsu::arm::esp8266_mission_control esp_mission_control(
+      // auto mc_timeout = hal::create_timeout(counter, 10s);
+      static esp8266_mission_control esp_mission_control(
         esp8266,
         uart0,
         ssid,
@@ -215,8 +215,7 @@ application_framework initialize_platform()
         socket_config,
         ip,
         buffer,
-        get_request,
-        mc_timeout);
+        get_request);
 
       drive_mission_control = &esp_mission_control;
       break;

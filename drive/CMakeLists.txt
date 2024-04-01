@@ -9,7 +9,7 @@ libhal_build_demos(
   SOURCES
   platform-implementations/drc_speed_sensor.cpp
   platform-implementations/esp8266_mission_control.cpp
-  platform-implementations/serial_mission_control.cpp
+  # platform-implementations/serial_mission_control.cpp
   platform-implementations/offset_servo.cpp
   implementations/command_lerper.cpp
   implementations/mode_switcher.cpp
