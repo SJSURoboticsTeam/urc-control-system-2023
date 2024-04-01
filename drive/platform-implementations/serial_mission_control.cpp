@@ -34,7 +34,7 @@ void serial_mission_control::parse_commands(std::string_view p_commands_json)
   m_commands = commands;
 }
 
-hal::result<mission_control::mc_commands>
+mission_control::mc_commands
 serial_mission_control::impl_get_command(
   hal::function_ref<hal::timeout_function> p_timeout)
 {

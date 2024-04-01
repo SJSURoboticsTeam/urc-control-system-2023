@@ -10,7 +10,7 @@ namespace sjsu::drive {
 class print_speed_sensor : public speed_sensor {
 public:
 
-    static hal::result<print_speed_sensor> make_speed_sensor(hal::serial& p_console) {
+    static print_speed_sensor make_speed_sensor(hal::serial& p_console) {
         return print_speed_sensor(p_console);
     }
 
@@ -21,7 +21,7 @@ private:
     {
     }
 
-    hal::result<speed_sensor::read_t> driver_read() {
+    speed_sensor::read_t driver_read() {
         using namespace hal::literals;
         
         auto speed = 0.0_rpm;

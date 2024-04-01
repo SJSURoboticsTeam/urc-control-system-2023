@@ -7,7 +7,7 @@ namespace sjsu::drive {
 
 class offset_servo : public hal::servo {
 public:
-    static hal::result<offset_servo> create(hal::servo& p_servo, hal::degrees p_offset) {
+    static offset_servo create(hal::servo& p_servo, hal::degrees p_offset) {
         return offset_servo(p_servo, p_offset);
     }
 
@@ -24,8 +24,8 @@ private:
     {
     }
 
-    hal::result<hal::servo::position_t> driver_position(hal::degrees p_position) override {
-        return HAL_CHECK(m_servo->position(p_position + m_offset));
+    hal::servo::position_t driver_position(hal::degrees p_position) override {
+        return m_servo->position(p_position + m_offset);
     }
 
     hal::degrees m_offset;

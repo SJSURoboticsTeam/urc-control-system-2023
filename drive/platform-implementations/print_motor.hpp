@@ -8,7 +8,7 @@ namespace sjsu::drive {
 
 class print_motor : public hal::motor {
 public:
-    static hal::result<print_motor> create(hal::serial& p_console) {
+    static print_motor create(hal::serial& p_console) {
         return print_motor(p_console);
     }
     
@@ -17,7 +17,7 @@ private:
     {
     }
 
-    hal::result<hal::motor::power_t> driver_power(float p_speed) override {
+    hal::motor::power_t driver_power(float p_speed) override {
         hal::print<20>(*m_console, "speed: %f\n", p_speed);
         return hal::motor::power_t{};
     }

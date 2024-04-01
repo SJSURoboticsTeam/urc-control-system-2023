@@ -196,38 +196,39 @@ application_framework initialize_platform()
   hal::write(uart0, "created Socket\n");
   static constexpr std::string_view get_request = "GET /drive HTTP/1.1\r\n"
                                                   "Host: 192.168.0.211:5000\r\n"
-                                                  "more info\r\n";
+                                                  "\r\n";
 
   static std::array<hal::byte, 1024> buffer{};
   // static auto helper = serial_mirror(uart1, uart0);
 
   auto timeout = hal::create_timeout(counter, 10s);
-  static auto esp8266 = hal::esp8266::at::create(uart1, timeout);
-  auto mc_timeout = hal::create_timeout(counter, 10s);
-  esp8266_mission_control::create_t create_mission_control{
-    .esp8266 = esp8266,
-    .console = uart0,
-    .ssid = ssid,
-    .password = password,
-    .config = socket_config,
-    .ip = ip,
-    .buffer = buffer,
-    .get_request = get_request
-  };
-  static auto esp_mission_control =
-    esp8266_mission_control::create(create_mission_control, mc_timeout);
+  hal::esp8266::at esp8266(helper, timeout);
+  sjsu::arm::esp8266_mission_control* drive_mission_control = nullptr;
+  while (true) {
+    try {
+      auto mc_timeout = hal::create_timeout(counter, 10s);
+      static sjsu::arm::esp8266_mission_control esp_mission_control(
+        esp8266,
+        uart0,
+        ssid,
+        password,
+        socket_config,
+        ip,
+        buffer,
+        get_request,
+        mc_timeout);
 
-  while (esp_mission_control.has_error()) {
-    mc_timeout = hal::create_timeout(counter, 30s);
-    esp_mission_control =
-      esp8266_mission_control::create(create_mission_control, mc_timeout);
+      drive_mission_control = &esp_mission_control;
+      break;
+    } catch (const hal::timed_out&) {
+      continue;
+    }
   }
-  static auto drive_mission_control = esp_mission_control.value();
 
   return application_framework{
     .legs = legs,
 
-    .mc = &drive_mission_control,
+    .mc = drive_mission_control,
 
     .terminal = &uart0,
     .clock = &counter,

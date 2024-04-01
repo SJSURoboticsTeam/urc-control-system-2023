@@ -13,7 +13,7 @@
 
 namespace sjsu::drive {
 
-hal::status application(application_framework& p_framework)
+void application(application_framework& p_framework)
 {
   using namespace std::chrono_literals;
   using namespace hal::literals;
@@ -35,7 +35,7 @@ hal::status application(application_framework& p_framework)
   sjsu::drive::command_lerper lerp;
 
   hal::delay(clock, 1000ms);
-  HAL_CHECK(hal::write(terminal, "Starting control loop..."));
+  hal::write(terminal, "Starting control loop...");
 
   while (true) {
     if (loop_count == 10) {
@@ -44,7 +44,7 @@ hal::status application(application_framework& p_framework)
       loop_count = 0;
     }
     loop_count++;
-    motor_speeds = HAL_CHECK(tri_wheel.get_motor_feedback());
+    motor_speeds = tri_wheel.get_motor_feedback();
 
     commands = sjsu::drive::validate_commands(commands);
 
@@ -53,11 +53,10 @@ hal::status application(application_framework& p_framework)
     commands.speed = lerp.lerp(commands.speed);
 
     arguments = sjsu::drive::select_mode(commands);
-    HAL_CHECK(tri_wheel.move(arguments, clock));
+    tri_wheel.move(arguments, clock);
     hal::delay(clock, 8ms);
   }
 
-  return hal::success();
 }
 
 }  // namespace sjsu::drive

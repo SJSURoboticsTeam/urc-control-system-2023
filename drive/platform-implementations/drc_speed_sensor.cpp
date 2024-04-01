@@ -10,7 +10,7 @@ drc_speed_sensor::drc_speed_sensor(hal::rmd::drc& p_drc)
 
 speed_sensor::read_t drc_speed_sensor::driver_read()
 {
-  HAL_CHECK(m_drc->feedback_request(hal::rmd::drc::read::status_2));
+  m_drc->feedback_request(hal::rmd::drc::read::status_2);
 
   return speed_sensor::read_t{ .speed = m_drc->feedback().speed() };
 }

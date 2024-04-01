@@ -38,16 +38,16 @@ public:
   {
   }
 
-  hal::status driver_configure(const settings& p_settings) override
+  void driver_configure(const settings& p_settings) override
   {
     return m_primary->configure(p_settings);
   }
 
-  hal::result<write_t> driver_write(std::span<const hal::byte> p_data) override
+  write_t driver_write(std::span<const hal::byte> p_data) override
   {
-    HAL_CHECK(hal::write(*m_mirror, "WRITE:["));
-    HAL_CHECK(m_mirror->write(p_data));
-    HAL_CHECK(hal::write(*m_mirror, "]\n"));
+    hal::write(*m_mirror, "WRITE:[");
+    m_mirror->write(p_data);
+    hal::write(*m_mirror, "]\n");
     return m_primary->write(p_data);
   }
 

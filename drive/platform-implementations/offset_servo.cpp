@@ -4,7 +4,7 @@
 
 namespace sjsu::drive {
 
-hal::result<offset_servo> offset_servo::create(hal::servo& p_servo,
+offset_servo offset_servo::create(hal::servo& p_servo,
                                                hal::degrees p_offset)
 {
   return offset_servo(p_servo, p_offset);
@@ -24,10 +24,10 @@ offset_servo::offset_servo(hal::servo& p_servo, hal::degrees p_offset)
 {
 }
 
-hal::result<hal::servo::position_t> offset_servo::driver_position(
+hal::servo::position_t offset_servo::driver_position(
   hal::degrees p_position)
 {
-  return HAL_CHECK(m_servo->position(p_position + m_offset));
+  return m_servo->position(p_position + m_offset);
 }
 
 }  // namespace sjsu::drive

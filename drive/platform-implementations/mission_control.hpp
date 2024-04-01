@@ -28,7 +28,7 @@ class mission_control
     int wheel_orientation = 0;
     int is_operational = 0;
     int heartbeat_count = 0;
-    hal::status print(hal::serial* terminal)
+    void print(hal::serial* terminal)
     {
       hal::print<128>(*terminal,
                       "HB: %d\n"
@@ -43,7 +43,6 @@ class mission_control
                       angle,
                       mode,
                       wheel_orientation);
-      return hal::success();
     }
   };
   /**
@@ -68,7 +67,7 @@ class mission_control
    * commands have been received, then this should return the default
    * initialized command.
    */
-  hal::result<mc_commands> get_command(hal::function_ref<hal::timeout_function> p_timeout)
+  mc_commands get_command(hal::function_ref<hal::timeout_function> p_timeout)
   {
     return impl_get_command(p_timeout);
   }
@@ -76,7 +75,7 @@ class mission_control
   virtual ~mission_control() = default;
 
 private:
-  virtual hal::result<mc_commands> impl_get_command(
+  virtual mc_commands impl_get_command(
     hal::function_ref<hal::timeout_function> p_timeout) = 0;
 };
 

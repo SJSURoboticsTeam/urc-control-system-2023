@@ -11,7 +11,7 @@ class speed_sensor
         hal::rpm speed = 0;
     };
 
-    [[nodiscard]] hal::result<read_t> read() 
+    [[nodiscard]] read_t read() 
     {
         return driver_read();
     }
@@ -19,6 +19,6 @@ class speed_sensor
     virtual ~speed_sensor() = default;
 
     private:
-    virtual hal::result<read_t> driver_read() = 0;
+    virtual read_t driver_read() = 0;
 };
 }

@@ -15,12 +15,12 @@ class print_mission_control : public mission_control
 {
 public:
 
-    static hal::result<print_mission_control> create(hal::serial& p_console)
+    static print_mission_control create(hal::serial& p_console)
     {
         return print_mission_control(p_console);
     }
 
-    hal::result<mc_commands> get_command(hal::function_ref<hal::timeout_function> p_timeout)
+    mc_commands get_command(hal::function_ref<hal::timeout_function> p_timeout)
     {
         return impl_get_command(p_timeout);
     }
@@ -31,7 +31,7 @@ private:
     {
     }
 
-    hal::result<mc_commands> impl_get_command(hal::function_ref<hal::timeout_function> p_timeout) {
+    mc_commands impl_get_command(hal::function_ref<hal::timeout_function> p_timeout) {
        hal::print(*m_console, "getting command");
        return mc_commands{};
     }

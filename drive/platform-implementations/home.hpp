@@ -16,7 +16,7 @@ struct homing
 };
 
 // this function will return offsets in the same order of servos passed in
-inline hal::status home(std::span<homing*> p_homing_structs,
+inline void home(std::span<homing*> p_homing_structs,
                         hal::steady_clock& p_counter)
 {
 
