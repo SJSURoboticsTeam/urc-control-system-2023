@@ -8,39 +8,34 @@ namespace sjsu::drive {
 class tmag5273 
 {
 public:
-
-tmag5273 create(hal::i2c& p_i2c, hal::steady_clock& p_clock, int p_device_version);
-
+/**
+ * @brief Constructor for the hall effect sensor
+ * 
+ * @param p_i2c The initialized I2C object to be passed for the sensor to use
+ * @param p_clock The initialized clock object for I2C to use for its timing
+ * @param p_device_version The version of the device {A1 : 1, B1 : 2, ..., D2 : 8}
+ */
+tmag5273(hal::i2c& p_i2c, hal::steady_clock& p_clock, uint8_t p_device_version);
 
 void write(uint8_t p_register_address, uint8_t p_data);
 void write(uint8_t p_register_address, uint8_t *p_data_buffer, uint8_t number_of_bytes);
 
 void read(uint8_t p_register_address, uint8_t *p_data_buffer, uint8_t number_of_bytes);
 
-
-
 private:
-
-tmag5273(hal::i2c& p_i2c, hal::steady_clock& p_clock);
-
 /**
- * @brief This sensor has 4 versions (A-D) which represents different default addresses,
- * along with each version having two different magnetic range variants (e.g. A1 & A2).
- * This function will take the version as an integer parameter, and set the member
- * variables which are used to adjust the addressing and calibrations accordingly
+ * @brief This function is to be used in the constructor to note the sensor's
+ * address, as it can come with 1 of 4 default addresses
  * 
  * @param p_device_version The version of the device {A1 : 1, B1 : 2, ..., D2 : 8}
  */
-void device_select(int p_device_version);
+uint8_t address_select(uint8_t p_device_version);
 
 void configure_registers();
-
-void start()
 
 hal::i2c& m_i2c;
 hal::steady_clock& m_clock;
 uint8_t device_address;
-uint8_t device_version;
 
 enum register_addresses {
     DEVICE_CONFIG_1 = 0x0,
