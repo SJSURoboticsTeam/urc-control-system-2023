@@ -65,10 +65,19 @@ application_framework initialize_platform()
 
   // servos, we need to init all of the mc_x motors then call make_servo
   // in order to pass servos into the application
-  static hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
-  hal::lpc40::can can(2, can_settings);
+  // static hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
+  hal::lpc40::can *can = nullptr;
+  while(true){
+    try {
+      static hal::lpc40::can try_can(2, {.baud_rate = 1.0_MHz});
+      can = &try_can;
+      break;
+    } catch (const hal::operation_not_supported&) {
+      continue;
+    }
+  }
 
-  hal::can_router can_router(can);
+  hal::can_router can_router(*can);
 
   hal::rmd::mc_x rotunda_mc_x(can_router, counter, 36.0, 0x141);
   static auto rotunda_servo = hal::make_servo(rotunda_mc_x, 2.0_rpm);
@@ -179,7 +188,7 @@ application_framework initialize_platform()
        left_wrist_mc_x,
        right_wrist_mc_x,
        uart0,
-       can,
+       *can,
        counter);
 
   hal::delay(counter, 1s);
