@@ -1,3 +1,4 @@
+#include <libhal/error.hpp>
 #include <string_view>
 
 #include <libhal-armcortex/dwt_counter.hpp>
@@ -42,19 +43,43 @@ application_framework initialize_platform()
                                 hal::serial::settings{
                                   .baud_rate = 38400,
                                 });
+  hal::write(uart0, "uart created\n", hal::never_timeout());
+
   // servos, we need to init all of the mc_x motors then call make_servo
   // in order to pass servos into the application
-  static hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
-  static hal::lpc40::can can(2, can_settings);
+  // static hal::can::settings can_settings{ .baud_rate = 1.0_MHz }; //removed can settings 
+  hal::write(uart0, "Can settings \n", hal::never_timeout());
+  hal::lpc40::can* can = nullptr;
+  try {
+    static hal::lpc40::can trycan(2);
 
-  static hal::can_router can_router(can);
+    can = &trycan;
+  } catch(hal::no_such_device) {
+    hal::write(uart0, "No such device \n", hal::never_timeout());
+  } catch (...) {
+    hal::write(uart0, "some other error\n", hal::never_timeout());
+    
+  }
+
+  hal::write(uart0, "Can \n", hal::never_timeout());
+
+
+  static hal::can_router can_router(*can);
   // left leg
-
+  hal::write(uart0, "Can router\n", hal::never_timeout());
+  
   static hal::rmd::drc left_leg_steer_drc(can_router, counter, 6.0, 0x141);
+  hal::write(uart0, "drc creating\n", hal::never_timeout());
+
   static auto left_leg_drc_servo = hal::make_servo(left_leg_steer_drc, 5.0_rpm);
+    hal::write(uart0, "make servo\n", hal::never_timeout());
+
   static auto left_leg_drc_steer_speed_sensor =
     make_speed_sensor(left_leg_steer_drc);
+  hal::write(uart0, "make speed sensor\n", hal::never_timeout());
+
   hal::lpc40::input_pin left_leg_mag(1, 22, hal::input_pin::settings{});
+  hal::write(uart0, "drc creating\n", hal::never_timeout());
 
   static hal::rmd::drc left_leg_hub_drc(can_router, counter, 6.0, 0x142);
   static auto left_leg_drc_motor = hal::make_motor(left_leg_hub_drc, 100.0_rpm);
@@ -62,6 +87,7 @@ application_framework initialize_platform()
     make_speed_sensor(left_leg_hub_drc);
 
   static offset_servo left_leg_drc_offset_servo(left_leg_drc_servo, 0.0f);
+  hal::write(uart0, "offset servo\n", hal::never_timeout());
 
   static auto left_home =
     homing{ &left_leg_drc_offset_servo, &left_leg_mag, false };
@@ -69,6 +95,7 @@ application_framework initialize_platform()
   // HAL_CHECK(print_speed_sensor::make_speed_sensor(uart0)); static auto
   // left_leg_drc_offset_servo  = HAL_CHECK(print_servo::create(uart0)); static
   // auto left_leg_drc_motor = HAL_CHECK(print_motor::create(uart0));
+  hal::write(uart0, "left leg\n", hal::never_timeout());
 
   // right leg
   static hal::rmd::drc right_leg_steer_drc(can_router, counter, 6.0, 0x143);
@@ -91,6 +118,7 @@ application_framework initialize_platform()
   // HAL_CHECK(print_speed_sensor::make_speed_sensor(uart0)); static auto
   // right_leg_drc_offset_servo  = HAL_CHECK(print_servo::create(uart0)); static
   // auto right_leg_drc_motor = HAL_CHECK(print_motor::create(uart0));
+  hal::write(uart0, "right leg\n", hal::never_timeout());
 
   // back leg
   static hal::rmd::drc back_leg_steer_drc(can_router, counter, 6.0, 0x143);
@@ -107,6 +135,7 @@ application_framework initialize_platform()
   static offset_servo back_leg_drc_offset_servo(back_leg_drc_servo, 0.0f);
   static auto back_home =
     homing{ &back_leg_drc_offset_servo, &back_leg_mag, false };
+  hal::write(uart0, "back leg\n", hal::never_timeout());
 
   // static auto back_leg_drc_speed_sensor =
   // HAL_CHECK(print_speed_sensor::make_speed_sensor(uart0)); static auto
@@ -138,6 +167,8 @@ application_framework initialize_platform()
   };
 
   home(homing_structs, counter);
+  hal::write(uart0, "homing\n", hal::never_timeout());
+
   // hal::print<100>(uart0, "right offset: %f", right_home.servo->get_offset());
   // hal::print<100>(uart0, "left offset: %f", left_home.servo->get_offset());
   // hal::print<100>(uart0, "back offset: %f", back_home.servo->get_offset());
