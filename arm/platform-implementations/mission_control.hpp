@@ -9,14 +9,6 @@
 
 namespace sjsu::arm {
 
-const char kResponseBodyFormat[] =
-  "{\"heartbeat_count\":%d,\"is_operational\":%d,\"speed\":%d,\"angles\":[%d,%"
-  "d,%d,%d,%d,%d]}\n";
-const char kGETRequestFormat[] =
-  "arm?heartbeat_count=%d&is_operational=%d&speed=%d&rotunda_angle=%d&shoulder_"
-  "angle=%d&elbow_angle=%d&wrist_pitch_angle=%d&wrist_roll_angle=%d&rr9_angle=%"
-  "d";
-
 class mission_control
 {
 public:
@@ -32,7 +24,7 @@ public:
     int wrist_roll_angle = 0;
     int rr9_angle = 0;
 
-    void print(hal::serial* terminal)
+    void print(hal::serial* terminal) const
     {
       hal::print<128>(*terminal,
                       "HB: %d\n"
@@ -77,17 +69,14 @@ public:
    * commands have been received, then this should return the default
    * initialized command.
    */
-  mc_commands get_command(
-    hal::function_ref<hal::timeout_function> p_timeout)
+  mc_commands get_command()
   {
-    return impl_get_command(p_timeout);
+    return impl_get_command();
   }
 
   virtual ~mission_control() = default;
 
 private:
-  virtual mc_commands impl_get_command(
-    hal::function_ref<hal::timeout_function> p_timeout) = 0;
+  virtual mc_commands impl_get_command() = 0;
 };
-
 }  // namespace sjsu::arm

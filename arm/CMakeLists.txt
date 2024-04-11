@@ -6,6 +6,7 @@ project(application LANGUAGES CXX)
 libhal_build_demos(
     DEMOS
     application
+    events
 
     PACKAGES
     libhal-rmd
@@ -20,5 +21,5 @@ libhal_build_demos(
     libhal::mpu
 
     SOURCES
-    platform-implementations/esp8266_mission_control.cpp
+    platform-implementations/esp8266_mission_control
 )

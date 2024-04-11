@@ -30,14 +30,11 @@ void application(sjsu::arm::application_framework& p_framework)
   auto& elbow_accelerometer = *p_framework.elbow_accelerometer;
   auto& wrist_accelerometer = *p_framework.wrist_accelerometer;
 
-  auto& mission_control = *(p_framework.mc);
-  auto loop_count = 0;
+  [[maybe_unused]]auto& mission_control = *(p_framework.mc);
+  [[maybe_unused]]auto loop_count = 0;
   // auto& end_effector = *p_framework.end_effector;
 
   // mission control init should go here, if anything is needed
-
-  std::string_view json;
-
   joint_router arm(rotunda_servo,
                    shoulder_servo,
                    elbow_servo,
@@ -48,25 +45,67 @@ void application(sjsu::arm::application_framework& p_framework)
                    elbow_accelerometer,
                    wrist_accelerometer);
 
-  sjsu::arm::mission_control::mc_commands commands;
-  [[maybe_unused]]speed_control speed_control;
+  const sjsu::arm::mission_control::mc_commands commands1 = {
+    .heartbeat_count = 0,
+    .is_operational = 0,
+    .speed = 1,
+    .rotunda_angle = 0,
+    .shoulder_angle = 0,
+    .elbow_angle = 0,
+    .wrist_pitch_angle = 0,
+    .wrist_roll_angle = 0,
+    .rr9_angle = 0
+  };
 
+  const sjsu::arm::mission_control::mc_commands commands2 = {
+    .heartbeat_count = 0,
+    .is_operational = 0,
+    .speed = 1,
+    .rotunda_angle = 60,
+    .shoulder_angle = 45,
+    .elbow_angle = 10,
+    .wrist_pitch_angle = 0,
+    .wrist_roll_angle = 0,
+    .rr9_angle = 0
+  };
+  const sjsu::arm::mission_control::mc_commands commands3 = {
+    .heartbeat_count = 0,
+    .is_operational = 0,
+    .speed = 1,
+    .rotunda_angle = -60,
+    .shoulder_angle = -20,
+    .elbow_angle = 45,
+    .wrist_pitch_angle = 0,
+    .wrist_roll_angle = 0,
+    .rr9_angle = 0
+  };
+  const sjsu::arm::mission_control::mc_commands commands4 = {
+    .heartbeat_count = 0,
+    .is_operational = 0,
+    .speed = 1,
+    .rotunda_angle = -60,
+    .shoulder_angle = 60,
+    .elbow_angle = 0,
+    .wrist_pitch_angle = 0,
+    .wrist_roll_angle = 0,
+    .rr9_angle = 0
+  };
   hal::print(terminal, "Starting control loop...");
   hal::delay(clock, 1000ms);
 
   while (true) {
-    if (loop_count == 10) {
-      [[maybe_unused]]auto timeout = hal::create_timeout(clock, 1s);
-      commands = mission_control.get_command();
-      loop_count = 0;
-    }
-    loop_count++;
-    commands = validate_commands(commands);
-    // commands = speed_control.lerp(commands);
-    // HAL_CHECK(hal::write(terminal, "\n\n"));
-    commands.print(&terminal);
-    arm.move(commands);
-    hal::delay(clock, 8ms);
+    commands1.print(&terminal);
+    arm.move(commands1);
+    hal::delay(clock, 45s);
+    commands2.print(&terminal);
+    arm.move(commands2);
+    hal::delay(clock, 45s);
+    commands3.print(&terminal);
+    arm.move(commands3);
+    hal::delay(clock, 45s);
+    commands4.print(&terminal);
+    arm.move(commands4);
+    hal::delay(clock, 45s);
   }
-}
+}  // namespace sjsu::arm
 }  // namespace sjsu::arm

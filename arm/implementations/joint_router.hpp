@@ -50,13 +50,13 @@ public:
     m_elbow_servo.position(
       static_cast<float>(p_arguments.elbow_angle * elbow_gear_ratio));
 
-    int left_wrist_angle =
-      (p_arguments.wrist_roll_angle) + (p_arguments.wrist_pitch_angle);
-    m_left_wrist_servo.position(static_cast<float>(left_wrist_angle));
+    // int left_wrist_angle =
+    //   (p_arguments.wrist_roll_angle) + (p_arguments.wrist_pitch_angle);
+    // m_left_wrist_servo.position(static_cast<float>(left_wrist_angle));
 
-    int right_wrist_angle =
-      (p_arguments.wrist_roll_angle) - (p_arguments.wrist_pitch_angle);
-    m_right_wrist_servo.position(static_cast<float>((right_wrist_angle)));
+    // int right_wrist_angle =
+    //   (p_arguments.wrist_roll_angle) - (p_arguments.wrist_pitch_angle);
+    // m_right_wrist_servo.position(static_cast<float>((right_wrist_angle)));
 
     return p_arguments;
   }
@@ -65,8 +65,8 @@ private:
   hal::servo& m_rotunda_servo;
   hal::servo& m_shoulder_servo;
   hal::servo& m_elbow_servo;
-  hal::servo& m_left_wrist_servo;
-  hal::servo& m_right_wrist_servo;
+  [[maybe_unused]]hal::servo& m_left_wrist_servo;
+  [[maybe_unused]]hal::servo& m_right_wrist_servo;
 
   hal::accelerometer& m_rotunda_accelerometer;
   hal::accelerometer& m_shoulder_accelerometer;

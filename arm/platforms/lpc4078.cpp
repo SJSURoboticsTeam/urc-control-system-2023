@@ -14,12 +14,13 @@
 #include <libhal-util/units.hpp>
 // #include <libhal-pca/pca9685.hpp>
 #include "../applications/application.hpp"
-#include "../platform-implementations/esp8266_mission_control.cpp"
+#include "../platform-implementations/esp8266_mission_control.hpp"
 #include "../platform-implementations/helper.hpp"
 #include "../platform-implementations/home.hpp"
-#include "../platform-implementations/offset_servo.hpp"
 
+#include <libhal-exceptions/control.hpp>
 #include <libhal-lpc40/clock.hpp>
+#include <libhal-lpc40/output_pin.hpp>
 #include <libhal-lpc40/pwm.hpp>
 #include <libhal-soft/inert_drivers/inert_accelerometer.hpp>
 #include <libhal-soft/rc_servo.hpp>
@@ -27,19 +28,31 @@
 #include <libhal/timeout.hpp>
 
 namespace sjsu::arm {
-
-void initialize_processor()
+[[noreturn]] void terminate_handler() noexcept
 {
+  hal::cortex_m::dwt_counter steady_clock(
+    hal::lpc40::get_frequency(hal::lpc40::peripheral::cpu));
 
-  hal::cortex_m::initialize_data_section();
-  hal::cortex_m::initialize_floating_point_unit();
+  hal::lpc40::output_pin led(1, 10);
+
+  while (true) {
+    using namespace std::chrono_literals;
+    led.level(false);
+    hal::delay(steady_clock, 100ms);
+    led.level(true);
+    hal::delay(steady_clock, 100ms);
+    led.level(false);
+    hal::delay(steady_clock, 100ms);
+    led.level(true);
+    hal::delay(steady_clock, 1000ms);
+  }
 }
 
 application_framework initialize_platform()
 {
   using namespace hal::literals;
   using namespace std::chrono_literals;
-
+  hal::set_terminate(terminate_handler);
   // setting clock
   hal::lpc40::maximum(12.0_MHz);
 
@@ -48,28 +61,28 @@ application_framework initialize_platform()
                          .clock_rate = 100.0_kHz,
                        });
   hal::lpc40::i2c i2c2(2,
-                      hal::i2c::settings{
-                        .clock_rate = 100.0_kHz,
-                      });
+                       hal::i2c::settings{
+                         .clock_rate = 100.0_kHz,
+                       });
 
   auto cpu_frequency = hal::lpc40::get_frequency(hal::lpc40::peripheral::cpu);
   static hal::cortex_m::dwt_counter counter(cpu_frequency);
 
   // Serial
   static std::array<hal::byte, 1024> recieve_buffer0{};
-  hal::lpc40::uart uart0(0,
-                         recieve_buffer0,
-                         hal::serial::settings{
-                           .baud_rate = 38400,
-                         });
+  static hal::lpc40::uart uart0(0,
+                                recieve_buffer0,
+                                hal::serial::settings{
+                                  .baud_rate = 38400,
+                                });
 
   // servos, we need to init all of the mc_x motors then call make_servo
   // in order to pass servos into the application
   // static hal::can::settings can_settings{ .baud_rate = 1.0_MHz };
-  hal::lpc40::can *can = nullptr;
-  while(true){
+  static hal::lpc40::can* can = nullptr;
+  while (true) {
     try {
-      static hal::lpc40::can try_can(2, {.baud_rate = 1.0_MHz});
+      static hal::lpc40::can try_can(2, { .baud_rate = 1.0_MHz });
       can = &try_can;
       break;
     } catch (const hal::operation_not_supported&) {
@@ -77,21 +90,22 @@ application_framework initialize_platform()
     }
   }
 
-  hal::can_router can_router(*can);
+  static hal::can_router can_router(*can);
 
-  hal::rmd::mc_x rotunda_mc_x(can_router, counter, 36.0, 0x141);
+  static hal::rmd::mc_x rotunda_mc_x(can_router, counter, 36.0, 0x141);
   static auto rotunda_servo = hal::make_servo(rotunda_mc_x, 2.0_rpm);
 
-  hal::rmd::mc_x shoulder_mc_x(can_router, counter, 36.0 * 65 / 30, 0x142);
+  static hal::rmd::mc_x shoulder_mc_x(
+    can_router, counter, 36.0 * 65 / 30, 0x142);
   static auto shoulder_servo = hal::make_servo(shoulder_mc_x, 5.0_rpm);
 
-  hal::rmd::mc_x elbow_mc_x(can_router, counter, 36.0 * 40 / 30, 0x143);
+  static hal::rmd::mc_x elbow_mc_x(can_router, counter, 36.0 * 40 / 30, 0x143);
   static auto elbow_servo = hal::make_servo(elbow_mc_x, 5.0_rpm);
 
-  hal::rmd::mc_x left_wrist_mc_x(can_router, counter, 36.0, 0x144);
+  static hal::rmd::mc_x left_wrist_mc_x(can_router, counter, 36.0, 0x144);
   static auto left_wrist_servo = hal::make_servo(left_wrist_mc_x, 2.0_rpm);
 
-  hal::rmd::mc_x right_wrist_mc_x(can_router, counter, 36.0, 0x145);
+  static hal::rmd::mc_x right_wrist_mc_x(can_router, counter, 36.0, 0x145);
   static auto right_wrist_servo = hal::make_servo(right_wrist_mc_x, 2.0_rpm);
 
   // static auto pca9685 = hal::pca::pca9685::create(i2c,
@@ -111,11 +125,11 @@ application_framework initialize_platform()
   // MPU INIT
   static std::array<hal::byte, 8192> recieve_buffer1{};
 
-  hal::lpc40::uart uart1(1,
-                         recieve_buffer1,
-                         hal::serial::settings{
-                           .baud_rate = 115200,
-                         });
+  static hal::lpc40::uart uart1(1,
+                                recieve_buffer1,
+                                hal::serial::settings{
+                                  .baud_rate = 115200,
+                                });
 
   static constexpr std::string_view ssid =
     "TP-Link_FC30";  // change to wifi name that you are using
@@ -124,44 +138,30 @@ application_framework initialize_platform()
 
   // still need to decide what we want the static IP to be
   static constexpr std::string_view ip = "192.168.0.212";
-  static constexpr auto socket_config = hal::esp8266::at::socket_config{
+  static auto socket_config = hal::esp8266::at::socket_config{
     .type = hal::esp8266::at::socket_type::tcp,
     .domain = "192.168.0.211",
     .port = 5000,
   };
   hal::write(uart0, "created Socket\n", hal::never_timeout());
-  static constexpr std::string_view get_request = "GET /arm HTTP/1.1\r\n"
-                                                  "Host: 192.168.0.211:5000\r\n"
-                                                  "Keep-Alive: timeout=1000\r\n"
-                                                  "Connection: keep-alive\r\n"
-                                                  "\r\n";
+  static std::string_view get_request = "GET /arm HTTP/1.1\r\n"
+                                        "Host: 192.168.0.211:5000\r\n"
+                                        "Keep-Alive: timeout=1000\r\n"
+                                        "Connection: keep-alive\r\n"
+                                        "\r\n";
 
-  static std::array<hal::byte, 2048> buffer{};
   static auto helper = serial_mirror(uart1, uart0);
-
   auto timeout = hal::create_timeout(counter, 10s);
-  hal::esp8266::at esp8266(helper, timeout);
-  sjsu::arm::esp8266_mission_control* arm_mission_control = nullptr;
-  while (true) {
-    try {
-      auto mc_timeout = hal::create_timeout(counter, 10s);
-      static sjsu::arm::esp8266_mission_control esp_mission_control(
-        esp8266,
-        uart0,
-        ssid,
-        password,
-        socket_config,
-        ip,
-        buffer,
-        get_request,
-        mc_timeout);
-
-      arm_mission_control = &esp_mission_control;
-      break;
-    } catch (const hal::timed_out&) {
-      continue;
-    }
-  }
+  static hal::esp8266::at esp8266(helper, timeout);
+  [[maybe_unused]]static sjsu::arm::esp8266_mission_control arm_mission_control(
+    &esp8266,
+    &uart0,
+    { .m_ssid = ssid,
+      .m_password = password,
+      .m_config = socket_config,
+      .m_ip = ip,
+      .m_get_request = get_request},
+    &counter);
 
   hal::mpu::mpu6050 elbow_mpu(i2c1, hal::mpu::mpu6050::address_ground);
   elbow_mpu.configure_full_scale(hal::mpu::mpu6050::max_acceleration::g2);
@@ -193,6 +193,8 @@ application_framework initialize_platform()
 
   hal::delay(counter, 1s);
 
+  hal::print(uart0, "Finished Framework\n");
+
   return application_framework{
     .rotunda_servo = &rotunda_servo,
     .shoulder_servo = &shoulder_servo,
@@ -207,7 +209,7 @@ application_framework initialize_platform()
 
     // .end_effector = &end_effector_servo,
     .terminal = &uart0,
-    .mc = arm_mission_control,
+    .mc = &arm_mission_control,
     .clock = &counter,
     .reset = []() { hal::cortex_m::reset(); },
   };

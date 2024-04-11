@@ -16,10 +16,9 @@ int main()
   return 0;
 }
 
-//TODO remove this later (used in building for debug) (#129)
+// TODO(#129) remove this later (used in building for debug) 
 extern "C" {
   _reent* _impure_ptr = nullptr;
   void __assert_func() {
-
   }
 }

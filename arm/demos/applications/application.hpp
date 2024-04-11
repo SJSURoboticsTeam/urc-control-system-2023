@@ -26,6 +26,6 @@ struct application_framework
 // Application function must be implemented by one of the compilation units
 // (.cpp) files.
 void initialize_processor();
-application_frameworkarm/main.cpp initialize_platform();
+void initialize_platform();
 void application(application_framework& p_framework);
 }
