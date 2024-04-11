@@ -24,7 +24,8 @@ esp8266_mission_control(hal::esp8266::at& p_esp8266,
                           const hal::esp8266::at::socket_config& p_config,
                           const std::string_view p_ip,
                           std::span<hal::byte> p_buffer,
-                          std::string_view p_get_request);
+                          std::string_view p_get_request,
+                          hal::function_ref<hal::timeout_function> p_timeout);
   struct create_t
   {
     hal::esp8266::at& esp8266;
@@ -81,6 +82,8 @@ private:
   std::string_view m_get_request;
   hal::stream_fill m_fill_payload;
   http_header_parser_t m_http_header_parser;
+  hal::function_ref<hal::timeout_function> m_timeout;
+
   std::array<hal::byte, 128> m_command_buffer;
   size_t m_buffer_len;
   mc_commands m_commands{};

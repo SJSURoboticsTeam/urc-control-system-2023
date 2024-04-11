@@ -9,11 +9,14 @@
 #include <libhal-lpc40/clock.hpp>
 #include <libhal-lpc40/constants.hpp>
 #include <libhal-lpc40/input_pin.hpp>
+#include <libhal-lpc40/output_pin.hpp>
+
 #include <libhal-lpc40/uart.hpp>
 
 #include <libhal-lpc40/input_pin.hpp>
 #include <libhal-rmd/drc.hpp>
 #include <libhal-util/units.hpp>
+#include <libhal-exceptions/control.hpp>
 
 #include "../include/drc_speed_sensor.hpp"
 
@@ -24,7 +27,28 @@
 #include "../platform-implementations/helper.hpp"
 #include "../platform-implementations/home.hpp"
 
+
 namespace sjsu::drive {
+
+[[noreturn]] void terminate_handler() noexcept
+{
+  hal::cortex_m::dwt_counter steady_clock(
+    hal::lpc40::get_frequency(hal::lpc40::peripheral::cpu));
+
+  hal::lpc40::output_pin led(1, 10);
+
+  while (true) {
+    using namespace std::chrono_literals;
+    led.level(false);
+    hal::delay(steady_clock, 100ms);
+    led.level(true);
+    hal::delay(steady_clock, 100ms);
+    led.level(false);
+    hal::delay(steady_clock, 100ms);
+    led.level(true);
+    hal::delay(steady_clock, 1000ms);
+  }
+}
 
 application_framework initialize_platform()
 {
@@ -35,6 +59,7 @@ application_framework initialize_platform()
   hal::lpc40::maximum(12.0_MHz);
   auto cpu_frequency = hal::lpc40::get_frequency(hal::lpc40::peripheral::cpu);
   static hal::cortex_m::dwt_counter counter(cpu_frequency);
+  hal::set_terminate(terminate_handler);
 
   // Serial
   static std::array<hal::byte, 1024> recieve_buffer0{};
@@ -47,20 +72,17 @@ application_framework initialize_platform()
 
   // servos, we need to init all of the mc_x motors then call make_servo
   // in order to pass servos into the application
-  // static hal::can::settings can_settings{ .baud_rate = 1.0_MHz }; //removed can settings 
+  static hal::can::settings can_settings{ .baud_rate = 1.0_MHz }; //removed can settings 
   hal::write(uart0, "Can settings \n", hal::never_timeout());
-  hal::lpc40::can* can = nullptr;
+  hal::lpc40::can* can = nullptr; //this can object doesn't yet exist, and it might not exist
   try {
-    static hal::lpc40::can trycan(2);
-
+    static hal::lpc40::can trycan(2, can_settings);
     can = &trycan;
-  } catch(hal::no_such_device) {
-    hal::write(uart0, "No such device \n", hal::never_timeout());
   } catch (...) {
     hal::write(uart0, "some other error\n", hal::never_timeout());
-    
+    hal::halt();
   }
-
+  
   hal::write(uart0, "Can \n", hal::never_timeout());
 
 
@@ -121,13 +143,13 @@ application_framework initialize_platform()
   hal::write(uart0, "right leg\n", hal::never_timeout());
 
   // back leg
-  static hal::rmd::drc back_leg_steer_drc(can_router, counter, 6.0, 0x143);
+  static hal::rmd::drc back_leg_steer_drc(can_router, counter, 6.0, 0x145);
   static auto back_leg_drc_servo = hal::make_servo(back_leg_steer_drc, 5.0_rpm);
   static auto back_leg_drc_steer_speed_sensor =
     make_speed_sensor(back_leg_steer_drc);
-  hal::lpc40::input_pin back_leg_mag(1, 15, hal::input_pin::settings{});
+  hal::lpc40::input_pin back_leg_mag(1, 23, hal::input_pin::settings{});
 
-  static hal::rmd::drc back_leg_hub_drc(can_router, counter, 6.0, 0x144);
+  static hal::rmd::drc back_leg_hub_drc(can_router, counter, 6.0, 0x146);
   static auto back_leg_drc_motor = hal::make_motor(back_leg_hub_drc, 100.0_rpm);
   static auto back_leg_drc_hub_speed_sensor =
     make_speed_sensor(back_leg_hub_drc);
@@ -224,7 +246,7 @@ application_framework initialize_platform()
     .domain = "192.168.0.211",
     .port = 5000,
   };
-  hal::write(uart0, "created Socket\n", hal::never_timeout());
+  hal::write(uart0, "created Uart for ESP\n", hal::never_timeout());
   static constexpr std::string_view get_request = "GET /drive HTTP/1.1\r\n"
                                                   "Host: 192.168.0.211:5000\r\n"
                                                   "\r\n";
@@ -234,6 +256,7 @@ application_framework initialize_platform()
 
   auto timeout = hal::create_timeout(counter, 10s);
   hal::esp8266::at esp8266(helper, timeout);
+
   esp8266_mission_control* drive_mission_control = nullptr;
   while (true) {
     try {
@@ -246,11 +269,14 @@ application_framework initialize_platform()
         socket_config,
         ip,
         buffer,
-        get_request);
+        get_request,
+        timeout);
 
       drive_mission_control = &esp_mission_control;
       break;
     } catch (const hal::timed_out&) {
+      hal::write(uart0, "caught timed out\n", hal::never_timeout());
+
       continue;
     }
   }

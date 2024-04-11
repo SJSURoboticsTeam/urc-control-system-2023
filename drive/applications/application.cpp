@@ -35,12 +35,16 @@ void application(application_framework& p_framework)
   sjsu::drive::command_lerper lerp;
 
   hal::delay(clock, 1000ms);
-  hal::write(terminal, "Starting control loop...", hal::never_timeout());
+  hal::write(terminal, "Starting control loop...\n", hal::never_timeout());
 
   while (true) {
+    hal::write(terminal, "Trying...\n", hal::never_timeout());
+
     if (loop_count == 10) {
       auto timeout = hal::create_timeout(clock, 1s);
       commands = mission_control.get_command(timeout);
+      hal::write(terminal, "Ran Get command...", hal::never_timeout());
+
       loop_count = 0;
     }
     loop_count++;

@@ -22,7 +22,8 @@ esp8266_mission_control::esp8266_mission_control(
   const hal::esp8266::at::socket_config& p_config,
   const std::string_view p_ip,
   std::span<hal::byte> p_buffer,
-  std::string_view p_get_request)
+  std::string_view p_get_request,
+  hal::function_ref<hal::timeout_function> p_timeout)
   : m_esp8266(&p_esp8266)
   , m_console(&p_console)
   , m_ssid(p_ssid)
@@ -33,8 +34,11 @@ esp8266_mission_control::esp8266_mission_control(
   , m_get_request(p_get_request)
   , m_fill_payload(hal::stream_fill(m_buffer))
   , m_http_header_parser(new_http_header_parser())
+  , m_timeout(p_timeout)
+
   , m_buffer_len(0)
 {
+  this->establish_connection(p_timeout);
 }
 
 mission_control::mc_commands
@@ -42,6 +46,7 @@ esp8266_mission_control::impl_get_command(
   hal::function_ref<hal::timeout_function> p_timeout)
 {
     using namespace std::literals;
+    hal::print(*m_console, "In get command...\n");
 
     // auto dumfuck = m_esp8266->is_connected_to_server(p_timeout));
     if (m_write_error) {
@@ -67,9 +72,12 @@ esp8266_mission_control::impl_get_command(
 
       // Send out HTTP GET request
       try {
+      hal::print(*m_console, "in the tryyyy...\n");
+
       auto status =
         m_esp8266->server_write(hal::as_bytes(m_get_request), p_timeout);
-      } catch (const hal::timed_out&) {
+        
+      } catch (...) {
         hal::print(*m_console, "\nFailed to write to server!\n");
         hal::print(*m_console, m_get_request);
         m_write_error = true;
@@ -86,7 +94,7 @@ esp8266_mission_control::impl_get_command(
                      m_http_header_parser.find_end_of_header;
 
     m_missed_read++;
-    if (m_missed_read > 15) {
+    if (m_missed_read > 10) {
       hal::print(*m_console, "READ MISS!!!\n");
       m_write_error = true;
       return m_commands;

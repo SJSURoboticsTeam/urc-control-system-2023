@@ -4,7 +4,7 @@ project(drive LANGUAGES CXX)
 
 libhal_build_demos(
   DEMOS
-  application
+  application 
 
   SOURCES
   platform-implementations/drc_speed_sensor.cpp

@@ -31,4 +31,5 @@ libhal_build_demos(
   ../platform-implementations/soil_sensor_sht21.cpp
   ../platform-implementations/color_sensor_opt4048.cpp
 
+  
 )
