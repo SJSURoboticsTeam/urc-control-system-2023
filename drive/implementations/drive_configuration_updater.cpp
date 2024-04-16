@@ -10,13 +10,13 @@ namespace sjsu::drive {
         m_delta.wheel_heading_rate = (m_target.wheel_heading - m_current.wheel_heading) * m_sensitivity.wheel_heading;
         m_delta.wheel_speed_rate = (m_target.wheel_speed - m_current.wheel_speed) * m_sensitivity.wheel_speed;
 
-        m_delta.steering_angle_rate = std::clamp(m_delta_rate.steering_angle, -m_max_rate.steering_angle_rate, m_max_rate.steering_angle_rate);
-        m_delta.wheel_heading_rate = std::clamp(m_delta_rate.wheel_heading, -m_max_rate.wheel_heading_rate, m_max_rate.wheel_heading_rate);
-        m_delta.wheel_speed_rate = std::clamp(m_delta_rate.wheel_speed, -m_max_rate.wheel_speed_rate, m_max_rate.wheel_speed_rate);
+        m_delta.steering_angle_rate = std::clamp(m_delta.steering_angle_rate, -m_max_rate.steering_angle_rate, m_max_rate.steering_angle_rate);
+        m_delta.wheel_heading_rate = std::clamp(m_delta.wheel_heading_rate, -m_max_rate.wheel_heading_rate, m_max_rate.wheel_heading_rate);
+        m_delta.wheel_speed_rate = std::clamp(m_delta.wheel_speed_rate, -m_max_rate.wheel_speed_rate, m_max_rate.wheel_speed_rate);
 
-        m_current.steering_angle += m_delta_rate.steering_angle * dt;
-        m_current.wheel_heading += m_delta_rate.wheel_heading * dt;
-        m_current.wheel_speed += m_delta_rate.wheel_speed * dt;
+        m_current.steering_angle += m_delta.steering_angle_rate * dt;
+        m_current.wheel_heading += m_delta.wheel_heading_rate * dt;
+        m_current.wheel_speed += m_delta.wheel_speed_rate * dt;
     }
     drive_configuration drive_configuration_updater::get_current() {
         return m_current;
