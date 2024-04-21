@@ -105,12 +105,16 @@ hal::result<application_framework> initialize_platform()
     .port = 5000,
   };
   HAL_CHECK(hal::write(uart0, "created Socket\n"));
-  static constexpr std::string_view get_request = "GET /science HTTP/1.1\r\n"
-                                                  "Host: 192.168.0.211:5000\r\n"
-                                                  "Keep-Alive: timeout=1000\r\n"
-                                                  "Connection: keep-alive\r\n"
-                                                  "\r\n";
+  // static constexpr char* get_request = "GET / %s HTTP/1.1\r\n"
+  //                                                 "Host: 192.168.0.211:5000\r\n"
+  //                                                 "Keep-Alive: timeout=1000\r\n"
+  //                                                 "Connection: keep-alive\r\n"
+  //                                                 "\r\n";
+  
+  // static constexpr std::string_view get_request_meta_data = "";
 
+
+  // char get_request[get_prefix.size() + get_request_meta_data.size() + 200];
   static std::array<hal::byte, 2048> buffer{};
   // static auto helper = serial_mirror(uart1, uart0);
 
@@ -128,8 +132,7 @@ hal::result<application_framework> initialize_platform()
                                                socket_config,
                                                ip,
                                                mc_timeout,
-                                               buffer,
-                                               get_request);
+                                               buffer);
   while (esp_mission_control.has_error()) {
     mc_timeout = hal::create_timeout(counter, 10s);
     esp_mission_control =
@@ -140,8 +143,7 @@ hal::result<application_framework> initialize_platform()
                                                  socket_config,
                                                  ip,
                                                  mc_timeout,
-                                                 buffer,
-                                                 get_request);
+                                                 buffer);
   }
   static auto science_mission_control = esp_mission_control.value();
 

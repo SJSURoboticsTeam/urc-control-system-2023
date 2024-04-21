@@ -1,12 +1,13 @@
 #include "science_state_machine.hpp"
+#include "../applications/application.hpp"
 
 using namespace std::chrono_literals;
 
 namespace sjsu::science{
 
-    science_state_machine::science_state_machine(application_framework& application) : hardware(application), m_count(0), num_vials_left(12){}
+    science_state_machine::science_state_machine(sjsu::science::application_framework& application) : hardware(application), m_count(0) {}
 
-    hal::result<science_state_machine> science_state_machine::create(application_framework& p_application){
+    hal::result<science_state_machine> science_state_machine::create(sjsu::science::application_framework& p_application){
         science_state_machine science_state_machine(p_application);
         return science_state_machine;
      }
@@ -14,14 +15,15 @@ namespace sjsu::science{
     hal::status science_state_machine::run_state_machine(science_state_machine::science_states state){
         switch(state){
             case science_state_machine::science_states::GET_SAMPLES:
+                m_status.is_sample_finished=0;
                 mix_solution();
                 turn_on_pump(pump_manager::pumps::DEIONIZED_WATER, 5000ms);
                 turn_on_pump(pump_manager::pumps::SAMPLE, 5000ms);
                 move_sample(1);
-                num_vials_left--;
+                m_status.num_vials_used++;
                 m_count++;
                 turn_on_pump(pump_manager::pumps::SAMPLE, 5000ms);
-                num_vials_left--;
+                m_status.num_vials_used++;
                 break; 
             case science_state_machine::science_states::MOLISCH_TEST:
                 turn_on_pump(pump_manager::pumps::MOLISCH_REAGENT, 5000ms);
@@ -37,6 +39,7 @@ namespace sjsu::science{
                 break;
             case science_state_machine::science_states::RESET:
                 containment_reset();
+                m_status.is_sample_finished=1;
                 break; 
         }
         return hal::success();
@@ -70,8 +73,12 @@ namespace sjsu::science{
         return hal::success(); 
     }
 
-    hal::result<int> science_state_machine::get_num_vials_left (){
-        return num_vials_left; 
+    science_state_machine::status science_state_machine::get_status(){
+        return m_status;
+    }
+
+    int science_state_machine::get_num_vials_left (){
+        return 12-m_status.num_vials_used; 
     }
   
 }

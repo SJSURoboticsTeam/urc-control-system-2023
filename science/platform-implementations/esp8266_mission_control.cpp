@@ -1,4 +1,3 @@
-#include "mission_control.hpp"
 #include <array>
 #include <cinttypes>
 #include <string_view>
@@ -9,6 +8,8 @@
 #include <libhal-util/streams.hpp>
 #include <libhal-util/timeout.hpp>
 #include <libhal/timeout.hpp>
+#include "mission_control.hpp"
+#include "science_state_machine.hpp"
 
 namespace sjsu::science {
 
@@ -23,8 +24,7 @@ public:
     const hal::esp8266::at::socket_config& p_config,
     const std::string_view p_ip,
     hal::timeout auto& p_timeout,
-    std::span<hal::byte> p_buffer,
-    std::string_view p_get_request)
+    std::span<hal::byte> p_buffer)
   {
     esp8266_mission_control esp_mission_control =
       esp8266_mission_control(p_esp8266,
@@ -33,12 +33,28 @@ public:
                               p_password,
                               p_config,
                               p_ip,
-                              p_buffer,
-                              p_get_request);
+                              p_buffer);
     HAL_CHECK(esp_mission_control.establish_connection(p_timeout));
 
     return esp_mission_control;
-  }
+  };
+
+std::string_view science_update_status(science_state_machine::status p_status ){
+    char buffer[200];
+    sprintf(buffer, kGETRequestFormat,
+    p_status.heartbeat_count,
+    p_status.is_operational,
+    p_status.sample_recieved,
+    p_status.pause_play,
+    p_status.contianment_reset,
+    p_status.num_vials_used,
+    p_status.is_sample_finished);
+
+    char final_buffer[200];
+    sprintf(final_buffer,get_request, buffer);
+
+    return final_buffer;
+}
 
 private:
   esp8266_mission_control(hal::esp8266::at& p_esp8266,
@@ -47,8 +63,7 @@ private:
                           const std::string_view p_password,
                           const hal::esp8266::at::socket_config& p_config,
                           const std::string_view p_ip,
-                          std::span<hal::byte> p_buffer,
-                          std::string_view p_get_request)
+                          std::span<hal::byte> p_buffer)
     : m_esp8266(&p_esp8266)
     , m_console(&p_console)
     , m_ssid(p_ssid)
@@ -56,14 +71,13 @@ private:
     , m_config(p_config)
     , m_ip(p_ip)
     , m_buffer(p_buffer)
-    , m_get_request(p_get_request)
     , m_fill_payload(hal::stream_fill(m_buffer))
     , m_http_header_parser(new_http_header_parser())
   {
     m_buffer_len = 0;
   }
 
-  hal::result<mc_commands> impl_get_command(
+  hal::result<mc_commands> impl_get_command(science_state_machine::status get_request_status,
     hal::function_ref<hal::timeout_function> p_timeout) override
   {
     using namespace std::literals;
@@ -90,10 +104,10 @@ private:
     if (m_read_complete) {
 
       // Send out HTTP GET request
+      std::string_view final_buffer = science_update_status(get_request_status);
 
       auto status =
-        m_esp8266->server_write(hal::as_bytes(m_get_request), p_timeout);
-
+        m_esp8266->server_write(hal::as_bytes(final_buffer), p_timeout);
       if (!status) {
         hal::print(*m_console, "\nFailed to write to server!\n");
         hal::print(*m_console, m_get_request);

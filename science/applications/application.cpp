@@ -42,8 +42,10 @@ hal::status application(application_framework& p_framework)
   
   while (true) {
     // Print message
+    
     auto timeout = hal::create_timeout(clock, 2s);
-    commands = mission_control.get_command(timeout).value();
+
+    commands = mission_control.get_command(state_machine.get_status(),timeout).value();
     commands.print(&terminal); 
    auto state = science_state_machine::science_states::GET_SAMPLES;
    int state_num = static_cast<int>(state);
@@ -52,7 +54,7 @@ hal::status application(application_framework& p_framework)
       if(commands.pause_play == 1 ){
         while(commands.pause_play == 1 ){
           hal::print(terminal, "Waiting for Mission Control\n");
-          commands = mission_control.get_command(timeout).value();
+          commands = mission_control.get_command(state_machine.get_status(), timeout).value();
         }
       }else if(commands.contianment_reset == 1){
         state_machine.run_state_machine(science_state_machine::science_states::RESET);
@@ -63,7 +65,7 @@ hal::status application(application_framework& p_framework)
           state_num++;
           state = static_cast<science_state_machine::science_states>(state_num);
       }
-      commands = mission_control.get_command(timeout).value();
+      commands = mission_control.get_command(state_machine.get_status(), timeout).value();
     }
     hal::print<64>(terminal, "%d samples left\n", state_machine.get_num_vials_left());
     state =science_state_machine::science_states::GET_SAMPLES;;

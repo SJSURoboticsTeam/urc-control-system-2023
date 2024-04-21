@@ -1,5 +1,5 @@
 #pragma once
-
+#include "science_state_machine.hpp"
 #include <libhal-util/serial.hpp>
 #include <libhal/motor.hpp>
 #include <libhal/serial.hpp>
@@ -7,26 +7,31 @@
 #include <libhal/steady_clock.hpp>
 #include <libhal/timeout.hpp>
 
-namespace sjsu::science{
+namespace sjsu::science {
 
 static constexpr char kResponseBodyFormat[] =
   "{\"HB\":%d,\"IO\":%d,\"SR\":%d,\"PP\":\"%d\",\"CR\":\"%d\"}\n";
 
 static constexpr char kGETRequestFormat[] =
-  "drive?heartbeat_count=%d&is_operational=%d&sample_recieved=%d&pause_play=%"
-  "c&contianment_reset=%d";
+  "science?heartbeat_count=%d&is_operational=%d&sample_recieved=%d&pause_play=%"
+  "c&contianment_reset=%dnum_vials%dsample_finished%d";
 
+static constexpr char get_request[] = "GET / %s HTTP/1.1\r\n"
+                                      "Host: 192.168.0.211:5000\r\n"
+                                      "Keep-Alive: timeout=1000\r\n"
+                                      "Connection: keep-alive\r\n"
+                                      "\r\n";
 
 class mission_control
 {
-  public:
+public:
   struct mc_commands
   {
     int heartbeat_count = 0;
     int is_operational = 0;
     int sample_recieved = 0;
     int pause_play = 0;
-    int contianment_reset =0;
+    int contianment_reset = 0;
 
     hal::status print(hal::serial* terminal)
     {
@@ -66,16 +71,19 @@ class mission_control
    * commands have been received, then this should return the default
    * initialized command.
    */
-  hal::result<mc_commands> get_command(hal::function_ref<hal::timeout_function> p_timeout)
+  hal::result<mc_commands> get_command(
+    auto get_request_status,
+    hal::function_ref<hal::timeout_function> p_timeout)
   {
-    return impl_get_command(p_timeout);
+    return impl_get_command(get_request_status, p_timeout);
   }
 
   virtual ~mission_control() = default;
 
 private:
   virtual hal::result<mc_commands> impl_get_command(
+    science_state_machine::status get_request_status,
     hal::function_ref<hal::timeout_function> p_timeout) = 0;
 };
 
-}
+}  // namespace sjsu::science
