@@ -136,16 +136,16 @@ void esp8266_mission_control::parse_commands()
 
   auto result = to_string_view(m_command_buffer);
   static constexpr int expected_number_of_arguments = 6;
-  mc_commands commands;
 
+  // Fill the original command with the new command.
   int actual_arguments = sscanf(result.data(),
                                 kResponseBodyFormat,
-                                &commands.heartbeat_count,
-                                &commands.is_operational,
-                                &commands.wheel_orientation,
-                                &commands.mode,
-                                &commands.speed,
-                                &commands.angle);
+                                &m_commands.heartbeat_count,
+                                &m_commands.is_operational,
+                                &m_commands.wheel_orientation,
+                                &m_commands.mode,
+                                &m_commands.speed,
+                                &m_commands.angle);
   if (actual_arguments != expected_number_of_arguments) {
     hal::print<200>(*m_console,
                     "Received %d arguments, expected %d\n",
@@ -153,7 +153,33 @@ void esp8266_mission_control::parse_commands()
                     expected_number_of_arguments);
   }
 
-  m_commands = commands;
+  // Increment the message count.
+  m_commands.message_count ++; 
+  
+  if(!m_commands.is_operational) {
+    m_commands.wheel_speed = 0.0;
+    return;
+  }
+
+  // A hack to get the current mission control to work with the new steering.
+  m_commands.wheel_speed = static_cast<float>(m_commands.speed);
+  switch(m_commands.mode) {
+  case 'D':
+    // In drive mode, angle refers to steering angle.
+    m_commands.steering_angle = static_cast<float>(m_commands.angle);
+    m_commands.wheel_heading = 0.0;
+    break;
+  case 'S':
+    // In spin mode, wheel heading should not change and steering angle should be 90
+    m_commands.steering_angle = 90.0;
+    m_commands.wheel_heading = 0.0; // Set it to 0 for now.
+    break;
+  case 'T':
+    // In translate mode, angle refers to wheel heading.
+    m_commands.wheel_heading = static_cast<float>(m_commands.angle);
+    m_commands.steering_angle = 0.0;
+    break;
+  }
 }
 
 esp8266_mission_control::http_header_parser_t

@@ -1,14 +1,11 @@
 #include <libhal-util/steady_clock.hpp>
 
-#include "../dto/motor_feedback.hpp"
+#include "../include/drive_debug.hpp"
+#include "../include/drive_configuration_updater.hpp"
+#include "../include/wheel_router.hpp"
+#include "../include/rules_engine.hpp"
+#include "../include/settings.hpp"
 
-#include "../implementations/mode_select.hpp"
-#include "../implementations/rules_engine.hpp"
-#include "../include/command_lerper.hpp"
-#include "../include/mode_switcher.hpp"
-#include "../include/tri_wheel_router.hpp"
-
-#include "../include/mission_control.hpp"
 #include "application.hpp"
 
 namespace sjsu::drive {
@@ -18,43 +15,69 @@ hal::status application(application_framework& p_framework)
   using namespace std::chrono_literals;
   using namespace hal::literals;
 
-  auto& left_leg = *p_framework.legs[0];
-  auto& right_leg = *p_framework.legs[1];
-  auto& back_leg = *p_framework.legs[2];
-  auto& mission_control = *(p_framework.mc);
+  auto legs = p_framework.legs;
+  auto& steering = *p_framework.steering;
+  auto& mission_control = *p_framework.mc;
   auto& terminal = *p_framework.terminal;
   auto& clock = *p_framework.clock;
-  auto loop_count = 0;
+  
+  // Test Steering math for debug purposes.
+  hal::print(terminal, "Testing Steering Math...\n");
+  test_steering_math(terminal, steering);
 
-  sjsu::drive::tri_wheel_router tri_wheel{ back_leg, right_leg, left_leg };
-  sjsu::drive::mission_control::mc_commands commands;
-  sjsu::drive::motor_feedback motor_speeds;
-  sjsu::drive::tri_wheel_router_arguments arguments;
 
-  sjsu::drive::mode_switch mode_switcher;
-  sjsu::drive::command_lerper lerp;
+  drive_configuration_updater configuration_updater;
+
+  configuration_updater.set_sensitivity(config_sensitivity);
+  configuration_updater.set_max_rate(config_max_delta);
+
+  // Supports different leg configurations
+  wheel_router wheels(legs);
 
   hal::delay(clock, 1000ms);
   HAL_CHECK(hal::write(terminal, "Starting control loop..."));
 
+  float next_update = static_cast<float>(clock.uptime().ticks) / clock.frequency().operating_frequency + 5;
+  float then = static_cast<float>(clock.uptime().ticks) / clock.frequency().operating_frequency;
   while (true) {
-    if (loop_count == 10) {
+    // Calculate time since last frame. Use this for physics.
+    float now = static_cast<float>(clock.uptime().ticks) / clock.frequency().operating_frequency;
+    float dt = now - then;
+    then = now;
+
+    if (next_update < now) {
+      // Time out in 10 ms
       auto timeout = hal::create_timeout(clock, 1s);
-      commands = mission_control.get_command(timeout).value();
-      loop_count = 0;
+      auto commands = mission_control.get_command(timeout).value();
+
+      // Create a new target and set the updater to go to the new target
+      drive_configuration target;
+      target.steering_angle = commands.steering_angle;
+      target.wheel_heading = commands.wheel_heading;
+      target.wheel_speed = commands.wheel_speed;
+
+      // Validate the target
+      target = validate_configuration(target);
+      
+      configuration_updater.set_target(target);
+
+      // Next update from mission control in 100 ms (0.1 s)
+      float now = static_cast<float>(clock.uptime().ticks) / clock.frequency().operating_frequency;
+      next_update = now + 0.1;
     }
-    loop_count++;
-    motor_speeds = HAL_CHECK(tri_wheel.get_motor_feedback());
 
-    commands = sjsu::drive::validate_commands(commands);
+    // Update the configuration
+    configuration_updater.update(dt);
+    // Get the current configuration
+    drive_configuration current_configuration = configuration_updater.get_current();
+    
+    // Calculate the turning radius
+    float turning_radius = 1 / std::tan(current_configuration.steering_angle * std::numbers::pi / 180);
+    // Calculate the current wheel settings.
+    auto wheel_settings = steering.calculate_wheel_settings(turning_radius, current_configuration.wheel_heading, current_configuration.wheel_speed / 100);
 
-    commands =
-      mode_switcher.switch_steer_mode(commands, arguments, motor_speeds);
-    commands.speed = lerp.lerp(commands.speed);
-
-    arguments = sjsu::drive::select_mode(commands);
-    HAL_CHECK(tri_wheel.move(arguments, clock));
-    hal::delay(clock, 8ms);
+    // Move all the wheels
+    HAL_CHECK(wheels.move(wheel_settings));
   }
 
   return hal::success();

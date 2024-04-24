@@ -22,7 +22,7 @@
 #include "../include/offset_servo.hpp"
 #include "../platform-implementations/helper.hpp"
 #include "../platform-implementations/home.hpp"
-
+#include "../include/settings.hpp"
 namespace sjsu::drive {
 
 hal::status initialize_processor()
@@ -124,7 +124,7 @@ hal::result<application_framework> initialize_platform()
   static auto back_leg_hub_drc =
     HAL_CHECK(hal::rmd::drc::create(can_router, counter, 6.0, 0x146));
   static auto back_leg_drc_motor =
-    HAL_CHECK(hal::make_motor(back_leg_hub_drc, 100.0_rpm));
+    HAL_CHECK(hal::make_motor(back_leg_hub_drc, 100.0_rpm)); // THIS WHEEL IS REVERSED
   static auto back_leg_drc_hub_speed_sensor =
     HAL_CHECK(make_speed_sensor(back_leg_hub_drc));
 
@@ -163,6 +163,18 @@ hal::result<application_framework> initialize_platform()
   };
 
   HAL_CHECK(home(homing_structs, counter));
+
+  // Home position will be drive mode. This is for the ackermann steering calculations
+  // Basically all wheels should be straight.
+  left_leg_drc_offset_servo.set_offset(left_leg_drc_offset_servo.get_offset() - 30 * angle_correction_factor);
+  right_leg_drc_offset_servo.set_offset(right_leg_drc_offset_servo.get_offset() - 150 * angle_correction_factor);
+  back_leg_drc_offset_servo.set_offset(back_leg_drc_offset_servo.get_offset() + 90 * angle_correction_factor);
+
+  // Straighten the wheels. For debugging.
+  HAL_CHECK(left_leg_drc_offset_servo.position(0));
+  HAL_CHECK(right_leg_drc_offset_servo.position(0));
+  HAL_CHECK(back_leg_drc_offset_servo.position(0));
+  
   // hal::print<100>(uart0, "right offset: %f", right_home.servo->get_offset());
   // hal::print<100>(uart0, "left offset: %f", left_home.servo->get_offset());
   // hal::print<100>(uart0, "back offset: %f", back_home.servo->get_offset());
@@ -196,6 +208,28 @@ hal::result<application_framework> initialize_platform()
     &left_leg, &right_leg, &back_leg,
     // extra_leg,
   };
+
+  
+  static std::array<vector2, 3> wheel_locations = {
+    vector2::from_bearing(1, -60 * std::numbers::pi / 180),
+    vector2::from_bearing(1, 60 * std::numbers::pi / 180),
+    vector2::from_bearing(1, std::numbers::pi),
+  };
+  // static std::array<vector2, 3> wheel_locations = {
+  //   vector2(-0.5, 0),
+  //   vector2(0.5, 0),
+  //   vector2(0, -std::sqrt(3/2)),
+  // };
+  // static std::array<vector2, 3> wheel_locations = {
+  //   vector2(-0.5, std::sqrt(3/2)),
+  //   vector2(0.5, std::sqrt(3/2)),
+  //   vector2(0, 0),
+  // };
+  static std::array<wheel_setting, 3> wheel_settings;
+  
+  // WE ARE UNABLE TO USE MAXIMUM ANGULAR SPEED UNLESS WE HAVE THE CORRECT SCALE FACTORS SET. 
+  static ackermann_steering steering(wheel_locations, wheel_settings, 2, 2);
+
 
   // mission control object
   static std::array<hal::byte, 8192> recieve_buffer1{};
@@ -250,6 +284,7 @@ hal::result<application_framework> initialize_platform()
   static auto drive_mission_control = esp_mission_control.value();
 
   return application_framework{
+    .steering = &steering,
     .legs = legs,
 
     .mc = &drive_mission_control,

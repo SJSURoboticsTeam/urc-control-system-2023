@@ -21,13 +21,14 @@ find_package(libhal-esp8266 REQUIRED CONFIG)
 add_executable(${PROJECT_NAME}
     main.cpp
     applications/application.cpp
+    platform-implementations/ackermann_steering.cpp
     platform-implementations/drc_speed_sensor.cpp
     platform-implementations/esp8266_mission_control.cpp
     platform-implementations/serial_mission_control.cpp
     platform-implementations/offset_servo.cpp
-    implementations/command_lerper.cpp
-    implementations/mode_switcher.cpp
-    implementations/tri_wheel_router.cpp
+    implementations/drive_debug.cpp
+    implementations/wheel_router.cpp
+    implementations/drive_configuration_updater.cpp
     platforms/${platform}.cpp)
 target_include_directories(${PROJECT_NAME} PUBLIC .)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
