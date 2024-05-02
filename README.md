@@ -1,4 +1,69 @@
-# URC 2023
+# Mars Rover Communications and Firmware
+
+## Dev Environment Setup
+
+## Linux
+
+### Install Git
+* This should be preinstalled
+* If it isn't installed then run the following command
+```
+sudo apt install git
+```
+
+### Download VSCode
+* To do so run the following commands 
+```
+sudo apt update
+sudo apt install software-properties-common apt-transport-https wget
+wget -q https://packages.microsoft.com/keys/microsoft.asc -O- | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main"
+sudo apt install code
+```
+#### Download VSCode Extensions
+* C/C++
+* C/C++ Extension Pack
+* Clang-Format
+* Gitlens
+* Liveshare
+* Code Spell checker
+* CMake
+* CMake Tools
+
+### Clone URC-Control-System-2023
+* Run the following command in your terminal in the directory that you want to download the clone repository to: 
+```
+git clone https://github.com/SJSURoboticsTeam/urc-control-system-2023.git
+```
+
+### Libhal
+* Goto the following link and follow the steps it tells you to: https://libhal.github.io/2.2/getting_started/
+
+## Windows
+
+### Install Git
+* Navigate to the following link and download git: https://git-scm.com/download/win
+
+### Download VSCode
+* Navigate to the following link to download VSCode: https://code.visualstudio.com/download
+
+#### Download VSCode Extensions
+* C/C++
+* C/C++ Extension Pack
+* Clang-Format
+* Gitlens
+* Liveshare
+* Code Spell checker
+* CMake
+* CMake Tools
+
+### Clone URC-Control-System-2023
+* Run the following command in your terminal in the directory that you want to download the clone repository to: 
+```
+git clone https://github.com/SJSURoboticsTeam/urc-control-system-2023.git
+```
+### Libhal
+* Goto the following link and follow the steps it tells you to: https://libhal.github.io/2.2/getting_started/
 
 ## How to Build and Flash
 
@@ -18,39 +83,5 @@
 
 If this doesn't work then look here for updated instructions: https://libhal.github.io/2.2/
 
-## How to Setup the Com tower
-
-1. Connect the safe black battery to the antenna on the pole.
-2. Plug in the Ryobi Battery to the arm
-3. If the TP-Link_FC30 (wireless access point on the arm) isn't getting power through the Ryobi battery then we will need to plug it into a power bank instead
-4. Ensure the esp is configured to connect to the tplink and your local computers server
-
-## How to Configure your Network Settings When Connected to the TP-Link_FC30
-
-1. Goto your network settings
-2. Click on the TP-Link's network settings and edit them
-3. Where it says anything about DHCP, disable this and set it to manual mode. This will let you set your static IP address
-4. Set your Static IP address to 192.168.0.211
-5. Set your subnet Mask to 255.255.255.0
-6. Set your DNS to 192.168.0.1
-7. Set your GateWay to 192.168.0.1
-8. Leave routes blank for linux
-9. If you need to know, the network is a /24 network which means you have an 8 bit network which means 255 (3 less then this) can be connected
-
-
-## How to Start Up Local Server (Frontend and Backend)
-
-1. Run the Following Commands
-   ```bash
-   cd joystick-serial-prototype-2022
-   npm run start
-   cd server
-   npm run start
-   ```
-If this doesn't work then look here for updated instructions: https://github.com/SJSURoboticsTeam/joystick-serial-prototype-2022
-
-## How to Configure Mission Control
-  
-1. Copy the backend URL
-2. Paste it in the textbox that holds the localhost of the current port its running on
-3. Click connect
+## Code Structure
+![alt text](image.png)
