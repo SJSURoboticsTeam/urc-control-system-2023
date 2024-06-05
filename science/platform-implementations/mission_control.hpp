@@ -1,5 +1,4 @@
 #pragma once
-#include "science_state_machine.hpp"
 #include <libhal-util/serial.hpp>
 #include <libhal/motor.hpp>
 #include <libhal/serial.hpp>
@@ -49,6 +48,24 @@ public:
       return hal::success();
     }
   };
+  struct status
+  {
+    int heartbeat_count = 0;
+    int is_operational = 1;
+    int sample_recieved = 0;
+    int pause_play = 0;
+    int contianment_reset = 0;
+    int num_vials_used = 0;
+    int is_sample_finished = 0;
+  };
+  // // static status m_status;
+  // status m_status;
+
+  //! @note mission_control::GetStatus();
+  //! @note mission_control::GetStatus() { return instance->m_status; }
+
+  // static mission_control* instance;
+
   /**
    * @brief Get the command object
    *
@@ -72,17 +89,15 @@ public:
    * initialized command.
    */
   hal::result<mc_commands> get_command(
-    auto get_request_status,
     hal::function_ref<hal::timeout_function> p_timeout)
   {
-    return impl_get_command(get_request_status, p_timeout);
+    return impl_get_command( p_timeout);
   }
 
   virtual ~mission_control() = default;
 
 private:
   virtual hal::result<mc_commands> impl_get_command(
-    science_state_machine::status get_request_status,
     hal::function_ref<hal::timeout_function> p_timeout) = 0;
 };
 

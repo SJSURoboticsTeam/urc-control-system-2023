@@ -9,13 +9,16 @@
 #include <libhal-util/timeout.hpp>
 #include <libhal/timeout.hpp>
 #include "mission_control.hpp"
-#include "science_state_machine.hpp"
 
 namespace sjsu::science {
+
+  // mission_control::status mission_control::m_status;
+  static mission_control::status m_status;
 
 class esp8266_mission_control : public mission_control
 {
 public:
+
   static hal::result<esp8266_mission_control> create(
     hal::esp8266::at& p_esp8266,
     hal::serial& p_console,
@@ -39,7 +42,7 @@ public:
     return esp_mission_control;
   };
 
-std::string_view science_update_status(science_state_machine::status p_status ){
+std::string_view science_update_status(status& p_status ){
     char buffer[200];
     sprintf(buffer, kGETRequestFormat,
     p_status.heartbeat_count,
@@ -77,7 +80,7 @@ private:
     m_buffer_len = 0;
   }
 
-  hal::result<mc_commands> impl_get_command(science_state_machine::status get_request_status,
+  hal::result<mc_commands> impl_get_command(
     hal::function_ref<hal::timeout_function> p_timeout) override
   {
     using namespace std::literals;
@@ -104,7 +107,7 @@ private:
     if (m_read_complete) {
 
       // Send out HTTP GET request
-      std::string_view final_buffer = science_update_status(get_request_status);
+      std::string_view final_buffer = science_update_status(m_status);
 
       auto status =
         m_esp8266->server_write(hal::as_bytes(final_buffer), p_timeout);

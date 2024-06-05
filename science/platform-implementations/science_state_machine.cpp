@@ -5,25 +5,25 @@ using namespace std::chrono_literals;
 
 namespace sjsu::science{
 
-    science_state_machine::science_state_machine(sjsu::science::application_framework& application) : hardware(application), m_count(0) {}
-
-    hal::result<science_state_machine> science_state_machine::create(sjsu::science::application_framework& p_application){
-        science_state_machine science_state_machine(p_application);
+    science_state_machine::science_state_machine(sjsu::science::application_framework& application, sjsu::science::mission_control::status& status) : hardware(application), m_count(0), sm_m_status(status) {}
+// pass in mission control status intialize m_status
+    hal::result<science_state_machine> science_state_machine::create(sjsu::science::application_framework& p_application, sjsu::science::mission_control::status& p_status){
+        science_state_machine science_state_machine(p_application, p_status);
         return science_state_machine;
      }
 
     hal::status science_state_machine::run_state_machine(science_state_machine::science_states state){
         switch(state){
             case science_state_machine::science_states::GET_SAMPLES:
-                m_status.is_sample_finished=0;
+                sm_m_status.is_sample_finished=0;
                 mix_solution();
                 turn_on_pump(pump_manager::pumps::DEIONIZED_WATER, 5000ms);
                 turn_on_pump(pump_manager::pumps::SAMPLE, 5000ms);
                 move_sample(1);
-                m_status.num_vials_used++;
+                sm_m_status.num_vials_used++;
                 m_count++;
                 turn_on_pump(pump_manager::pumps::SAMPLE, 5000ms);
-                m_status.num_vials_used++;
+                sm_m_status.num_vials_used++;
                 break; 
             case science_state_machine::science_states::MOLISCH_TEST:
                 turn_on_pump(pump_manager::pumps::MOLISCH_REAGENT, 5000ms);
@@ -39,7 +39,7 @@ namespace sjsu::science{
                 break;
             case science_state_machine::science_states::RESET:
                 containment_reset();
-                m_status.is_sample_finished=1;
+                sm_m_status.is_sample_finished=1;
                 break; 
         }
         return hal::success();
@@ -51,8 +51,6 @@ namespace sjsu::science{
         pump_controller.pump(pump, time);
         return hal::success();
     }
-
-    
 
     hal::status science_state_machine::mix_solution(){
         // hardware.mixing_servo.velocity_control(10.0 rpm);
@@ -73,12 +71,12 @@ namespace sjsu::science{
         return hal::success(); 
     }
 
-    science_state_machine::status science_state_machine::get_status(){
-        return m_status;
+    mission_control::status science_state_machine::get_status(){
+        return sm_m_status;
     }
 
     int science_state_machine::get_num_vials_left (){
-        return 12-m_status.num_vials_used; 
+        return 12-sm_m_status.num_vials_used; 
     }
   
 }

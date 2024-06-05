@@ -23,6 +23,7 @@ add_executable(${PROJECT_NAME}
     applications/application.cpp
     platform-implementations/pump_manager.cpp
     platform-implementations/revolver.cpp
+    platform-implementations/esp8266_mission_control.cpp
     platform-implementations/science_state_machine.cpp
     platforms/${platform}.cpp)
 target_include_directories(${PROJECT_NAME} PUBLIC .)
